@@ -1,3 +1,3 @@
-from .modules.integers import Integers
+from .modules.tokenTypes import tokenTypes
 
 # Interpret stuff.
