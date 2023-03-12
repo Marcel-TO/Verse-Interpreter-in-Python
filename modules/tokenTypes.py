@@ -1,6 +1,11 @@
-# Integers: 3 5+7
-# x: int, x = 7
+from enum import Enum
 
-class tokenTypes:
-    def isInt(value: int):
-        print(value)
+class Tokens(Enum):
+    # Data
+    Integer = "",
+
+    # Aritmetics
+    Plus = "+",
+    Minus = "-",
+    Multiply = "*",
+    Divide = "/"
