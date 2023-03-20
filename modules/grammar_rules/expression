@@ -1,0 +1,31 @@
+
+expr: or DOT DOT or
+choice: eq (| eq)*
+eqaul: gl = gl
+gl: arith ((GT|LT|GE|LE) arith)*
+arith: term ((PLUS|MINUS) term)*
+term: factor ((MUL|DIV) factor)*
+factor: INTEGER  
+      : tuple
+      : (MINUS|PLUS) arith                VLL. expr statt arith
+      : func_call
+      : indexing
+
+
+binding: scope BINDING (method|or)
+scope: Identifier (COMMA IDENTIFIER)*? COLON type
+Identifier: IDENTIFIER
+
+type: INT 
+      | TUPLE LB type (,type)* RB
+
+tuple: LB binding|expr (COMMA binding|expr)*? RB
+
+indexing: Identifier SLB expr RLB
+
+
+
+
+
+
+ 

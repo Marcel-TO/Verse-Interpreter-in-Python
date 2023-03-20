@@ -1,0 +1,51 @@
+program: statement_list | func_decl (SEMI statement_list | func_decl)*?
+
+
+block: statement_list
+statement_list: statement (SEMI statement)*?
+statement: expr|if|for|func_dec
+
+
+func_call: IDENTIFIER LB (func_call_param)? RB
+
+func_call_param: expr (COMMA expr)*?
+
+func_decl: IDENTIFIER LB func_dec_param RB (COLON TYPE)? BINDING block
+          |IDENTIFIER BINDING LB nested_scope LAMBDA expr RB                       VLL. STATT expr, doch statement
+
+func_dec_param: nested_scope
+
+
+if_statement: IF LB expr (COMMA|OR expr)*? RB THEN CBL block CBR ELSE CBL block CBR
+    | IF (expr) THEN expr ELSE expr
+
+
+for_loop: FOR LCB (scope|expr) (;expr)*? RCB
+    |FOR LB (scope|expr) (,expr)*? RB DO expr
+
+nested_scope: IDENTIFIER (,IDENTIFIER)*? COLON TYPE
+
+
+
+
+
+
+
+
+
+
+
+
+--------------WAHRSCHEINLICH NICHT BENÖTIGT------------------
+statement: assign_statement               
+                
+        
+statement_block: func_decl
+                 
+
+
+
+assign_statement: binding_statement EQ (method_call|expr)           =
+binding_statement: scope_statement BINDING (method_call|expr)       :=
+scope_statement: IDENTIFIER (,IDENTIFIER)*? COLON TYPE              :
+

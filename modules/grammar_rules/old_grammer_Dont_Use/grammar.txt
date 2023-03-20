@@ -1,0 +1,68 @@
+
+program: statement_list
+statement_list:
+            | func_dec: IDENTIFIER (param) (:Type)? BINDING block 
+            | func_call: IDENTIFIER (func_call_param)
+            | or 
+            | binding
+            | 
+
+compund: (statement)*?
+
+expr: 
+statements: binding | tuple
+
+tuple: ((or | scope (COMMA or | scope)*))|array{or | scope (COMMA or | scope)*}
+
+
+--Func Call--
+scope: IDENTIFIER (,IDENTIFIER)*? COLON TYPE
+binding: IDENTIFIER BINDING (method|or)
+func_call_param:  (or | func_call) (COMMA (or | func_call))*?
+
+---Func Decl--
+param: nested_scope
+nested_scope: IDENTIFIER (,IDENTIFIER)*? COLON TYPE
+
+
+--Opeartions--
+or: gl (| gl)*
+gl: arith ((GT|LT|GE|LE) arith)*
+arith: mult ((PLUS|MINUS) mult)*
+mult: factor ((MUL|DIV) factor)*
+factor: INTEGER  
+      : LP or RP
+      : (MINUS|PLUS) arith
+      : scope
+
+ 
+
+
+
+
+
+
+list: INTEGER ..
+method: IDENTIFIER()
+
+indexing: VARIABLE [INTEGER]
+binding: VARIABLE BINDING tuple|or
+
+
+tuple
+
+or: 3|2 x|x (4*3|3*2) (3>2|2<1)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
