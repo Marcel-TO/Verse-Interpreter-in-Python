@@ -1,31 +1,23 @@
-
-expr: or DOT DOT or
-choice: eq (| eq)*
-eqaul: gl = gl
-gl: arith ((GT|LT|GE|LE) arith)*
-arith: term ((PLUS|MINUS) term)*
-term: factor ((MUL|DIV) factor)*
+expr: choice DOT DOT choice                            --> DOT means .  1..10
+choice: equal (| equal)*
+equal: gl = gl                                  
+gl: arith ((GT|LT|GE|LE) arith)*                       --> GT means >; LT means <; GE means >=; LE means <=
+arith: term ((PLUS|MINUS) term)*                       --> PLUS means +; MINUS means -
+term: factor ((MUL|DIV) factor)*                       --> MUL means *; DIV means /
 factor: INTEGER  
       : tuple
-      : (MINUS|PLUS) arith                VLL. expr statt arith
+      : (MINUS|PLUS) arith                             --> UNARY OPERATION. May need to change from arith to expr
       : func_call
       : indexing
 
 
-binding: scope BINDING (method|or)
-scope: Identifier (COMMA IDENTIFIER)*? COLON type
-Identifier: IDENTIFIER
+binding: scope BINDING expr                            --> BINDING means :=
+scope: Identifier (COMMA IDENTIFIER)*? COLON type      --> COLON means :
+Identifier: IDENTIFIER                                 --> IDENTIFIER method name or variable name (a..z)*
 
 type: INT 
-      | TUPLE LB type (,type)* RB
+      | TUPLE LB type (,type)* RB                     --> INT means int; TUPLE means tuple
 
-tuple: LB binding|expr (COMMA binding|expr)*? RB
+tuple: LB expr (COMMA expr)*? RB                      --> LB/RB (LEFT/RIGHT) BRACKETS
 
-indexing: Identifier SLB expr RLB
-
-
-
-
-
-
- 
+indexing: Identifier SLB expr RLB                     --> SLB/SRB SQUARE (LEFT/RIGHT) BRACKETS

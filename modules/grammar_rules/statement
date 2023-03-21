@@ -2,25 +2,25 @@ program: statement_list | func_decl (SEMI statement_list | func_decl)*?
 
 
 block: statement_list
-statement_list: statement (SEMI statement)*?
+statement_list: statement (SEMI statement)*?                                  --> SEMI means ;
 statement: expr|if|for|func_dec
 
 
-func_call: IDENTIFIER LB (func_call_param)? RB
+func_call: IDENTIFIER LB (func_call_param)? RB                                
 
-func_call_param: expr (COMMA expr)*?
+func_call_param: expr (COMMA expr)*?                                          --> COMMA means ,
 
-func_decl: IDENTIFIER LB func_dec_param RB (COLON TYPE)? BINDING block
-          |IDENTIFIER BINDING LB nested_scope LAMBDA expr RB                       VLL. STATT expr, doch statement
+func_decl: IDENTIFIER LB func_dec_param RB (COLON type)? BINDING block
+          |IDENTIFIER BINDING LB nested_scope LAMBDA expr RB                  --> LAMBDA means =>         Maybe instead of expr use statement_list
 
 func_dec_param: nested_scope
 
 
-if_statement: IF LB expr (COMMA|OR expr)*? RB THEN CBL block CBR ELSE CBL block CBR
-    | IF (expr) THEN expr ELSE expr
+if_statement: IF LB expr RB THEN CBL block CBR ELSE CBL block CBR
+    | IF (expr) THEN expr ELSE expr                                           --> THEN means then; ELSE means else
 
 
-for_loop: FOR LCB (scope|expr) (;expr)*? RCB
+for_loop: FOR LCB (scope|expr) (;expr)*? RCB                                  --> LCB/RCB means (LEFT/RIGHT) CURVY BRACKETS; FOR means for
     |FOR LB (scope|expr) (,expr)*? RB DO expr
 
 nested_scope: IDENTIFIER (,IDENTIFIER)*? COLON TYPE
