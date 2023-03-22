@@ -7,18 +7,18 @@ factor: INTEGER
       : func_call
       : indexing
 
-indexing: binding SLB expr RLB                         --> a[i:int]
+indexing: binding SLB expr SRB                         --> SLB/SRB SQUARE (LEFT/RIGHT) BRACKETS a[i:int]
 binding: scope BINDING expr                            --> BINDING means :=
-scope: Identifier (COMMA IDENTIFIER)*? COLON type      --> COLON means :
+scope: Identifier COLON type      --> COLON means :
 Identifier: IDENTIFIER                                 --> IDENTIFIER method name or variable name (a..z)*
 
 type: INT 
-      | TUPLE LB type (,type)* RB                     --> INT means int; TUPLE means tuple
+      : TUPLE LB type (,type)* RB                     --> INT means int; TUPLE means tuple
 
 brackets: LB expr RB                                  --> LB/RB (LEFT/RIGHT) BRACKETS
 
 
-                  --> SLB/SRB SQUARE (LEFT/RIGHT) BRACKETS
+                
 
 
 
