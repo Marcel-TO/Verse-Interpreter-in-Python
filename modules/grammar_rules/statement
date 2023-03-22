@@ -3,12 +3,12 @@ program: statement_list | func_decl (SEMI statement_list | func_decl)*?
 
 block: statement_list
 statement_list: statement (SEMI statement)*?                                  --> SEMI means ;
-statement: expr|if|for|func_dec
+statement: expr|if|for|func_call
 
 
-func_call: IDENTIFIER LB (func_call_param)? RB                                
+func_call: IDENTIFIER LB (func_call_args)? RB                                
 
-func_call_param: expr (COMMA expr)*?                                          --> COMMA means ,
+func_call_args: expr (COMMA expr)*?                                          --> COMMA means ,
 
 func_decl: IDENTIFIER LB func_dec_param RB (COLON type)? BINDING block
           |IDENTIFIER BINDING LB nested_scope LAMBDA expr RB                  --> LAMBDA means =>         Maybe instead of expr use statement_list
@@ -36,7 +36,7 @@ nested_scope: IDENTIFIER (,IDENTIFIER)*? COLON TYPE
 
 
 
---------------WAHRSCHEINLICH NICHT BENÖTIGT------------------
+--------------MAY NEED TO BE NEEDED------------------
 statement: assign_statement               
                 
         
