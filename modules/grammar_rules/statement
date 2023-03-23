@@ -16,14 +16,14 @@ func_decl: IDENTIFIER LB func_dec_param RB (COLON type)? BINDING block
 func_dec_param: nested_scope
 
 
-if_statement: IF LB expr RB THEN CBL block CBR ELSE CBL block CBR
-    | IF (expr) THEN expr ELSE expr                                           --> THEN means then; ELSE means else
+if_statement: IF LB expr RB ((THEN block ELSE block) | (THEN CBL expr CBR ELSE CBL expr CBR))    --> THEN means then; ELSE means else
 
 
 for_loop: FOR LCB (scope|expr) (;expr)*? RCB                                  --> LCB/RCB means (LEFT/RIGHT) CURVY BRACKETS; FOR means for
     |FOR LB (scope|expr) (,expr)*? RB DO expr
 
-nested_scope: IDENTIFIER (,IDENTIFIER)*? COLON TYPE
+
+nested_scope: Identifier (,Identifier)*? COLON TYPE
 
 
 
