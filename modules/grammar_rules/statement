@@ -26,6 +26,13 @@ for_loop: FOR LCB (scope|expr) (;expr)*? RCB                                  --
 nested_scope: Identifier (,Identifier)*? COLON TYPE
 
 
+sequence: LB expr (COMMA expr)* RB                  --> tuple
+         array {expr (COMMA expr)*}                 --> array
+
+      
+
+
+
 
 
 
