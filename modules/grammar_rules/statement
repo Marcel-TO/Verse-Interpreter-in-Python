@@ -1,22 +1,22 @@
-program: statement_list | func_decl (SEMI statement_list | func_decl)*?
+program: statement_list | func_decl
 
 
 block: statement_list
 statement_list: statement (SEMI statement)*?                                  --> SEMI means ;
-statement: expr|if|for|func_call
+statement: expr|if_statement|for_loop|nested_scope|flexible_eq
 
 
-func_call: IDENTIFIER LB (func_call_args)? RB                                
+func_call: Identifier LB (func_call_args)? RB                                
 
 func_call_args: expr (COMMA expr)*?                                          --> COMMA means ,
 
-func_decl: IDENTIFIER LB func_dec_param RB (COLON type)? BINDING block
-          |IDENTIFIER BINDING LB nested_scope LAMBDA expr RB                  --> LAMBDA means =>         Maybe instead of expr use statement_list
+func_decl: Identifier LB func_dec_param RB (COLON type)? BINDING block
+          |Identifier BINDING LB nested_scope LAMBDA expr RB                  --> LAMBDA means =>         Maybe instead of expr use statement_list
 
 func_dec_param: nested_scope
 
 
-if_statement: IF LB expr RB ((THEN block ELSE block) | (THEN CBL expr CBR ELSE CBL expr CBR))    --> THEN means then; ELSE means else
+if_statement: IF LB rigid_eq RB ((THEN block ELSE block) | (THEN CBL expr CBR ELSE CBL expr CBR))    --> THEN means then; ELSE means else
 
 
 for_loop: FOR LCB (scope|expr) (;expr)*? RCB                                  --> LCB/RCB means (LEFT/RIGHT) CURVY BRACKETS; FOR means for
@@ -28,6 +28,11 @@ nested_scope: Identifier (,Identifier)*? COLON TYPE
 
 sequence: LB expr (COMMA expr)* RB                  --> tuple
          array {expr (COMMA expr)*}                 --> array
+
+         
+
+rigid_eq = expr (EQUAL expr)*?
+flexible_eq = Identifier (EQUAL expr)
 
       
 
