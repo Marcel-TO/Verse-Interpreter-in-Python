@@ -3,7 +3,7 @@ program: statement_list | func_decl
 
 block: statement_list
 statement_list: statement (SEMI statement)*?                                  --> SEMI means ;
-statement: expr|if_statement|for_loop|nested_scope|flexible_eq
+statement: expr|nested_scope|flexible_eq
 
 
 func_call: identifier LB (func_call_args)? RB                                
@@ -27,7 +27,7 @@ for_loop: FOR LCB (scope|expr) (condition)? (;expr)? RCB                        
 condition: expr -> contains <,>,=,=>,=<
 
 
-nested_scope: identifier (,identifier)*? COLON TYPE
+nested_scope: identifier COMMA dentifier)*? COLON TYPE
 
 
 sequence: LB expr (COMMA expr)* RB                  --> tuple
@@ -35,8 +35,8 @@ sequence: LB expr (COMMA expr)* RB                  --> tuple
 
          
 
-rigid_eq = expr (EQUAL expr)*?
-flexible_eq = Identifier (EQUAL expr)
+rigid_eq = (expr (EQUAL expr)*)
+flexible_eq = (Identifier EQUAL expr)
 
       
 
