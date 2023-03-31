@@ -7,6 +7,7 @@ factor: INTEGER
       : func_call
       : indexing
       : if_statement
+      : for_loop
 
 indexing: binding SLB expr SRB                         --> SLB/SRB SQUARE (LEFT/RIGHT) BRACKETS a[i:int]
 binding: scope BINDING expr                            --> BINDING means :=
@@ -21,7 +22,5 @@ brackets: LB expr RB                                  --> LB/RB (LEFT/RIGHT) BRA
 
                 
 if_statement|for_loop
-
-
 
 
