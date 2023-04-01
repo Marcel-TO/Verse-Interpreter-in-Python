@@ -5,13 +5,17 @@ factor: INTEGER
       : brackets
       : (MINUS|PLUS) arith                             --> UNARY OPERATION. May need to change from arith to expr
       : func_call
+      : fail
       : indexing
+      : binding
+      : scope
       : if_statement
       : for_loop
+      : sequence
 
-indexing: binding SLB expr SRB                         --> SLB/SRB SQUARE (LEFT/RIGHT) BRACKETS a[i:int]
-binding: scope BINDING expr                            --> BINDING means :=
-scope: Identifier COLON type      --> COLON means :
+indexing: (Identifier SLB expr SRB)                         --> SLB/SRB SQUARE (LEFT/RIGHT) BRACKETS a[i:int] 
+binding: (Identifier BINDING expr)                            --> BINDING means :=
+scope: (Identifier COLON type)      --> COLON means :
 Identifier: IDENTIFIER                                 --> IDENTIFIER method name or variable name (a..z)*
 
 type: INT 
@@ -19,8 +23,10 @@ type: INT
 
 brackets: LB expr RB                                  --> LB/RB (LEFT/RIGHT) BRACKETS
 
+sequence: LB (expr COMMA expr)* RB                    --> tuple (n1,...)
+          array CBL expr (COMMA expr)*? CBR           --> long-form syntax and singleton tuple/array array{n1} oder array{n1,...}
 
-                
-if_statement|for_loop
+
+
 
 
