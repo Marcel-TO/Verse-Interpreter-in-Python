@@ -12,6 +12,7 @@ factor: INTEGER
       : if_statement
       : for_loop
       : sequence
+      : Identifier
 
 indexing: (Identifier SLB expr SRB)                         --> SLB/SRB SQUARE (LEFT/RIGHT) BRACKETS a[i:int] 
 binding: (Identifier BINDING expr)                            --> BINDING means :=
