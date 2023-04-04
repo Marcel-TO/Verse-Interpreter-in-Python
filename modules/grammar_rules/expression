@@ -22,7 +22,7 @@ Identifier: IDENTIFIER                                 --> IDENTIFIER method nam
 type: INT 
       : TUPLE LB type (,type)* RB                     --> INT means int; TUPLE means tuple
 
-brackets: LB expr RB                                  --> LB/RB (LEFT/RIGHT) BRACKETS
+brackets: LB block RB                                  --> LB/RB (LEFT/RIGHT) BRACKETS
 
 sequence: LB (expr COMMA expr)* RB                    --> tuple (n1,...)
           array CBL expr (COMMA expr)*? CBR           --> long-form syntax and singleton tuple/array array{n1} oder array{n1,...}

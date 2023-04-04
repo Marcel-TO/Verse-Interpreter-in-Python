@@ -32,5 +32,5 @@ for_loop: FOR LCB (scope|expr) (;expr)*? RCB                                  --
 nested_scope: (Identifier COMMA Identifier)* COLON TYPE
          
 
-rigid_eq = (expr (EQUAL expr)*)
-flexible_eq = (Identifier EQUAL expr)
+rigid_eq = (block (EQUAL block)*)
+flexible_eq = (Identifier EQUAL block)
