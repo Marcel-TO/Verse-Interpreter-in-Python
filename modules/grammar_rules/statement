@@ -1,9 +1,8 @@
-program: statement_list | func_decl
+program: block 
 
 
-block: statement_list
-statement_list: statement (SEMI statement)*?                                  --> SEMI means ;
-statement: expr|nested_scope|flexible_eq
+block: statement (SEMI statement)*?                                  --> SEMI means ;
+statement: expr|nested_scope|flexible_eq | func_decl
 
 
 

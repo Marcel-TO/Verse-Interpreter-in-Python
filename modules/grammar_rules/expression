@@ -1,5 +1,6 @@
-expr: operation DOT DOT operation                                  --> DOT means .  1..10
-operation: term ((GT|LT|GE|LE|CHOICE|PLUS|MINUS) term)*      --> GT means >; LT means <; GE means >=; LE means <=, PLUS means +; MINUS means -; CHOISE means |; EQUAL means =                    
+expr: choice DOT DOT choice 
+choice: operation CHOICE operation                                --> DOT means .  1..10
+operation: term ((GT|LT|GE|LE|PLUS|MINUS) term)*      --> GT means >; LT means <; GE means >=; LE means <=, PLUS means +; MINUS means -; CHOISE means |; EQUAL means =                    
 term: factor ((MUL|DIV) factor)*                                   --> MUL means *; DIV means /
 factor: INTEGER  
       : brackets
