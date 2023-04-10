@@ -1,8 +1,7 @@
-import enum
+from enum import Enum
 import string
 
-
-class TokenTypes(enum):
+class TokenTypes(Enum):
     # Data
     INTEGER = int
     IDENTIFIER = string #Names/Variables
