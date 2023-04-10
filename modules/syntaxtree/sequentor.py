@@ -1,39 +1,74 @@
 import copy
 from syntaxtree.nodes import *
 
+'''
+Creates a/or many possible sequences.
+''' 
 class Sequentor:
+    '''
+    Gets the nodes to find possible seqences.
+    '''
     def __init__(self, nodes:list[BaseNode]) -> None:
         self.nodes:list[BaseNode] = nodes
         self.others = []
         self.choices = []
+        self.references = []
         self.pointer_pos = 0
 
+
+    '''
+    Gets the resulting seqeunces.
+    '''
     def getSequences(self):
         self.setUpNodes()
         sequences = self.createSequences() 
         return sequences 
 
+    '''
+    Sets up the nodes of the sequences by differenciating choices and other values (Integers, Tuple).
+    As well coping each to their own list, which will be combined later on.
+    Row need to be saved and the node wihin the seqeunce to know where the reuslting value
+    of a node needs to be stored in a new/resulting list.
+    '''
     def setUpNodes(self):
         row = 0
+        
         for n in self.nodes:
-            node = n.visit(n)
-            if node.node.token.type == TokenTypes.CHOICE:
-                self.choices.append([row, copy.deepcopy(node.node)]) # Deep copy since duplicates can change value during operation of functions.
-            elif node.node.token.type == TokenTypes.FAIL:
-                return FailNode(TokenTypes.FAIL, TokenTypes.FAIL.value)
-            else: self.choices.append([row, node.node])
+            if n.token.type == TokenTypes.CHOICE:
+
+            # Deep copy since duplicates can change value during operation of functions.
+            # y:=(31|5); x:=(7|22); ((2|3),x,y)
+                self.choices.append([row, copy.deepcopy(n)]) 
+
+            else: self.others.append([row, n])
             row += 1
 
-   
 
-# Sets up the list with values that are fix (Not choices)
+    '''
+    Sets up the list with values that are fix (Not choices):
+
+    Example: (( 31 | 4 ), 9, (23,77))
+    cv_fix -> [0, 1, 2]
+
+    *Raplace values with the right ones (Fixed values only for now)*
+     cv_fix -> [0, 9, (23,77)]
+    '''
     def setUp(self):
-        cv_fix = list(range(0, len(self.choices)))
+        cv_fix = list(range(0, len(self.choices) + len(self.others)))
         for o in self.others:
             cv_fix[o[0]] = o[1]
         return cv_fix
+    
 
+    '''
+    Creates a list of possible sequenc(es).
+    '''
     def createSequences(self):
+            # If there are no choices, than return back the nodes given to the sequentor.
+            if len(self.choices) == 0:
+              return [self.nodes]
+    
+            
             current_pointer_pos = len(self.choices) - 2
             last_index = len(self.choices) - 1
             choice_values = []
@@ -87,7 +122,7 @@ class Sequentor:
 
                     current_index += 1
                 if(hasCompleted == False):
-                    choice_values.append(SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),choiceVals))
+                    choice_values.append(choiceVals)
                 current_index = 0
 
             return choice_values
