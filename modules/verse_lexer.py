@@ -6,6 +6,9 @@ from structure.tokenTypes import TokenTypes
 
 class lexicon:
     def __init__(self, input: string):
+        if input == None or input == "":
+            raise ValueError("the input value must not be None or empty.")
+
         self.input = input
         self.index = 0
         self.current_char = self.input[self.index]
