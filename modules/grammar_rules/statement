@@ -13,7 +13,7 @@ func_call_args: expr (COMMA expr)*?                                          -->
 
 
 
-func_decl: Identifier LB func_dec_param RB (COLON type)? BINDING block
+func_decl: Identifier LB func_dec_param RB (COLON type)? BINDING expr
           |Identifier BINDING LB nested_scope LAMBDA expr RB                  --> LAMBDA means =>         Maybe instead of expr use statement_list
 
 func_dec_param: nested_scope
