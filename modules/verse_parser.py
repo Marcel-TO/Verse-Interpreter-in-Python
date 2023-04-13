@@ -18,16 +18,23 @@ class Parser:
             self.logger.__log_error__("it appears there was a problem", ErrorType.SyntaxError)
         return node.node
        
-
     #####################################
     # statements
     #####################################
+
 
     """
     Checks if the program has either statements or function calls.
     Rule => statement_list | func_decl (SEMI statement_list | func_decl)*?
     """
     def program(self) -> ParsedNode:
+      
+
+         #node = self.func_decl()
+
+        # checks if start of the program is not a block but a function.
+        #if(node.hasSyntaxError == True):
+        #    self.set_to_token(index, token)
         node = self.block()
         
         # checks if the program is not a function either.
@@ -50,7 +57,6 @@ class Parser:
         nodes.append(node)
 
         if(node.hasSyntaxError==False):
-            # iterates through the input and breaks the block into statements.
             if(self.current_token.type == TokenTypes.SEMICOLON):
                 while(self.current_token.type == TokenTypes.SEMICOLON):
                     self.forward()
@@ -72,24 +78,24 @@ class Parser:
 
         node: ParsedNode = self.nested_scope()
 
-        # checks if current node is not a nested scope.
+        # checks if current node is not an expression.
+
         if(node.hasSyntaxError == True):
             self.set_to_token(index,token)
             node = self.func_decl()
 
-        # checks if current node is not a function declaration.
         if(node.hasSyntaxError == True):
              self.set_to_token(index,token)
              node = self.flexible_eq()
-
-        # checks if current node is not a flexible eq.
+             
         if(node.hasSyntaxError == True):
             self.set_to_token(index,token)
             node = self.expr()
-
+        
+     
+        
         return node
     
-
     """
     Flexible Eq Statement (Used only to give something a value)
     Rule -> (Identifier EQUAL expr)
@@ -135,6 +141,7 @@ class Parser:
     Rule => IDENTIFIER LB (func_call_args)? RB 
     """
     def func_call(self) -> ParsedNode:
+         # RULE --> IDENTIFIER LB (func_call_param)? RB  NOT IMPLEMENTED
         node = self.identifier()
         if(node.hasSyntaxError):
             return ParsedNode(None, True)  
@@ -157,6 +164,7 @@ class Parser:
                 
         return ParsedNode(None, True)
         
+
     """
     Checks for the arguments of the function call.
     Rule => expr (COMMA expr)*?  
@@ -203,7 +211,7 @@ class Parser:
                         
                     if self.current_token.type == TokenTypes.BINDING:
                         self.forward()
-                        block = self.block()
+                        block = self.expr()
                         if(block.hasSyntaxError == False):
                             return ParsedNode(FuncDeclNode(identifier,params,False,type,block),False)
                 return ParsedNode(None,True)
@@ -219,7 +227,7 @@ class Parser:
                     
                     if self.current_token.type == TokenTypes.LAMBDA:
                         self.forward()                   
-                        block = self.block()
+                        block = self.expr()
                         if(block.hasSyntaxError == False and self.current_token.type == TokenTypes.RBRACKET):
                             self.forward()
                             return ParsedNode(FuncDeclNode(identifier,params,True,type,block),False)
@@ -499,6 +507,7 @@ class Parser:
         return ParsedNode(ScopeNode(TokenTypes.COLON, nodes, type), False)
         
         
+
     #####################################
     # expressions
     #####################################
@@ -543,16 +552,17 @@ class Parser:
                 return ParsedNode(ChoiceSequenceNode(token,nodes), False)
         return node
     
-
     """
     This method checks if a token any of the following operations: =, <, >, <=, >=, |, +, -
     Since all of this operations have the same priority and same values output, it is not needed to write them in different methods
     """
     def operation(self):
-        # RULE --> op: term ((GT|LT|GE|LE|EQUAL|CHOICE|PLUS|MINUS) term)*
+          # RULE --> op: term ((GT|LT|GE|LE|EQUAL|CHOICE|PLUS|MINUS) term)*
+
         left_node = self.term()
 
         # Checks if left node has been received and if the following token is one of the following tokens: : =, <, >, <=, >=, |, +, -
+
         if(left_node.hasSyntaxError == False and (self.check_type(self.current_token.type,
                 [TokenTypes.GREATER,TokenTypes.GREATEREQ,TokenTypes.LOWER,TokenTypes.LOWEREQ, TokenTypes.PLUS,
                 TokenTypes.MINUS]))):
@@ -560,6 +570,7 @@ class Parser:
                 node = ParsedNode(None,True)
                 
                 # The while method "concatenates" the operations
+
                 while(self.check_type(self.current_token.type,
                 [TokenTypes.GREATER,TokenTypes.GREATEREQ,TokenTypes.LOWER,TokenTypes.LOWEREQ, TokenTypes.PLUS,
                 TokenTypes.MINUS])):
@@ -577,12 +588,12 @@ class Parser:
                 return node
         return left_node
 
-
     """
     Checks the same way in operation method but here it checks for *, /
     """
     def term(self) -> ParsedNode:
         # RULE --> factor ((MUL|DIV) factor)*
+        
         left_node = self.factor() 
 
         if(left_node.hasSyntaxError == False and (self.check_type(self.current_token.type,[TokenTypes.MULTIPLY, TokenTypes.DIVIDE]))):
@@ -604,7 +615,6 @@ class Parser:
             return node
         return left_node
     
-
     """
     Checks for unary operations, Integers, brackets (highest priority)
     RULE -->  INTEGER  
@@ -669,18 +679,15 @@ class Parser:
             self.set_to_token(index,token)
             node = self.if_statement()
         
-        #if node has failed check sequence
         if(node.hasSyntaxError):
             self.set_to_token(index,token)
             node = self.sequence()
-        
-        #if node has failed check identifier
+            
         if(node.hasSyntaxError):
             self.set_to_token(index,token)
             node = self.identifier()
         return node
     
-
     """
     Checks for brackets (highest priority)
     RULE --> brackets: LB expr RB
@@ -695,6 +702,7 @@ class Parser:
                 return node
         return ParsedNode(None,True)
         
+
 
     """
     y := 8 y:=(x:int)  y:= method(...)...
@@ -733,7 +741,7 @@ class Parser:
 
     """
     variable/method name
-    RULE --> identifier
+    RULE --> identifier            NEED UPDATE
     """
     def identifier(self) -> ParsedNode:
         token = self.current_token
@@ -742,13 +750,15 @@ class Parser:
             return ParsedNode(IdentifierNode(token), False)
         return ParsedNode(None, True) 
         
-
     """
     int or tuple(int,int) or array{int}
     RULE -->  INT                        
             : TUPLE LB type (,type)* RB 
     """
-    def type(self) -> ParsedNode: 
+    def type(self) -> ParsedNode:
+        # RULE -->  INT                        
+        #        : TUPLE LB type (,type)* RB    
+
         token = self.current_token
         if(token.type == TokenTypes.INT_TYPE):
             self.forward()
@@ -779,7 +789,6 @@ class Parser:
             
         return ParsedNode(None, True) 
         
-
     """
     a[i:int]
     # RULE --> identifier SBL expr SBR
@@ -797,13 +806,13 @@ class Parser:
                 return ParsedNode(None,True)
         return ParsedNode(None,True)
     
-
     """
     RUKE --> LB (expr COMMA expr)* RB                  --> tuple (n1,...)
              array CBL expr (COMMA expr)*? CBR         --> long-form syntax and singleton tuple/array array{n1} oder array{n1,...}
     """
     def sequence(self) -> ParsedNode:
         token = self.current_token
+
         nodes:list[BaseNode] = []
 
         # Tuple
@@ -821,6 +830,7 @@ class Parser:
                 if(len(nodes) > 1 and self.current_token.type == TokenTypes.RBRACKET):
                     self.forward()
                     return ParsedNode(SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),nodes), False)
+
 
         # Array
         if(token.type == TokenTypes.ARRAY_TYPE):
@@ -854,6 +864,7 @@ class Parser:
             self.end = True
         
 
+        
     """
     Checks if a type exists in the following types list
     """
