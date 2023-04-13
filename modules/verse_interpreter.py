@@ -13,8 +13,14 @@ class Interpreter:
 
     def interpret(self):
         tree = self.parser.parse()
+        result = None
         if tree != None:
-            return self.visit(tree)
+            result =  self.visit(tree)
+
+            for i in range(0, len(self.scopetable.scopetable)):
+                result =  self.visit(tree)
+        
+        return result
     
 
     def visit(self, node):
@@ -85,11 +91,15 @@ class Interpreter:
 
     def visit_scopeNode(self, node: ScopeNode):
         for n in node.nodes:
-            self.scopetable.addScope(n.token.value, None, self.visit(node.type))
+            # remove if Parser is updated!!!!!!
+            if type(n) == ParsedNode:
+                 self.scopetable.addScope(n.node.token.value, self.visit(node.type))
+                 continue
+            self.scopetable.addScope(n.token.value, self.visit(node.type))
 
 
     def visit_bindingNode(self, node: BindingNode):
-        self.scopetable.addScope(node.leftNode.token.value, node.rightNode, None)
+        self.scopetable.addBinding(node.leftNode.token.value, node.rightNode, None)
         
 
     def visit_numberNode(self, node):
@@ -219,7 +229,7 @@ class Interpreter:
 
     def visit_funcDeclNode(self, node: FuncDeclNode):
 
-        self.scopetable.addScope(node.identifier.token.value,)
+        self.scopetable.addBinding(node.identifier.token.value, node.block, node.type)
         pass
     
     
@@ -255,7 +265,7 @@ class Interpreter:
 
     def visit_flexibleEqNode(self, node: FlexibleEqNode):
         leftResult = self.visit(node.left_node)
-        self.scopetable.addScope(leftResult, node.right_node, None)
+        self.scopetable.addValue(leftResult, node.right_node)
              
 
     def visit_indexingNode(self, node: IndexingNode):
