@@ -176,15 +176,25 @@ class Interpreter:
             case TokenTypes.PLUS:              
                 result = val1 + val2
             case TokenTypes.MINUS:
-                result = val1 - val2      
-            case TokenTypes.GREATER:
+                result = val1 - val2
+            case TokenTypes.DOT:
+                return SequenceNode(Token(TokenTypes.ARRAY_TYPE, TokenTypes.ARRAY_TYPE), [NumberNode(Token(TokenTypes.INTEGER, i)) for i in range(val1, val2)])   
+
+        if token.type == TokenTypes.EQUAL:
+            if type(val1) == type(val2):
+                if val1 == val2:
+                    result = val1
+        
+        if token.type == TokenTypes.GREATER:
+            if type(val1) == type(val2):
                 if val1 > val2:
                     result = val1
-                else: return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value)) 
-            case TokenTypes.LOWER:
+        
+        if token.type == TokenTypes.LOWER:
+            if type(val1) == type(val2):
                 if val1 < val2:
                     result = val1
-                else: return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value)) 
+         
         return  NumberNode(Token(TokenTypes.INTEGER, result))  
     
     '''
@@ -235,7 +245,15 @@ class Interpreter:
     
     def visit_forNode(self, node: ForNode):
         if node.condition == None and node.expr == None and node.do == None:
-            return self.visit(node.node)
+            result = self.visit(node.node)
+            if type(result) == ChoiceSequenceNode:
+                return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), result.nodes)
+
+            if type(result) == NumberNode:
+                return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), [result.token.value])
+                
+            if result.token.type == TokenTypes.FAIL:
+                return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), [])
         
         visited_node = self.visit(node.node)
 
