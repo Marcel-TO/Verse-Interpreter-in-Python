@@ -1,0 +1,24 @@
+expr: operation DOT DOT operation                                  --> DOT means .  1..10
+operation: term ((GT|LT|GE|LE|CHOICE|PLUS|MINUS) term)*      --> GT means >; LT means <; GE means >=; LE means <=, PLUS means +; MINUS means -; CHOISE means |; EQUAL means =                    
+term: factor ((MUL|DIV) factor)*                                   --> MUL means *; DIV means /
+factor: INTEGER  
+      : brackets
+      : (MINUS|PLUS) arith                             --> UNARY OPERATION. May need to change from arith to expr
+      : func_call
+      : indexing
+      : if_statement
+      : for_loop
+
+indexing: binding SLB expr SRB                         --> SLB/SRB SQUARE (LEFT/RIGHT) BRACKETS a[i:int]
+binding: scope BINDING expr                            --> BINDING means :=
+scope: Identifier COLON type      --> COLON means :
+Identifier: IDENTIFIER                                 --> IDENTIFIER method name or variable name (a..z)*
+
+type: INT 
+      : TUPLE LB type (,type)* RB                     --> INT means int; TUPLE means tuple
+
+brackets: LB expr RB                                  --> LB/RB (LEFT/RIGHT) BRACKETS
+
+
+                
+if_statement|for_loop

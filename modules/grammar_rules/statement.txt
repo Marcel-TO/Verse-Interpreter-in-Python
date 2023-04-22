@@ -1,0 +1,66 @@
+program: statement_list | func_decl
+
+
+block: statement_list
+statement_list: statement (SEMI statement)*?                                  --> SEMI means ;
+statement: expr|nested_scope|flexible_eq
+
+
+func_call: identifier LB (func_call_args)? RB                                
+
+func_call_args: expr (COMMA expr)*?                                          --> COMMA means ,
+
+func_decl: identifier LB func_dec_param RB (COLON type)? BINDING block
+          |identifier BINDING LB nested_scope LAMBDA expr RB                  --> LAMBDA means =>         Maybe instead of expr use statement_list
+
+func_dec_param: nested_scope
+
+
+if_statement: IF LB rigid_eq RB ((THEN block ELSE block) | (THEN CBL expr CBR ELSE CBL expr CBR))    --> THEN means then; ELSE means else
+
+
+for_loop: FOR LCB (scope|expr) (condition)? (;expr)? RCB                                  --> LCB/RCB means (LEFT/RIGHT) CURVY BRACKETS; FOR means for
+    | FOR LCB expr (| expr)*?                                                 --> returns Tuple
+    | FOR LCB expr (--> CONTAINS DOT DOT) RCB                              --> List
+    | FOR LB (scope|expr) (condition)? (;expr)? RB DO expr
+
+condition: expr -> contains <,>,=,=>,=<
+
+
+nested_scope: identifier COMMA dentifier)*? COLON TYPE
+
+
+sequence: LB expr (COMMA expr)* RB                  --> tuple
+         array {expr (COMMA expr)*}                 --> array
+
+         
+
+rigid_eq = (expr (EQUAL expr)*)
+flexible_eq = (Identifier EQUAL expr)
+
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+--------------MAY NEED TO BE NEEDED------------------
+statement: assign_statement               
+                
+        
+statement_block: func_decl
+                 
+
+
+
+assign_statement: binding_statement EQ (method_call|expr)           =
+binding_statement: scope_statement BINDING (method_call|expr)       :=
+scope_statement: IDENTIFIER (,IDENTIFIER)*? COLON TYPE              :
