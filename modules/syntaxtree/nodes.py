@@ -231,7 +231,7 @@ class ChoiceSequenceNode(BaseNode):
         self.currentVal:int = - 1 
 
         # Gets the vals of current choice branch.
-        # self.getVals = self.getValsOfChoice() --> Need to do something different
+        self.getVals = self.getValsOfChoice() #--> Need to do something different
         
     def __repr__(self) -> str:    
         return "(" + self.seperator.join([repr(n) for n in self.nodes]) + ")"
