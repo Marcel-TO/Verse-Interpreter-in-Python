@@ -7,7 +7,9 @@ Top class of all nodes.
 '''
 class BaseNode:
     def __init__(self, token) -> None:
-        self.token = token  
+        self.token = token 
+    def visit(self):
+        pass 
 
      
 '''
@@ -20,6 +22,9 @@ class BlockNode(BaseNode):
 
     def __repr__(self) -> str:    
         return self.seperator.join([repr(n) for n in self.nodes])
+    
+    def visit(self):
+        self.nodes[0].visit()
 
 
 '''
@@ -28,6 +33,9 @@ Top Node in tree.
 class ProgramNode(BaseNode):
     def __init__(self, node:BlockNode) -> None:
         self.node = node
+    
+    def visit(self):
+        print("ProgramNode")
 
 
 '''
@@ -41,6 +49,9 @@ class BindingNode(BaseNode):
 
     def __repr__(self) -> str:    
         return "{}:={}".format(repr(self.leftNode),repr(self.rightNode))  
+    
+    def visit(self):
+        print("Binding")
 
 
 '''
@@ -53,6 +64,9 @@ class NumberNode(BaseNode):
 
     def __repr__(self) -> str:
         return str(self.value)
+    
+    def visit(self):
+        print("Number")
 
 
 '''
