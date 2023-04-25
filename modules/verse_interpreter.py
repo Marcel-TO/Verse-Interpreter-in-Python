@@ -213,7 +213,7 @@ class Interpreter:
         for scope in self.scopetable.scopetable:
              if scope.symbol == node.token.value and scope.value != None:
                   return self.visit(scope.value)
-        return node.token.value
+        return node
 
 
     def visit_typeNode(self, node: TypeNode):
@@ -239,7 +239,7 @@ class Interpreter:
     def visit_forNode(self, node: ForNode):
         if node.condition == None and node.expr == None and node.do == None:
             result = self.visit(node.node)
-            if type(result) == ChoiceSequenceNode:
+            if type(result) == SequenceNode:
                 return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), result.nodes)
 
             if type(result) == NumberNode:
