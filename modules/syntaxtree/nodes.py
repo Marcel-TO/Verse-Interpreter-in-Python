@@ -290,7 +290,34 @@ class FuncCallNode:
         self.args = args
 
     def visit(self, symboltable: SymbolTable):
-        pass 
+        table = SymbolTable()
+        scope = symboltable.get_value(self.identifier.token.value, symboltable)
+        if scope[0]:
+            func_dec:FuncDeclNode = scope[1]
+            index = 0
+            params = func_dec.params
+            for param in params:
+                id = param.nodes[0].token.value
+
+                arg = self.args[index].visit(symboltable)
+                if(arg.token.type == TokenTypes.IDENTIFIER):
+                     arg = None
+
+                table.addBinding(id, arg ,param.type)
+                index += 1
+            val = func_dec.block.visit(table)
+
+            # Check if a variable is given to argument that has not been set (Logic)
+            index = 0
+            for arg in self.args:
+                 if arg.token.type == TokenTypes.IDENTIFIER:  
+                    arg = arg.token.value            
+                    id = params[index].nodes[0].token.value
+                    param_val_at_arg_pos = table.get_value(id, table)
+                    if param_val_at_arg_pos[0]:
+                        symboltable.addValue(arg, param_val_at_arg_pos[1])
+                 index += 1
+            return val
 
 '''
 Node for func declarations.
@@ -304,7 +331,9 @@ class FuncDeclNode:
         self.block = block
 
     def visit(self, symboltable: SymbolTable):
-        symboltable.addBinding(self.identifier.token.value, self.block, self.type) 
+        symbol = self.identifier.token.value
+        symboltable.addBinding(symbol, self, self.type)
+        pass
 
 
 '''
@@ -514,12 +543,10 @@ class ChoiceSequenceNode(BaseNode):
     Steps to the next choice if possible.
     
     If:
-
     no choice branches available (Index of choice is at the last choice branch),
     set choice branch index back to the beginning choice branch, choice branch at index 0
     and set back the index counter for the values of the choice branch at current index.
     Return False indicating, no choice branches left.
-
     Else:
     
     Step to the next choice branch.

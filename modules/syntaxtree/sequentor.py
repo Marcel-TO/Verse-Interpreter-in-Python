@@ -46,10 +46,8 @@ class Sequentor:
 
     '''
     Sets up the list with values that are fix (Not choices):
-
     Example: (( 31 | 4 ), 9, (23,77))
     cv_fix -> [0, 1, 2]
-
     *Raplace values with the right ones (Fixed values only for now)*
      cv_fix -> [0, 9, (23,77)]
     '''

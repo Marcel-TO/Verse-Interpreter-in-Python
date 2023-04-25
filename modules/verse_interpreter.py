@@ -17,7 +17,7 @@ class Interpreter:
         if tree != None:
             result =  tree.visit(self.symboltable)
 
-            for i in range(0, len(self.symboltable.symboltable)):
-                result =  tree.visit(self.symboltable)
+            # for i in range(0, len(self.symboltable.symboltable)):
+             #   result =  tree.visit(self.symboltable)
         
         return result
