@@ -176,7 +176,7 @@ class Interpreter:
             case TokenTypes.MINUS:
                 result = val1 - val2      
             case TokenTypes.DOT:
-                return SequenceNode(Token(TokenTypes.ARRAY_TYPE, TokenTypes.ARRAY_TYPE), [NumberNode(Token(TokenTypes.INTEGER, i)) for i in range(val1, val2)])   
+                return SequenceNode(Token(TokenTypes.ARRAY_TYPE, TokenTypes.ARRAY_TYPE), [NumberNode(Token(TokenTypes.INTEGER, i)) for i in range(val1, val2 + 1)])   
 
         if token.type == TokenTypes.EQUAL:
             if type(val1) == type(val2):
@@ -355,4 +355,4 @@ class Interpreter:
 
 
     def visit_failNode(self, node: FailNode):
-        return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value))
+        return FailNode(Token(TokenTypes.FAIL,"Fail"))
