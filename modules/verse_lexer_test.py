@@ -38,8 +38,13 @@ class LexerTest(unittest.TestCase):
           {'input': "tuple", 'expected': Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value)},
           {'input': "int", 'expected': Token(TokenTypes.INT_TYPE,TokenTypes.INT_TYPE.value)},
           {'input': "123", 'expected': Token(TokenTypes.INTEGER,123)},
+          {'input': "ifthen", 'expected': Token(TokenTypes.IDENTIFIER,"ifthen")},
           {'input': "arrays", 'expected': Token(TokenTypes.IDENTIFIER,"arrays")},
-          {'input': "tuplde", 'expected': Token(TokenTypes.IDENTIFIER,"tuplde")}
+          {'input': "tuplde", 'expected': Token(TokenTypes.IDENTIFIER,"tuplde")},
+          {'input': "elsesr", 'expected': Token(TokenTypes.IDENTIFIER,"elsesr")},
+          {'input': "thenzy", 'expected': Token(TokenTypes.IDENTIFIER,"thenzy")},
+          {'input': "does", 'expected': Token(TokenTypes.IDENTIFIER,"does")},
+          {'input': "foryou", 'expected': Token(TokenTypes.IDENTIFIER,"foryou")},
        )
 
     @unpack
