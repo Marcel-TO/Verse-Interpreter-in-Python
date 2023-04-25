@@ -1,5 +1,5 @@
 import copy
-from syntaxtree.nodes import *
+from structure.tokenTypes import TokenTypes
 
 '''
 Creates a/or many possible sequences.
@@ -8,8 +8,8 @@ class Sequentor:
     '''
     Gets the nodes to find possible seqences.
     '''
-    def __init__(self, nodes:list[BaseNode]) -> None:
-        self.nodes:list[BaseNode] = nodes
+    def __init__(self, nodes:list) -> None:
+        self.nodes = nodes
         self.others = []
         self.choices = []
         self.references = []
@@ -46,10 +46,8 @@ class Sequentor:
 
     '''
     Sets up the list with values that are fix (Not choices):
-
     Example: (( 31 | 4 ), 9, (23,77))
     cv_fix -> [0, 1, 2]
-
     *Raplace values with the right ones (Fixed values only for now)*
      cv_fix -> [0, 9, (23,77)]
     '''

@@ -529,7 +529,7 @@ class Parser:
         if rightNode.hasSyntaxError:
             return ParsedNode(None, True)
 
-        return ParsedNode(OperatorNode(token, leftNode.node, rightNode.node), False)
+        return ParsedNode(ChoiceSequenceNode(Token(TokenTypes.CHOICE, TokenTypes.CHOICE.value), [OperatorNode(token, leftNode.node, rightNode.node)]), False)
     
     def choice(self):
         node = self.operation()
