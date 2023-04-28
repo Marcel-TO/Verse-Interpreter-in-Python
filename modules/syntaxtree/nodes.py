@@ -71,7 +71,8 @@ class BindingNode(BaseNode):
         return "{}:={}".format(repr(self.leftNode),repr(self.rightNode))  
     
     def visit(self, symboltable: SymbolTable):
-        symboltable.addBinding(self.leftNode.token.value, self.rightNode, None) 
+        symboltable.addBinding(self.leftNode.token.value, self.rightNode, None)
+        return self.rightNode
 
 
 '''
@@ -166,24 +167,22 @@ class OperatorNode(BaseNode):
                 result = val1 + val2
             case TokenTypes.MINUS:
                 result = val1 - val2      
-            case TokenTypes.DOT:
-                return SequenceNode(Token(TokenTypes.ARRAY_TYPE, TokenTypes.ARRAY_TYPE), [NumberNode(Token(TokenTypes.INTEGER, i)) for i in range(val1, val2 + 1)])   
-
-        if token.type == TokenTypes.EQUAL:
-            if type(val1) == type(val2):
-                if val1 == val2:
-                    result = val1
-
-        if token.type == TokenTypes.GREATER:
-            if type(val1) == type(val2):
+            case TokenTypes.GREATER:
                 if val1 > val2:
                     result = val1
-        
-        if token.type == TokenTypes.LOWER:
-            if type(val1) == type(val2):
+                else: return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value)) 
+            case TokenTypes.GREATEREQ:
+                if val1 >= val2:
+                    result = val1
+                else: return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value)) 
+            case TokenTypes.LOWEREQ:
+                if val1 <= val2:
+                    result = val1
+                else: return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value)) 
+            case TokenTypes.LOWER:
                 if val1 < val2:
                     result = val1
-
+                else: return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value)) 
         return  NumberNode(Token(TokenTypes.INTEGER, result))  
 
 '''
@@ -331,7 +330,6 @@ class FuncDeclNode:
     def visit(self, symboltable: SymbolTable):
         symbol = self.identifier.token.value
         symboltable.addBinding(symbol, self, self.type)
-        pass
 
 
 '''
@@ -612,6 +610,39 @@ class ChoiceSequenceNode(BaseNode):
                 yield c.yieldVal()
             else: yield c
 
+class DotDotNode(BaseNode):
+    def __init__(self, token:Token, start:BaseNode, end:BaseNode) -> None:
+        super().__init__(token)
+        self.start = start
+        self.end = end
+
+    def visit(self, symboltable: SymbolTable):
+        startNode = self.start(symboltable)
+        if startNode.token.type != TokenTypes.INTEGER:
+            return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+        
+        endNode = self.end(symboltable)
+        if endNode.token.type != TokenTypes.INTEGER:
+            return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+        
+        fac = 1
+        if startNode.value > endNode.value:
+            fac = -1
+
+        nodes = []
+        nodes.append(startNode.value)
+
+        currentInt = startNode.value
+        endGen = False
+
+        while endGen == False:
+            if currentInt == endNode.value:
+                endGen == True
+            else:
+                currentInt += fac
+                nodes.append(currentInt)
+           
+        return ChoiceSequenceNode(Token(TokenTypes.CHOICE,TokenTypes.CHOICE.value), nodes)
 
 '''
 Fail node indicating false? in Verse.

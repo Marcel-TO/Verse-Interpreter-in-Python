@@ -510,26 +510,28 @@ class Parser:
     #####################################
 
     def expr(self) -> ParsedNode:         
-        leftNode = self.choice()
+        startNode = self.choice()
 
-        if leftNode.hasSyntaxError:
+        if startNode.hasSyntaxError:
             return ParsedNode(None, True)
 
-        if self.current_token.type != TokenTypes.DOT:
-            return leftNode
+        if self.current_token.type == TokenTypes.DOTDOT:
+            token = self.current_token
+            self.forward()
+            endNode = self.choice()
+
+            if endNode.hasSyntaxError:
+                return ParsedNode(None, True)
+            
+            return DotDotNode(token, startNode, endNode)
         
-        self.forward()
-        if self.current_token.type != TokenTypes.DOT:
-            return ParsedNode(None, True)
+        return startNode  
         
-        token = self.current_token
-        self.forward()
-        rightNode = self.choice()
+        
+        
 
-        if rightNode.hasSyntaxError:
-            return ParsedNode(None, True)
+        
 
-        return ParsedNode(ChoiceSequenceNode(Token(TokenTypes.CHOICE, TokenTypes.CHOICE.value), [OperatorNode(token, leftNode.node, rightNode.node)]), False)
     
     def choice(self):
         node = self.operation()
