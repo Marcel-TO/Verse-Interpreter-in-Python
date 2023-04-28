@@ -76,61 +76,18 @@ class lexicon:
                 result += self.input[self.index]
         return result
     
+    def get_longer_token(self, currentToken: Token) -> Token:
+        if self.index + 2 > len(self.input):
+            return currentToken
+        self.forward()
+        nextChar = self.input[self.index]
 
-    def get_binding(self):
-        if self.index >= len(self.input) and self.index + 1 >= len(self.input):
-            return None
-        
-        result = self.get_a_string_from_input()
-
-        match result:
-            case TokenTypes.BINDING.value:
-                return Token(TokenTypes.BINDING, TokenTypes.BINDING.value)
+        newToken = self.get_token(currentToken.value + nextChar)
+        if newToken.type != TokenTypes.EOF:
+            return newToken
         
         self.backward()
-        return Token(TokenTypes.COLON, TokenTypes.COLON.value)
-    
-    def get_greater_eq(self):
-        if self.index >= len(self.input) and self.index + 1 >= len(self.input):
-            return None
-        
-        result = self.get_a_string_from_input()
-
-        match result:
-            case TokenTypes.GREATEREQ.value:
-                return Token(TokenTypes.GREATEREQ, TokenTypes.GREATEREQ.value)
-        
-        self.backward()
-        return Token(TokenTypes.GREATER, TokenTypes.GREATER.value)
-    
-
-    def get_lower_eq(self):
-        if self.index >= len(self.input) and self.index + 1 >= len(self.input):
-            return None
-        
-        result = self.get_a_string_from_input()
-
-        match result:
-            case TokenTypes.LOWEREQ.value:
-                return Token(TokenTypes.LOWEREQ, TokenTypes.LOWEREQ.value)
-        
-        self.backward()
-        return Token(TokenTypes.LOWER, TokenTypes.LOWER.value)
-    
-    def get_lambda(self):
-        if self.index >= len(self.input) and self.index + 1 >= len(self.input):
-            return None
-        
-        result = self.input[self.index]
-        
-        result = self.get_a_string_from_input()
-
-        match result:
-            case TokenTypes.LAMBDA.value:
-                return Token(TokenTypes.LAMBDA, TokenTypes.LAMBDA.value)
-        
-        self.backward()
-        return Token(TokenTypes.EQUAL, TokenTypes.EQUAL.value)
+        return currentToken
     
    
     def get_token(self, char: string) -> Token:
@@ -146,9 +103,6 @@ class lexicon:
         if char == ' ':
             self.forward()
             return self.get_token(self.current_char)
-        
-        if char == TokenTypes.COLON:
-            return self.get_next(TokenTypes.BINDING.value)
 
         # checks if the current character is a number.
         if char.isnumeric():
@@ -159,8 +113,7 @@ class lexicon:
             result = self.get_var()
             token = self.check_for_tokentypes(result)
             if(token.type == TokenTypes.EOF):
-                token = Token(TokenTypes.IDENTIFIER, result)  
-                  
+                token = Token(TokenTypes.IDENTIFIER, result)
         return token
 
     def check_for_tokentypes(self, char: string) -> Token:
@@ -187,11 +140,11 @@ class lexicon:
             case TokenTypes.DIVIDE.value:
                 return Token(TokenTypes.DIVIDE, TokenTypes.DIVIDE.value)
             case TokenTypes.GREATER.value:
-                return self.get_greater_eq()
+                return self.get_longer_token(Token(TokenTypes.GREATER, TokenTypes.GREATER.value))
             case TokenTypes.GREATEREQ.value:
                 return Token(TokenTypes.GREATEREQ, TokenTypes.GREATEREQ.value)
             case TokenTypes.LOWER.value:
-                return self.get_lower_eq()
+                return self.get_longer_token(Token(TokenTypes.LOWER, TokenTypes.LOWER.value))
             case TokenTypes.LOWEREQ.value:
                 return Token(TokenTypes.LOWEREQ, TokenTypes.LOWEREQ.value)
             case TokenTypes.CHOICE.value:
@@ -209,7 +162,7 @@ class lexicon:
             case TokenTypes.EOF.value:
                 return Token(TokenTypes.EOF, TokenTypes.EOF.value)
             case TokenTypes.COLON.value:
-                return self.get_binding()
+                return self.get_longer_token(Token(TokenTypes.COLON, TokenTypes.COLON.value))
             case TokenTypes.COMMA.value:
                 return Token(TokenTypes.COMMA, TokenTypes.COMMA.value)
             case TokenTypes.SEMICOLON.value:
@@ -231,10 +184,23 @@ class lexicon:
             case TokenTypes.SBL.value:
                 return Token(TokenTypes.SBL, TokenTypes.SBL.value)
             case TokenTypes.EQUAL.value:
-                return self.get_lambda()
+                return self.get_longer_token(Token(TokenTypes.EQUAL, TokenTypes.EQUAL.value))
             case TokenTypes.SCOPE.value:
                 return Token(TokenTypes.SCOPE, TokenTypes.SCOPE.value)
             case TokenTypes.DOT.value:
                 return Token(TokenTypes.DOT, TokenTypes.DOT.value)
+            case TokenTypes.DOTDOT.value:
+                return Token(TokenTypes.DOTDOT, TokenTypes.DOTDOT.value)
+            case TokenTypes.LAMBDA.value:
+                return Token(TokenTypes.LAMBDA, TokenTypes.LAMBDA.value) 
             case _:
                 return Token(TokenTypes.EOF, None)
+
+
+if __name__ == '__main__':
+    lexer = lexicon("= >")
+
+    while lexer.current_char is not None:
+        token = lexer.get_token(lexer.current_char)
+        print(str(token.value) + " is of the tokentype: " + str(token.type))
+        lexer.forward()
