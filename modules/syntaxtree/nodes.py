@@ -619,11 +619,11 @@ class DotDotNode(BaseNode):
         self.end = end
 
     def visit(self, symboltable: SymbolTable):
-        startNode = self.start(symboltable)
+        startNode = self.start.visit(symboltable)
         if startNode.token.type != TokenTypes.INTEGER:
             return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
         
-        endNode = self.end(symboltable)
+        endNode = self.end.visit(symboltable)
         if endNode.token.type != TokenTypes.INTEGER:
             return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
         
@@ -632,17 +632,17 @@ class DotDotNode(BaseNode):
             fac = -1
 
         nodes = []
-        nodes.append(startNode.value)
+        nodes.append(startNode)
 
         currentInt = startNode.value
         endGen = False
 
         while endGen == False:
             if currentInt == endNode.value:
-                endGen == True
+                endGen = True
             else:
                 currentInt += fac
-                nodes.append(currentInt)
+                nodes.append(NumberNode(Token(TokenTypes.INTEGER,currentInt)))
            
         return ChoiceSequenceNode(Token(TokenTypes.CHOICE,TokenTypes.CHOICE.value), nodes)
 

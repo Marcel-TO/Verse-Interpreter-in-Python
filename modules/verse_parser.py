@@ -523,7 +523,7 @@ class Parser:
             if endNode.hasSyntaxError:
                 return ParsedNode(None, True)
             
-            return DotDotNode(token, startNode, endNode)
+            return  ParsedNode(DotDotNode(token, startNode.node, endNode.node),False)
         
         return startNode  
         

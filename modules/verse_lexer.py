@@ -114,6 +114,10 @@ class lexicon:
             token = self.check_for_tokentypes(result)
             if(token.type == TokenTypes.EOF):
                 token = Token(TokenTypes.IDENTIFIER, result)
+
+        if char == ".":
+            self.forward()
+            token = self.check_for_tokentypes(char + self.current_char)
         return token
 
     def check_for_tokentypes(self, char: string) -> Token:
@@ -187,8 +191,6 @@ class lexicon:
                 return self.get_longer_token(Token(TokenTypes.EQUAL, TokenTypes.EQUAL.value))
             case TokenTypes.SCOPE.value:
                 return Token(TokenTypes.SCOPE, TokenTypes.SCOPE.value)
-            case TokenTypes.DOT.value:
-                return Token(TokenTypes.DOT, TokenTypes.DOT.value)
             case TokenTypes.DOTDOT.value:
                 return Token(TokenTypes.DOTDOT, TokenTypes.DOTDOT.value)
             case TokenTypes.LAMBDA.value:

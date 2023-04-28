@@ -39,6 +39,5 @@ class TokenTypes(Enum):
     CBR = "}"
     EQUAL = "="
     SCOPE = ":"
-    DOT = "."
     DOTDOT = ".."
     LAMBDA = "=>"

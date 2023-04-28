@@ -5,7 +5,7 @@ from verse_interpreter import Interpreter
 
 
 text = "x:int; z:int; f(p:int,q:int):int :=  (p = 1; q = 23; y:int; y = 100; (p+q)*100); f(x,z); x + z"
-text = "2>2"
+text = "1..4"
 # text = "z:int; z=7; y:=(31|5); x:=(7|22); (z,x,y)"
 # text = "x:int; if(x<20) then x else 333; x=7; x" #!!!! x=7 reverse
 # text = "z:=x+y; x,y:int; x=7; y = 3;z"
