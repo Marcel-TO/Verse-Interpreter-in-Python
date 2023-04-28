@@ -8,6 +8,7 @@ from structure.tokenTypes import TokenTypes
 @ddt
 class LexerTest(unittest.TestCase):
     @data({'input': "if", 'expected': Token(TokenTypes.IF,TokenTypes.IF.value)},
+          {'input': "=>", 'expected': Token(TokenTypes.LAMBDA,TokenTypes.LAMBDA.value)},
           {'input': ".", 'expected': Token(TokenTypes.DOT,TokenTypes.DOT.value)},
           {'input': ":", 'expected': Token(TokenTypes.COLON,TokenTypes.COLON.value)},
           {'input': "=", 'expected': Token(TokenTypes.EQUAL,TokenTypes.EQUAL.value)},

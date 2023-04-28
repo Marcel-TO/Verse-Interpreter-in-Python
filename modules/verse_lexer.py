@@ -3,12 +3,8 @@ from structure.token import Token
 from structure.tokenTypes import TokenTypes
 
 
-
 class lexicon:
     def __init__(self, input: string):
-        if input == None or input == "":
-            raise ValueError("the input value must not be None or empty.")
-
         self.input = input
         self.index = 0
         self.current_char = self.input[self.index]
@@ -18,7 +14,7 @@ class lexicon:
         self.index += 1
 
         # checks if index is out of range
-        if (self.index >= len(self.input)):
+        if self.index >= len(self.input):
             self.current_char = None
             return
         
@@ -72,15 +68,20 @@ class lexicon:
         
         return result
     
-    def get_binding(self):
-        if self.index >= len(self.input) and self.index + 1 >= len(self.input):
-            return None
-        
+    def get_a_string_from_input(self) -> string:
         result = self.input[self.index]
         self.forward()
         
         if self.index < len(self.input) and self.input[self.index] != None:
                 result += self.input[self.index]
+        return result
+    
+
+    def get_binding(self):
+        if self.index >= len(self.input) and self.index + 1 >= len(self.input):
+            return None
+        
+        result = self.get_a_string_from_input()
 
         match result:
             case TokenTypes.BINDING.value:
@@ -93,11 +94,7 @@ class lexicon:
         if self.index >= len(self.input) and self.index + 1 >= len(self.input):
             return None
         
-        result = self.input[self.index]
-        self.forward()
-        
-        if self.index < len(self.input) and self.input[self.index] != None:
-                result += self.input[self.index]
+        result = self.get_a_string_from_input()
 
         match result:
             case TokenTypes.GREATEREQ.value:
@@ -106,15 +103,12 @@ class lexicon:
         self.backward()
         return Token(TokenTypes.GREATER, TokenTypes.GREATER.value)
     
+
     def get_lower_eq(self):
         if self.index >= len(self.input) and self.index + 1 >= len(self.input):
             return None
         
-        result = self.input[self.index]
-        self.forward()
-        
-        if self.index < len(self.input) and self.input[self.index] != None:
-                result += self.input[self.index]
+        result = self.get_a_string_from_input()
 
         match result:
             case TokenTypes.LOWEREQ.value:
@@ -123,6 +117,22 @@ class lexicon:
         self.backward()
         return Token(TokenTypes.LOWER, TokenTypes.LOWER.value)
     
+    def get_lambda(self):
+        if self.index >= len(self.input) and self.index + 1 >= len(self.input):
+            return None
+        
+        result = self.input[self.index]
+        
+        result = self.get_a_string_from_input()
+
+        match result:
+            case TokenTypes.LAMBDA.value:
+                return Token(TokenTypes.LAMBDA, TokenTypes.LAMBDA.value)
+        
+        self.backward()
+        return Token(TokenTypes.EQUAL, TokenTypes.EQUAL.value)
+    
+   
     def get_token(self, char: string) -> Token:
         token = self.check_for_tokentypes(char)
 
@@ -210,16 +220,18 @@ class lexicon:
                 return Token(TokenTypes.LBRACKET, TokenTypes.LBRACKET.value)
             case TokenTypes.RBRACKET.value:
                 return Token(TokenTypes.RBRACKET, TokenTypes.RBRACKET.value)
-            case TokenTypes.SBL.value:
-                return Token(TokenTypes.SBL, TokenTypes.SBL.value)
+            case TokenTypes.RBRACKET.value:
+                return Token(TokenTypes.RBRACKET, TokenTypes.RBRACKET.value)
             case TokenTypes.SBR.value:
                 return Token(TokenTypes.SBR, TokenTypes.SBR.value)
             case TokenTypes.CBL.value:
                 return Token(TokenTypes.CBL, TokenTypes.CBL.value)
             case TokenTypes.CBR.value:
                 return Token(TokenTypes.CBR, TokenTypes.CBR.value)
+            case TokenTypes.SBL.value:
+                return Token(TokenTypes.SBL, TokenTypes.SBL.value)
             case TokenTypes.EQUAL.value:
-                return Token(TokenTypes.EQUAL, TokenTypes.EQUAL.value)
+                return self.get_lambda()
             case TokenTypes.SCOPE.value:
                 return Token(TokenTypes.SCOPE, TokenTypes.SCOPE.value)
             case TokenTypes.DOT.value:
