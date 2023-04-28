@@ -92,8 +92,10 @@ class NumberNode(BaseNode):
 
 '''
 Operators: +, *, -, /, <, >, <=, >=.
+
 Fail condition on using following nodes for any 
 of the above listed operations: FaileNode, SequenceNodes (Except choices).
+
 Operator node, checks its left and right node by visiting it.
 Then in the sequentor it get combination if there is or are many choices
 in the left and right node. Iterates the sequences received by the sequentor and

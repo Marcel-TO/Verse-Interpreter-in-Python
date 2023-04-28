@@ -40,4 +40,5 @@ class TokenTypes(Enum):
     EQUAL = "="
     SCOPE = ":"
     DOT = "."
+    DOTDOT = ".."
     LAMBDA = "=>"
