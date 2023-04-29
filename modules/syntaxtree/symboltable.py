@@ -20,7 +20,7 @@ class SymbolTable:
     
     def check_if_exists(self, symbol: string, table) -> bool:
         for sym in self.symboltable:
-            if sym.symbol == sym and table == sym.insideTable:
+            if sym.symbol == symbol and table == sym.insideTable:
                 return True
         return False
     
@@ -63,9 +63,27 @@ class SymbolTable:
                     self.symboltable.remove(Symbol(sym.symbol, sym.value, sym.symbolType, self)) 
                     self.logger.__log__("Removed the Symbol: {} to the scopetable".format(symbol))
     
+
+    def remove_all_except_self(self):
+        i = 0
+        while i < len(self.symboltable):
+            if self.symboltable[i].insideTable != self:
+                self.logger.__log__("Removed the Symbol: {} from the symboltable".format(self.symboltable[i].symbol))
+                self.symboltable.remove(self.symboltable[i])
+                i -= 1
+            i += 1
+    
     def get_value(self, symbol: string, symboltable) -> tuple[bool]:
         for sym in self.symboltable:
             if sym.symbol == symbol:
                 if sym.insideTable == symboltable:
                     return True, sym.value
         return False, None
+    
+
+    def clone_table(self):
+        newTable = SymbolTable()
+        # checks if the name already exists in the current symbol. Otherwise add to table.
+        for sym in self.symboltable:
+            newTable.symboltable.append(Symbol(sym.symbol, sym.value, sym.symbolType, self))
+        return newTable

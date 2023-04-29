@@ -109,7 +109,7 @@ class Parser:
     Rule -> (expr (EQUAL expr)*?)
     """
     def rigid_eq(self) -> ParsedNode:
-        left_node = self.block()
+        left_node = self.expr()
         if(left_node.hasSyntaxError == False):
             if(self.current_token.type == TokenTypes.EQUAL):
                 node = ParsedNode(None,True)
@@ -289,7 +289,7 @@ class Parser:
                 self.forward()
             else: return ParsedNode(None, True)
         else:
-            then_node = self.expr()
+            then_node = self.block()
             if(then_node.hasSyntaxError):
                 return ParsedNode(None, True)
             
@@ -308,7 +308,7 @@ class Parser:
                 else: return ParsedNode(None,True)
             else: return ParsedNode(None,True)
         else:
-            else_node = self.expr()
+            else_node = self.block()
             if(else_node.hasSyntaxError):
                 return ParsedNode(None,True)
             
