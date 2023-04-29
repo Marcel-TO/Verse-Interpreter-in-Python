@@ -122,18 +122,21 @@ class OperatorNode(BaseNode):
        
         node_right = self.rightNode.visit(symboltable)
         if node_right.token.type in fail_conditions:
-                 return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+                return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
 
         sequentor = Sequentor([node_left,node_right])
-        seqences = sequentor.getSequences()
+        sequences = sequentor.getSequences()
 
         # If lenght is one, it can only be two integers.
-        if len(seqences) == 1:
-            return self.doOperation(seqences[0][0].value,seqences[0][1].value, self.token)
+        if len(sequences) == 1:
+            for s in sequences:
+                if s[0].token.type == TokenTypes.IDENTIFIER or s[1].token.type == TokenTypes.IDENTIFIER:
+                    return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+            return self.doOperation(sequences[0][0].value,sequences[0][1].value, self.token)
         
         # Else left or/and right node of operation had to be a choice.
         nodes = []
-        for s in seqences:
+        for s in sequences:
             left_val = s[0]
             right_val = s[1]
 
@@ -247,10 +250,6 @@ class ScopeNode(BaseNode):
 
     def visit(self, symboltable: SymbolTable):
         for n in self.nodes:
-            # remove if Parser is updated!!!!!!
-            if type(n) == ParsedNode:
-                 symboltable.addScope(n.node.token.value, self.type.visit(symboltable))
-                 continue
             symboltable.addScope(n.token.value, self.type.visit(symboltable)) 
 
 '''
@@ -394,9 +393,13 @@ class IfNode(BaseNode):
 
     def visit(self, symboltable: SymbolTable):
         result_if = self.if_node.visit(symboltable)
-        if result_if != None:
+        if result_if != None and result_if.token.type != TokenTypes.FAIL:
             return self.then_node.visit(symboltable)
-        return self.else_node.visit(symboltable) 
+        
+        if_symboltable = symboltable.clone_table()
+        result = self.else_node.visit(if_symboltable)
+        symboltable.addSymbolTable(if_symboltable)
+        return result 
 
 '''
 Node for rigid equals.
@@ -411,7 +414,13 @@ class RigidEqNode(BaseNode):
         return "{}{}{}".format(repr(self.left_node),self.token.value, repr(self.right_node)) 
 
     def visit(self, symboltable: SymbolTable):
-        pass 
+        res_left = self.left_node.visit(symboltable)
+        res_right = self.right_node.visit(symboltable)
+        if res_left.token.type != TokenTypes.IDENTIFIER and res_right.token.type != TokenTypes.IDENTIFIER:
+            if res_left.value == res_right.value:
+                return res_left
+        return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+
 
 '''
 Node for flexible equals.
@@ -424,7 +433,8 @@ class FlexibleEqNode(BaseNode):
 
     def visit(self, symboltable: SymbolTable):
         leftResult = self.left_node.visit(symboltable)
-        symboltable.addValue(leftResult.token.value, self.right_node) 
+        symboltable.addValue(leftResult.token.value, self.right_node)
+        return self.right_node.visit(symboltable) 
 
 
 '''
