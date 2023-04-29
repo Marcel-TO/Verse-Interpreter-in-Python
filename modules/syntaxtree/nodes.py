@@ -1,3 +1,4 @@
+from unification import unify,unifiable
 from structure.token import Token
 from structure.tokenTypes import TokenTypes
 from syntaxtree.symboltable import SymbolTable
@@ -7,6 +8,7 @@ from syntaxtree.sequentor import Sequentor
 '''
 Top class of all nodes.
 '''
+@unifiable
 class BaseNode:
     def __init__(self, token) -> None:
         self.token = token 
@@ -78,6 +80,7 @@ class BindingNode(BaseNode):
 '''
 Node representing a number.
 ''' 
+@unifiable
 class NumberNode(BaseNode):
     def __init__(self, token:Token) -> None:
         super().__init__(token)
@@ -165,10 +168,13 @@ class OperatorNode(BaseNode):
                 result = val1 // val2
             case TokenTypes.MULTIPLY:
                 result = val1 * val2
-            case TokenTypes.PLUS:              
+            case TokenTypes.PLUS:        
+                # APPLICATION: add⟨k1, k2⟩ −→ k3      
                 result = val1 + val2
             case TokenTypes.MINUS:
-                result = val1 - val2      
+                result = val1 - val2  
+
+            # APPLICATION: gt⟨k1, k2⟩ −→ k1  &  gt⟨k1, k2⟩ −→ fail  
             case TokenTypes.GREATER:
                 if val1 > val2:
                     result = val1
@@ -211,6 +217,7 @@ class UnaryNode(BaseNode):
 '''
 Node for identifiers.
 ''' 
+@unifiable
 class IdentifierNode(BaseNode):
     def __init__(self, token:Token) -> None: #Change into Variable/IdentifierNode
         super().__init__(token)
@@ -423,6 +430,7 @@ class FlexibleEqNode(BaseNode):
 '''
 Node for sequences (tuple, array).
 ''' 
+@unifiable
 class SequenceNode(BaseNode):
     def __init__(self, token:Token, nodes:list[BaseNode]) -> None:
         super().__init__(token)
