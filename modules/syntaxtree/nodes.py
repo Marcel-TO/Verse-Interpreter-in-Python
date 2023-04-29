@@ -119,18 +119,21 @@ class OperatorNode(BaseNode):
        
         node_right = self.rightNode.visit(symboltable)
         if node_right.token.type in fail_conditions:
-                 return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+                return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
 
         sequentor = Sequentor([node_left,node_right])
-        seqences = sequentor.getSequences()
+        sequences = sequentor.getSequences()
 
         # If lenght is one, it can only be two integers.
-        if len(seqences) == 1:
-            return self.doOperation(seqences[0][0].value,seqences[0][1].value, self.token)
+        if len(sequences) == 1:
+            for s in sequences:
+                if s[0].token.type == TokenTypes.IDENTIFIER or s[1].token.type == TokenTypes.IDENTIFIER:
+                    return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+            return self.doOperation(sequences[0][0].value,sequences[0][1].value, self.token)
         
         # Else left or/and right node of operation had to be a choice.
         nodes = []
-        for s in seqences:
+        for s in sequences:
             left_val = s[0]
             right_val = s[1]
 
@@ -387,7 +390,7 @@ class IfNode(BaseNode):
 
     def visit(self, symboltable: SymbolTable):
         result_if = self.if_node.visit(symboltable)
-        if result_if != None:
+        if result_if != None and result_if.token.type != TokenTypes.FAIL:
             return self.then_node.visit(symboltable)
         return self.else_node.visit(symboltable) 
 
