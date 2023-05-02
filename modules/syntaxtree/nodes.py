@@ -258,9 +258,11 @@ class ScopeNode(BaseNode):
         return "{}{}{}".format(self.seperator.join([repr(n) for n in self.nodes]),self.token.value, repr(self.type)) 
 
     def visit(self, symboltable: SymbolTable):
+        
         for n in self.nodes:
+           
             symboltable.addScope(n.token.value, self.type.visit(symboltable))
-        return self.nodes[0] 
+        return self.nodes[0]
 
 '''
 Top class node for types (int, tuple, etc.).
@@ -427,7 +429,8 @@ class RigidEqNode(BaseNode):
 
     def visit(self, symboltable: SymbolTable):
         res_left = self.left_node.visit(symboltable)
-        res_right = self.right_node.visit(symboltable)
+        res_right = self.right_node.visit(symboltable) # x = r:int
+        self.right_node = res_right
         if res_left.token.type != TokenTypes.IDENTIFIER and res_right.token.type != TokenTypes.IDENTIFIER:
             if res_left.value == res_right.value:
                 return res_left
@@ -446,6 +449,7 @@ class FlexibleEqNode(BaseNode):
     def visit(self, symboltable: SymbolTable):
         leftResult = self.left_node.visit(symboltable)
         
+        self.right_node = self.right_node.visit(symboltable)
         
         symboltable.addValue(leftResult.token.value, self.right_node)
         return self.right_node.visit(symboltable) 
