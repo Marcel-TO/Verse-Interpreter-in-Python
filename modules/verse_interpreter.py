@@ -17,8 +17,10 @@ class Interpreter:
         if tree != None:
             result =  tree.visit(self.symboltable)
 
-            for i in range(0, len(self.symboltable.symboltable)):
-               self.symboltable.remove_all_except_self()
-               result =  tree.visit(self.symboltable)
+            i = 0
+            while i < len(self.symboltable.symboltable):
+                self.symboltable.remove_all_except_self()
+                result =  tree.visit(self.symboltable)
+                i += 1
         
         return result

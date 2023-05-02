@@ -40,6 +40,15 @@ class BlockNode(BaseNode):
             result = n.visit(symboltable)
             if result != None:
                  results.append(result)
+
+        i = 0
+        while i < len(symboltable.symboltable):
+            results = []
+            for n in self.nodes:
+                result = n.visit(symboltable)
+                if result != None:
+                    results.append(result)
+            i += 1
         '''
         HIER GEÄNDERT Block Node, darf nur ein Value liefern.
         Bsp. y:= (31|(z:=9; z)); x:=(7|22); (x,y)
@@ -399,6 +408,8 @@ class IfNode(BaseNode):
         
         if_symboltable = symboltable.clone_table()
         result = self.else_node.visit(if_symboltable)
+        for i in range(0, len(if_symboltable.symboltable)):
+               result =  self.else_node.visit(if_symboltable)
         symboltable.addSymbolTable(if_symboltable)
         return result 
 
