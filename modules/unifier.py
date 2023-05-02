@@ -24,7 +24,8 @@ xs = [s1,s2]
 simple_Table.append(xs)
 symbolTable = SymbolTable()
 # ∃x y z. x = ⟨y, 3⟩; x = ⟨2, z⟩; x = (2,3); y
-# x = (1,x); x=(1,(2,x))
+# x = (1,x); x=(1,(2,x)) 
+
 
 print(unify(s1,s2))
 print(1)
@@ -38,7 +39,12 @@ def unify(l, r) -> tuple[bool,str]:
   elif l.token.type == TokenTypes.IDENTIFIER:
     if r.token.type == TokenTypes.IDENTIFIER:
       unify_success = Var_Swap(l,r)
-    else: unify_success = Assign(l,r)
+    else: 
+     # exists = U_Occurs(l,r)
+     # if(exists):
+     #  return (False,"")
+     # else:
+        unify_success = Assign(l,r)
   elif r.token.type == TokenTypes.IDENTIFIER:
     unify_success = Hnf_Swap(l,r)
   return unify_success
@@ -77,6 +83,9 @@ def Assign(id_l, r):
 
 def Hnf_Swap(l,id_r):
   return (True,["{}={}".format(repr(id_r),repr(l))])
+
+# def U_Occurs(id_l,r):
+  
 
 print(unify(s1,s2)[1])      
 

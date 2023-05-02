@@ -250,7 +250,8 @@ class ScopeNode(BaseNode):
 
     def visit(self, symboltable: SymbolTable):
         for n in self.nodes:
-            symboltable.addScope(n.token.value, self.type.visit(symboltable)) 
+            symboltable.addScope(n.token.value, self.type.visit(symboltable))
+        return self.nodes[0] 
 
 '''
 Top class node for types (int, tuple, etc.).
@@ -433,6 +434,8 @@ class FlexibleEqNode(BaseNode):
 
     def visit(self, symboltable: SymbolTable):
         leftResult = self.left_node.visit(symboltable)
+        
+        
         symboltable.addValue(leftResult.token.value, self.right_node)
         return self.right_node.visit(symboltable) 
 
