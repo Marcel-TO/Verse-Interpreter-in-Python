@@ -289,7 +289,9 @@ class Parser:
                 self.forward()
             else: return ParsedNode(None, True)
         else:
-            then_node = self.block()
+            then_node = self.brackets()
+            if then_node.hasSyntaxError:
+                then_node = self.block()
             if(then_node.hasSyntaxError):
                 return ParsedNode(None, True)
             
@@ -308,7 +310,9 @@ class Parser:
                 else: return ParsedNode(None,True)
             else: return ParsedNode(None,True)
         else:
-            else_node = self.block()
+            else_node = self.brackets()
+            if else_node.hasSyntaxError:
+                else_node = self.block()
             if(else_node.hasSyntaxError):
                 return ParsedNode(None,True)
             
