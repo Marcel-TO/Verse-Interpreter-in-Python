@@ -39,14 +39,19 @@ class BlockNode(BaseNode):
         for n in self.nodes:
             result = n.visit(symboltable)
             if result != None:
-                 results.append(result)
+                if result.token.type == TokenTypes.FAIL:
+                    return result
+                results.append(result)
 
         i = 0
         while i < len(symboltable.symboltable):
             results = []
+            symboltable.remove_all_except_self()
             for n in self.nodes:
                 result = n.visit(symboltable)
                 if result != None:
+                    if result.token.type == TokenTypes.FAIL:
+                        return result
                     results.append(result)
             i += 1
         '''
@@ -239,10 +244,10 @@ class IdentifierNode(BaseNode):
 
     def visit(self, symboltable: SymbolTable):
         # checks if the identifier already exists in the scopetable.
-        for symbol in symboltable.symboltable:
-             if symbol.symbol == self.token.value and symbol.value != None:
-                  return symbol.value.visit(symboltable)
-        return self 
+        (isValid, result) = symboltable.get_value(self.token.value, symboltable)
+        if isValid:
+            return result
+        return self
 
 '''
 Node for scoped identifiers.
@@ -253,16 +258,22 @@ class ScopeNode(BaseNode):
         self.nodes = nodes
         self.type = type
         self.seperator = ","
+        self.isVisitted: bool = False
 
     def __repr__(self) -> str:    
         return "{}{}{}".format(self.seperator.join([repr(n) for n in self.nodes]),self.token.value, repr(self.type)) 
 
     def visit(self, symboltable: SymbolTable):
+        if self.isVisitted == False:
+            for n in self.nodes:
+                isValid = symboltable.addScope(n.token.value, self.type.visit(symboltable))
+                if isValid:
+                    self.isVisitted = True
+                else:
+                    return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+            return self.nodes[0]
+        else: return self.nodes[0]
         
-        for n in self.nodes:
-           
-            symboltable.addScope(n.token.value, self.type.visit(symboltable))
-        return self.nodes[0]
 
 '''
 Top class node for types (int, tuple, etc.).
@@ -365,17 +376,10 @@ class ForNode(BaseNode):
 
     def visit(self, symboltable: SymbolTable):
         if self.condition == None and self.expr == None and self.do == None:
-            result = self.node.visit(symboltable)
-            if type(result) == SequenceNode or type(result) == ChoiceSequenceNode:
-                return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), result.nodes)
-
-            if type(result) == NumberNode:
-                return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), [result.token.value])
-                
-            if result.token.type == TokenTypes.FAIL:
-                return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), [])
+            return self.visit_curly()
         
         visited_node = self.node.visit(symboltable)
+        test_do = self.do.visit(symboltable)
 
         if self.condition != None:
             visited_condition = self.condition.visit(symboltable)
@@ -388,6 +392,17 @@ class ForNode(BaseNode):
 
         if visited_expr != None:
                 return visited_expr 
+    
+    def visit_curly(self, symboltable: SymbolTable):
+        result = self.node.visit(symboltable)
+        if type(result) == SequenceNode or type(result) == ChoiceSequenceNode:
+            return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), result.nodes)
+
+        if type(result) == NumberNode:
+            return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), [result.token.value])
+            
+        if result.token.type == TokenTypes.FAIL:
+            return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), [])
 
 
 '''
@@ -452,6 +467,7 @@ class FlexibleEqNode(BaseNode):
         self.right_node = self.right_node.visit(symboltable)
         
         symboltable.addValue(leftResult.token.value, self.right_node)
+        
         return self.right_node.visit(symboltable) 
 
 
