@@ -375,7 +375,7 @@ class ForNode(BaseNode):
         self.do = do
 
     def visit(self, symboltable: SymbolTable):
-        if self.condition == None and self.expr == None and self.do == None:
+        if (self.condition == None and self.expr == None) or self.do == None:
             return self.visit_curly()
         
         visited_node = self.node.visit(symboltable)
