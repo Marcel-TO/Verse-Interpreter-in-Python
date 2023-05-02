@@ -24,11 +24,14 @@ class SymbolTable:
                 return True
         return False
     
-    def addScope(self, symbol: string, symbolType: TokenTypes) -> None:
+    def addScope(self, symbol: string, symbolType: TokenTypes) -> bool:
         # checks if the name already exists in the current symbol. Otherwise add to table.
         if self.check_if_exists(symbol, self) == False:
             self.symboltable.append(Symbol(symbol, None, symbolType, self))
             self.logger.__log__("Added the Symbol: {} to the symboltable: {}".format(symbol, self))
+            return True
+        return False
+
     
     def addValue(self, symbol: string, value) -> None:
         # checks if the symbol is already defined with type or value.
@@ -73,7 +76,7 @@ class SymbolTable:
                 i -= 1
             i += 1
     
-    def get_value(self, symbol: string, symboltable) -> tuple[bool]:
+    def get_value(self, symbol: string, symboltable):
         for sym in self.symboltable:
             if sym.symbol == symbol:
                 if sym.insideTable == symboltable:
