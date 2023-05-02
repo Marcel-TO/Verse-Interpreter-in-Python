@@ -245,8 +245,8 @@ class IdentifierNode(BaseNode):
     def visit(self, symboltable: SymbolTable):
         # checks if the identifier already exists in the scopetable.
         (isValid, result) = symboltable.get_value(self.token.value, symboltable)
-        if isValid:
-            return result
+        if isValid and result != None:
+            return result.visit(symboltable)
         return self
 
 '''
@@ -462,12 +462,7 @@ class FlexibleEqNode(BaseNode):
         self.right_node = right_node
 
     def visit(self, symboltable: SymbolTable):
-        leftResult = self.left_node.visit(symboltable)
-        
-        self.right_node = self.right_node.visit(symboltable)
-        
-        symboltable.addValue(leftResult.token.value, self.right_node)
-        
+        symboltable.addValue(self.left_node.token.value, self.right_node.visit(symboltable))
         return self.right_node.visit(symboltable) 
 
 

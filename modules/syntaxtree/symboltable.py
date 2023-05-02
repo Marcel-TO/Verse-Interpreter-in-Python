@@ -36,7 +36,7 @@ class SymbolTable:
     def addValue(self, symbol: string, value) -> None:
         # checks if the symbol is already defined with type or value.
         for sym in self.symboltable:
-            if sym.symbol == symbol and sym.symbolType != None and sym.value == None and value != None:
+            if sym.symbol == symbol and sym.symbolType != None and sym.value == None and value != None and sym.value != sym.symbol:
                 sym.value = value
                 self.logger.__log__("Added the value: {} to the existing symbol: {} in the symboltable: {}".format(value, sym.symbol, self))
     
