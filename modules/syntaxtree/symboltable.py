@@ -54,17 +54,19 @@ class SymbolTable:
                     self.logger.__log__("Added the Symbol: {} from the symboltable: {}".format(sym.symbol, symboltable))
 
     
-    def remove(self, symbol:string, value, symbolType: type) -> None:
+    def remove(self, symbol:Symbol) -> bool:
         # checks if the table is empty.
         if len(self.symboltable) < 1:
-            return
+            return False
         
         # iterates through and removes the corresponding 
         for sym in self.symboltable:
-            if sym.symbol == symbol:
+            if sym.symbol == symbol.symbol:
                 if sym.insideTable == self:
-                    self.symboltable.remove(Symbol(sym.symbol, sym.value, sym.symbolType, self)) 
-                    self.logger.__log__("Removed the Symbol: {} to the scopetable".format(symbol))
+                    self.symboltable.remove(symbol) 
+                    self.logger.__log__("Removed the Symbol: {} to the scopetable".format(symbol.symbol))
+                    return True
+        return False
     
 
     def remove_all_except_self(self):
@@ -80,6 +82,14 @@ class SymbolTable:
         for sym in self.symboltable:
             if sym.symbol == symbol:
                 if sym.insideTable == symboltable:
+                    return True, sym.value
+        return False, None
+    
+    def change_value(self, symbol: string, value, symboltable):
+        for sym in self.symboltable:
+            if sym.symbol == symbol:
+                if sym.insideTable == symboltable:
+                    sym.value = value
                     return True, sym.value
         return False, None
     

@@ -19,8 +19,10 @@ text = "for{1..10}" # !!!!!
 # text = "1..10" # CHOICE
 # text = "x:int; x=10; if(x=r:int) then 70 else 30"
 text = "for(x:=2|3|5)do(x+1)"
-text = "for(x:=10|20; y:=1|2|3)do(x+y)"
+text = "for(x:=10|20) do (x | x+1)"
+# text = "for(x:=10|20; y:=1|2|3)do(x+y)"
 text = "for(x:=2|3|5; x > 2)do(x+1)"
+# text = "for(x:=10|20; x>10; y:=1|2|3; y<3)do(x+y)"
 # text = "x:=10|20|15; x<20"
 # text = "x:int; x:int; r=11; r:int; r"
 # text = "x:=10; x<7; 3"

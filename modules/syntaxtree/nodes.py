@@ -366,12 +366,23 @@ class ForNode(BaseNode):
         self.do = do
 
     def visit(self, symboltable: SymbolTable):
-        node = self.node.visit(symboltable)
-
         if self.do == None:
-            return self.visit_curly(node)
+            return self.visit_curly(self.node.visit(symboltable))
+
+        for_table = symboltable.clone_table()
+
+        # check if block or not!!!!!
+        try: 
+            for n in self.node.nodes:
+                if type(n) == OperatorNode:
+                    result = n.visit(for_table)
+                    for_table.change_value(n.leftNode.token.value, result, for_table)
+                result = n.visit(for_table)
+        except:
+            result = self.node.visit(for_table)
         
-        result = self.do.visit(symboltable)
+        result = self.do.visit(for_table)
+        symboltable.addSymbolTable(for_table)
         return result
     
     def visit_curly(self, result: BaseNode):
