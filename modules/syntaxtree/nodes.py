@@ -360,34 +360,21 @@ class FuncDeclNode:
 Node for loops.
 ''' 
 class ForNode(BaseNode):
-    def __init__(self, token:Token, node: BaseNode, condition: BaseNode, expr: BaseNode, do: BaseNode) -> None:
+    def __init__(self, token:Token, node: BaseNode, do: BaseNode) -> None:
         super().__init__(token)
         self.node = node
-        self.condition = condition
-        self.expr = expr
         self.do = do
 
     def visit(self, symboltable: SymbolTable):
-        if self.condition == None and self.expr == None and self.do == None:
-            return self.visit_curly()
+        node = self.node.visit(symboltable)
+
+        if self.do == None:
+            return self.visit_curly(node)
         
-        visited_node = self.node.visit(symboltable)
-        test_do = self.do.visit(symboltable)
-
-        if self.condition != None:
-            visited_condition = self.condition.visit(symboltable)
-
-        if self.expr != None:
-            visited_expr = self.expr.visit(symboltable)
-        
-        if type(visited_expr) == FailNode:
-             return []
-
-        if visited_expr != None:
-                return visited_expr 
+        result = self.do.visit(symboltable)
+        return result
     
-    def visit_curly(self, symboltable: SymbolTable):
-        result = self.node.visit(symboltable)
+    def visit_curly(self, result: BaseNode):
         if type(result) == SequenceNode or type(result) == ChoiceSequenceNode:
             return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), result.nodes)
 

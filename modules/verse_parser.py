@@ -339,144 +339,38 @@ class Parser:
             
     
     def for_loop_curly(self) -> ParsedNode:
-        condition: ParsedNode
-        expression: ParsedNode
-        token = self.current_token
-        index = self.lexer.index
-
-        node = self.scope()
-
-        # checks if the loop content is not a scope but an expression.
-        if node.hasSyntaxError == True:
-            self.set_to_token(index, token)
-            node = self.expr()
+        node = self.block()
         
         # checks if the loop input is invalid.
-        if node.hasSyntaxError:
+        if node.hasSyntaxError and self.current_token.type != TokenTypes.CBR:
+            return ParsedNode(None, True)
+        self.forward()
+        return ParsedNode(ForNode(TokenTypes.FOR, node=node.node, do=None), False)
+    
+    def for_loop_bracket(self) -> ParsedNode:
+        node = self.block()
+        
+        # checks if the loop input is invalid.
+        if node.hasSyntaxError and self.current_token.type != TokenTypes.RBRACKET:
             return ParsedNode(None, True)
         
-        if self.current_token.type == TokenTypes.CBR:
-            self.forward()
-            return ParsedNode(ForNode(TokenTypes.FOR, node=node.node, condition=None, expr=None, do=None), False)
-        
+        self.forward()
+        if self.current_token.type != TokenTypes.DO:
+            return ParsedNode(None, True)
+
         self.forward()
         token = self.current_token
         index = self.lexer.index
-        condition = self.flexible_eq()
 
-        if(condition.hasSyntaxError == True):
-            self.set_to_token(index,token)
-            condition = self.expr()
-
-        if condition.hasSyntaxError:
+        do = self.brackets()
+        if do.hasSyntaxError:
+            self.set_to_token(index, token)
+            do = self.expr()
+        
+        if do.hasSyntaxError:
             return ParsedNode(None, True)
-
-        if self.current_token.type == TokenTypes.SEMICOLON:
-            self.forward()
-            token = self.current_token
-            index = self.lexer.index
-            expression = self.flexible_eq()
-
-            if(expression.hasSyntaxError == True):
-                self.set_to_token(index,token)
-                expression = self.expr()
         
-            if self.current_token.type != TokenTypes.CBR or expression.hasSyntaxError:
-                return ParsedNode(None, True)
-
-            self.forward()
-            return ParsedNode(ForNode(TokenTypes.FOR, node=node.node, condition=condition.node, expr=expression.node, do=None),False)
-        
-        if self.current_token.type == TokenTypes.CBR:
-            self.forward()
-            return ParsedNode(ForNode(TokenTypes.FOR, node=node.node, condition=None, expr=condition.node, do=None), False)
-        
-        return ParsedNode(None, True)
-    
-    def for_loop_bracket(self) -> ParsedNode:
-        condition: ParsedNode
-        expression: ParsedNode
-        token = self.current_token
-        index = self.lexer.index
-        node = self.block()
-        test =  ParsedNode(ForNode(TokenTypes.FOR, node, None, None, None), False)
-        do = self.expr()
-
-        # node = self.scope()
-
-        # # checks if the loop content is not a scope but an expression.
-        # if node.hasSyntaxError == True:
-        #     self.set_to_token(index,token)
-        #     node = self.expr()
-        
-        # # checks if the loop input is invalid.
-        # if node.hasSyntaxError:
-        #     return ParsedNode(None, True)
-        
-        # if self.current_token.type == TokenTypes.RBRACKET:
-        #     self.forward()
-        #     if self.current_token.type != TokenTypes.DO:
-        #         return ParsedNode(None, True)
-        
-        #     self.forward()
-        #     do = self.expr()
-        
-        #     if do.hasSyntaxError:
-        #         return ParsedNode(None, True)
-            
-        #     return ParsedNode(ForNode(token, node=node.node, condition=None, expr=None, do=do.node), False)
-        
-        # self.forward()
-        # token = self.current_token
-        # index = self.lexer.index
-        # condition = self.flexible_eq()
-
-        # if(condition.hasSyntaxError == True):
-        #     self.set_to_token(index,token)
-        #     condition = self.expr()
-
-        # if condition.hasSyntaxError:
-        #     return ParsedNode(None, True)
-
-        # if self.current_token.type == TokenTypes.SEMICOLON:
-        #     self.forward()
-        #     token = self.current_token
-        #     index = self.lexer.index
-        #     expression = self.flexible_eq()
-
-        #     if(expression.hasSyntaxError == True):
-        #         self.set_to_token(index,token)
-        #         expression = self.expr()
-        
-        #     if self.current_token.type != TokenTypes.RBRACKET or expression.hasSyntaxError:
-        #         return ParsedNode(None, True)
-        
-        #     self.forward()
-        #     if self.current_token.type != TokenTypes.DO:
-        #         return ParsedNode(None, True)
-        
-        #     self.forward()
-        #     do = self.expr()
-        
-        #     if do.hasSyntaxError:
-        #         return ParsedNode(None, True)
-            
-        #     return ParsedNode(ForNode(token, node=node.node, condition=condition.node, expr=expression.node, do=do.node), False)
-        
-        # if self.current_token.type != TokenTypes.RBRACKET:
-        #         return ParsedNode(None, True)
-        
-        # self.forward()
-        # if self.current_token.type != TokenTypes.DO:
-        #     return ParsedNode(None, True)
-        
-        # self.forward()
-        # do = self.expr()
-        
-        # if do.hasSyntaxError:
-        #     return ParsedNode(None, True)
-            
-        # return ParsedNode(ForNode(token, node=node.node, condition=None, expr=condition.node, do=do.node), False)
+        return ParsedNode(ForNode(TokenTypes.FOR, node=node.node, do=do.node), False)
 
 
     """
