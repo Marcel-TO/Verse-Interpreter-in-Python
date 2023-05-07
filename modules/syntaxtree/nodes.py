@@ -376,7 +376,7 @@ class ForNode(BaseNode):
 
     def visit(self, symboltable: SymbolTable):
         if (self.condition == None and self.expr == None) or self.do == None:
-            return self.visit_curly()
+            return self.visit_curly(symboltable)
         
         visited_node = self.node.visit(symboltable)
         test_do = self.do.visit(symboltable)
@@ -387,8 +387,8 @@ class ForNode(BaseNode):
         if self.expr != None:
             visited_expr = self.expr.visit(symboltable)
         
-        if type(visited_expr) == FailNode:
-             return []
+        if visited_expr.token.type == FailNode:
+             return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), [])
 
         if visited_expr != None:
                 return visited_expr 
