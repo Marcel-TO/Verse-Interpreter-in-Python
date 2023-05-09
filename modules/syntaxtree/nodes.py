@@ -371,12 +371,13 @@ class ForNode(BaseNode):
 
         for_table = symboltable.clone_table()
 
-        # check if block or not!!!!!
+        # check if block or not
         try: 
             for n in self.node.nodes:
                 if type(n) == OperatorNode:
                     result = n.visit(for_table)
                     for_table.change_value(n.leftNode.token.value, result, for_table)
+                    continue
                 result = n.visit(for_table)
         except:
             result = self.node.visit(for_table)
@@ -506,11 +507,29 @@ class IndexingNode(BaseNode):
         for symbol in symboltable.symboltable:
             if self.identifier.token.value == symbol.symbol:
                 value = symbol.value.visit(symboltable)
-                if self.index.value >= len(value):
-                    print("Exception -> Index out of range")
-                    return
+                index = self.index.visit(symboltable)
+                try:
+                    # checks if it is number
+                    if index.value >= len(value.nodes):
+                        print("Exception -> Index out of range")
+                        return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
 
-                return value[self.index.value] 
+                    return value.nodes[index.value]
+                except:
+                    # checks if it is tuple
+                    try:
+                        result = []
+                        for iNode in index.nodes:
+                            i = iNode.visit(symboltable)
+                            if i.value >= len(value.nodes):
+                                print("Exception -> Index out of range")
+                                return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+                            result.append(value.nodes[i.value])
+                        return SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),result)
+                    except:
+                        return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+                    
+
 
 
 '''
