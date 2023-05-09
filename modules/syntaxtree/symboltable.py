@@ -1,4 +1,5 @@
 import string
+from unifier import Pfushifyer
 from structure.tokenTypes import TokenTypes
 from structure.logger import Console_Logger
 
@@ -9,11 +10,14 @@ class Symbol:
         self.symbolType: TokenTypes | None = symbolType
         self.insideTable = insideTable
 
+    
+
 class SymbolTable:
     def __init__(self) -> None:
         self.symboltable: list[Symbol] = []
         self.logger = Console_Logger()
-    
+        self.unifer = Pfushifyer()
+
     def __info__(self) -> None:
         for symbol in self.symboltable:
             self.logger.__log__("Symboltable: Name= {}, Value= {}, type= {} and inside table={}".format(symbol.symbol, symbol.value, symbol.symbolType, symbol.insideTable))
@@ -37,6 +41,8 @@ class SymbolTable:
         # checks if the symbol is already defined with type or value.
         for sym in self.symboltable:
             if sym.symbol == symbol and sym.symbolType != None and sym.value == None and value != None and sym.value != sym.symbol:
+                
+                self.unifer.unify(sym.value, value)
                 sym.value = value
                 self.logger.__log__("Added the value: {} to the existing symbol: {} in the symboltable: {}".format(value, sym.symbol, self))
     
@@ -100,3 +106,8 @@ class SymbolTable:
         for sym in self.symboltable:
             newTable.symboltable.append(Symbol(sym.symbol, sym.value, sym.symbolType, self))
         return newTable
+    
+
+
+
+    

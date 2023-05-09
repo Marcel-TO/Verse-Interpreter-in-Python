@@ -1,91 +1,70 @@
-from unification import unify
-
-from structure.token import Token
+from symtable import SymbolTable
 from structure.tokenTypes import TokenTypes
 from syntaxtree.nodes import *
 
 
-n1 = NumberNode(Token(TokenTypes.INTEGER, 1))
-n2 = NumberNode(Token(TokenTypes.INTEGER, 2))
-n3 = NumberNode(Token(TokenTypes.INTEGER, 3))
-id1 = IdentifierNode(Token(TokenTypes.IDENTIFIER, "y"))
-id2 = IdentifierNode(Token(TokenTypes.IDENTIFIER, "z"))
-id3 = IdentifierNode(Token(TokenTypes.IDENTIFIER, "w"))
+class Pfushifyer:
+
+  def tryUnify(self, l, r) -> bool: 
+      unified = self.unify(l,r)[1]
+      for u in unified:
+          if u[0].token.type == TokenTypes.IDENTIFIER:
+            node:IdentifierNode = u[0]
+            SymbolTable.addValue(node.token.value, u[1])
+     
+  def unify(self,l, r) -> tuple[bool,list[BaseNode]]:
+      unify_success = (False,"")
+      if l.token.type == TokenTypes.INTEGER and r.token.type == TokenTypes.INTEGER:
+        unify_success = self.U_LIT(l,r)
+      elif l.token.type == TokenTypes.TUPLE_TYPE and r.token.type == TokenTypes.TUPLE_TYPE:
+        unify_success =  self.U_TUP(l,r)
+      elif l.token.type == TokenTypes.IDENTIFIER:
+        if r.token.type == TokenTypes.IDENTIFIER:
+          unify_success = self.Var_Swap(l,r)
+        else: 
+        # exists = U_Occurs(l,r)
+        # if(exists):
+        #  return (False,"")
+        # else:
+            unify_success = self.Assign(l,r)
+      elif r.token.type == TokenTypes.IDENTIFIER:
+        unify_success = self.Hnf_Swap(l,r)
+      return unify_success
+
+        
 
 
-s0 = SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),[n1,n2])
+  def U_LIT(self,k1, k2) -> tuple[bool,list[BaseNode]]:
+      u_str = [k1,k2]
+      if k1.token.value != k2.token.value:
+        return (False, [u_str])
+      return (True, [u_str])
 
-simple_Table = []
-s1 = SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),[id1,n1,n3,s0])
-s2 = SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),[n2,id2,n3,s0])
+  def U_TUP(self,t1, t2) -> tuple[bool,list[BaseNode]]: 
+        if len(t1.nodes) != len(t2.nodes):
+          return (False, None)
 
+        unified_vals = list(zip(t1.nodes,t2.nodes)) 
 
-xs = [s1,s2]
-simple_Table.append(xs)
-symbolTable = SymbolTable()
-# ∃x y z. x = ⟨y, 3⟩; x = ⟨2, z⟩; x = (2,3); y
-# x = (1,x); x=(1,(2,x)) 
+        unifiedVals = []
+        for uv in unified_vals:
+          isUnified = self.unify(uv[0], uv[1])
+          if isUnified[0]:
+            unifiedVals.extend(isUnified[1])
+          else:  return (False, None)
+        return (True, unifiedVals)
 
+  def Var_Swap(self,id_l, id_r) -> tuple[bool,list[BaseNode]]:
+    return (True,[[id_l,id_r],[id_r,id_l]])
+      
 
-print(unify(s1,s2))
-print(1)
+  def Assign(self,id_l, r):
+    return (True,[[id_l,r]])
 
-def unify(l, r) -> tuple[bool,str]:
-  unify_success = (False,"")
-  if l.token.type == TokenTypes.INTEGER and r.token.type == TokenTypes.INTEGER:
-   unify_success = U_LIT(l,r)
-  elif l.token.type == TokenTypes.TUPLE_TYPE and r.token.type == TokenTypes.TUPLE_TYPE:
-   unify_success =  U_TUP(l,r)
-  elif l.token.type == TokenTypes.IDENTIFIER:
-    if r.token.type == TokenTypes.IDENTIFIER:
-      unify_success = Var_Swap(l,r)
-    else: 
-     # exists = U_Occurs(l,r)
-     # if(exists):
-     #  return (False,"")
-     # else:
-        unify_success = Assign(l,r)
-  elif r.token.type == TokenTypes.IDENTIFIER:
-    unify_success = Hnf_Swap(l,r)
-  return unify_success
-
-    
-
-
-def U_LIT(k1, k2) -> tuple[bool,str]:
-  u_str = "{}={}".format(k1.token.value,k2.token.value)
-  if k1.token.value != k2.token.value:
-    return (False, [u_str])
-  return (True, [u_str])
-
-def U_TUP(t1, t2) -> tuple[bool,str]:
-    
-    if len(t1.nodes) != len(t2.nodes):
-      return (False, "")
-
-    unified_vals = list(zip(t1.nodes,t2.nodes)) 
-
-    unifiedVals = []
-    for uv in unified_vals:
-       isUnified = unify(uv[0], uv[1])
-       if isUnified[0]:
-         unifiedVals.extend(isUnified[1])
-       else:  return (False, "")
-    return (True, unifiedVals)
-
-def Var_Swap(id_l, id_r) -> tuple[bool,str]:
-  return (True,["{}={}".format(repr(id_l),repr(id_r)),
-          "{}={}".format(repr(id_r),repr(id_l))])
+  def Hnf_Swap(self,l,id_r):
+    return (True,[[id_r,l]])
   
 
-def Assign(id_l, r):
-  return (True,["{}={}".format(repr(id_l),repr(r))])
-
-def Hnf_Swap(l,id_r):
-  return (True,["{}={}".format(repr(id_r),repr(l))])
-
-# def U_Occurs(id_l,r):
   
 
-print(unify(s1,s2)[1])      
 

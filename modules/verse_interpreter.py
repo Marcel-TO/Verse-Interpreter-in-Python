@@ -1,8 +1,6 @@
 from verse_parser import Parser
 from syntaxtree.symboltable import SymbolTable
 from syntaxtree.nodes import *
-from syntaxtree.parsedNode import ParsedNode
-from syntaxtree.sequentor import Sequentor
 from structure.logger import *
 
 class Interpreter:

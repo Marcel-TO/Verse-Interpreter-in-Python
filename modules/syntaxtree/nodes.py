@@ -1,4 +1,3 @@
-from unification import unify,unifiable
 from structure.token import Token
 from structure.tokenTypes import TokenTypes
 from syntaxtree.symboltable import SymbolTable
@@ -8,7 +7,7 @@ from syntaxtree.sequentor import Sequentor
 '''
 Top class of all nodes.
 '''
-@unifiable
+
 class BaseNode:
     def __init__(self, token) -> None:
         self.token = token 
@@ -36,12 +35,16 @@ class BlockNode(BaseNode):
     
     def visit(self, symboltable: SymbolTable):
         results = []
+        i = 0
         for n in self.nodes:
             result = n.visit(symboltable)
             if result != None:
+                if result.token.type == TokenTypes.IDENTIFIER:
+                    self.nodes[i] = result
                 if result.token.type == TokenTypes.FAIL:
                     return result
                 results.append(result)
+            i += 1
 
         i = 0
         while i < len(symboltable.symboltable):
@@ -94,7 +97,7 @@ class BindingNode(BaseNode):
 '''
 Node representing a number.
 ''' 
-@unifiable
+
 class NumberNode(BaseNode):
     def __init__(self, token:Token) -> None:
         super().__init__(token)
@@ -234,7 +237,7 @@ class UnaryNode(BaseNode):
 '''
 Node for identifiers.
 ''' 
-@unifiable
+
 class IdentifierNode(BaseNode):
     def __init__(self, token:Token) -> None: #Change into Variable/IdentifierNode
         super().__init__(token)
@@ -247,7 +250,7 @@ class IdentifierNode(BaseNode):
         (isValid, result) = symboltable.get_value(self.token.value, symboltable)
         if isValid and result != None:
             return result.visit(symboltable)
-        return self
+        return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
 
 '''
 Node for scoped identifiers.
@@ -467,7 +470,7 @@ class FlexibleEqNode(BaseNode):
 '''
 Node for sequences (tuple, array).
 ''' 
-@unifiable
+
 class SequenceNode(BaseNode):
     def __init__(self, token:Token, nodes:list[BaseNode]) -> None:
         super().__init__(token)
@@ -482,7 +485,7 @@ class SequenceNode(BaseNode):
         for n in self.nodes:
             visited_node = n.visit(symboltable)
             if visited_node.token.type == TokenTypes.FAIL:
-                return FailNode(TokenTypes.FAIL,TokenTypes.FAIL.value)
+                return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value))
             visited_nodes.append(visited_node)
         
         sequentor:Sequentor = Sequentor(visited_nodes)
