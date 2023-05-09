@@ -33,12 +33,14 @@ class SymbolTable:
         return False
 
     
-    def addValue(self, symbol: string, value) -> None:
+    def addValue(self, symbol: string, value) -> bool:
         # checks if the symbol is already defined with type or value.
         for sym in self.symboltable:
             if sym.symbol == symbol and sym.symbolType != None and sym.value == None and value != None and sym.value != sym.symbol:
                 sym.value = value
                 self.logger.__log__("Added the value: {} to the existing symbol: {} in the symboltable: {}".format(value, sym.symbol, self))
+                return True
+        return False
     
     def addBinding(self, symbol: string, value, symbolType: TokenTypes) -> None:
         # checks if the name already exists in the current symbol. Otherwise add to table.

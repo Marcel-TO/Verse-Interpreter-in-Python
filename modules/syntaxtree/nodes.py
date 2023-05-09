@@ -451,9 +451,12 @@ class FlexibleEqNode(BaseNode):
         super().__init__(token)
         self.left_node = left_node
         self.right_node = right_node
+        self.alreadyExists = False
 
     def visit(self, symboltable: SymbolTable):
-        symboltable.addValue(self.left_node.token.value, self.right_node.visit(symboltable))
+        isValid = symboltable.addValue(self.left_node.token.value, self.right_node.visit(symboltable))
+        # if isValid:
+        #     return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
         return self.right_node.visit(symboltable) 
 
 
