@@ -41,8 +41,8 @@ class BlockNode(BaseNode):
             if result != None:
                 if result.token.type == TokenTypes.IDENTIFIER:
                     self.nodes[i] = result
-                if result.token.type == TokenTypes.FAIL:
-                    return result
+                #if result.token.type == TokenTypes.FAIL:
+                    #return result
                 results.append(result)
             i += 1
 
@@ -50,6 +50,8 @@ class BlockNode(BaseNode):
         while i < len(symboltable.symboltable):
             results = []
             symboltable.remove_all_except_self()
+            if symboltable.checkAllUnificationValid() == False:
+                return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value))
             for n in self.nodes:
                 result = n.visit(symboltable)
                 if result != None:
@@ -448,7 +450,7 @@ class RigidEqNode(BaseNode):
         res_right = self.right_node.visit(symboltable) # x = r:int
         self.right_node = res_right
         if res_left.token.type != TokenTypes.IDENTIFIER and res_right.token.type != TokenTypes.IDENTIFIER:
-            if res_left.value == res_right.value:
+            if res_left.token.value == res_right.token.value:
                 return res_left
         return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
 
@@ -463,8 +465,10 @@ class FlexibleEqNode(BaseNode):
         self.right_node = right_node
 
     def visit(self, symboltable: SymbolTable):
-        symboltable.addValue(self.left_node.token.value, self.right_node.visit(symboltable))
-        return self.right_node.visit(symboltable) 
+        rn = self.right_node.visit(symboltable) 
+        if rn.token.type != TokenTypes.FAIL:
+            symboltable.addValue(self.left_node.token.value, rn)
+        return rn
 
 
 '''
