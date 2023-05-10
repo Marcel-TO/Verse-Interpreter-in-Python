@@ -37,8 +37,13 @@ text = "for(x:=10|20) do (x | x+1)"
 # text = "for(x:=10|20; y:=1|2|3)do(x+y)"
 text = "for(x:=2|3|5; x > 2)do(x+(1|2))"
 text = "x:int; x = (z:int,2); x = (3,y:int,r:int); x"
+
+# UNFICATION TEST CASES
 text = "x:int; x=23; x = 23;  x"
 text = "x,y,p,q:int; if(x=0) then { p = r; r=10; p=11; r:int; q=4} else {p=333;q=444}; x=0; (p,q)"
+text = "x:int; x = (z:int,2); x = (3,y:int,r:int); x"
+text = "x:int; x = (z:int,2); x = (3,y:int); x"
+text = "x:int; x=23; x = 2;  x"
 
 # text = "for(x:=10|20; x>10; y:=1|2|3; y<3)do(x+y)"
 # text = "x:=10|20|15; x<20"
