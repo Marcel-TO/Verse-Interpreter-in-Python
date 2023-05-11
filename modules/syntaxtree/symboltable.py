@@ -45,9 +45,10 @@ class SymbolTable:
                 self.logger.__log__("Added the value: {} to the existing symbol: {} in the symboltable: {}".format(value, sym.symbol, self))
             elif sym.symbol == symbol and sym.symbolType != None and sym.value != None and value != None and sym.value != sym.symbol:
                 isUnified = self.tryUnify(sym.value, value)
-                sym.value = value
                 if isUnified == False:
                     sym.isUnified = isUnified
+                sym.value = value
+                
 
     def addBinding(self, symbol: string, value, symbolType: TokenTypes) -> None:
         # checks if the name already exists in the current symbol. Otherwise add to table.
@@ -128,8 +129,12 @@ class SymbolTable:
                 return False
             for u in unifiedResult[1]:
                 if u[0].token.type == TokenTypes.IDENTIFIER:
-                    node = u[0]
-                    self.addValue(node.token.value, u[1])
+                    if u[1].token.type == TokenTypes.IDENTIFIER and u[0].token.type.value != u[1].token.type.value:
+                    
+                        nodeR = u[1].visit(self)
+                        if nodeR.token.type != TokenTypes.FAIL:
+                            self.addValue(u[0].token.value, nodeR)
+                    elif u[1].token.type != TokenTypes.IDENTIFIER: self.addValue(u[0].token.value, u[1])
             return True
         except:
             
@@ -155,8 +160,15 @@ class SymbolTable:
         #  return (False,"")
         # else:
             unify_success = self.Assign(l,r)
+        
       elif r.token.type == TokenTypes.IDENTIFIER:
         unify_success = self.Hnf_Swap(l,r)
+      else: 
+          if l.token.type == TokenTypes.SCOPE: 
+              l = l.nodes[0]
+          if r.token.type == TokenTypes.SCOPE: 
+              r = r.nodes[0]
+          unify_success = self.unify(l,r)  
       return unify_success
 
         

@@ -59,7 +59,7 @@ text = "x:int; r=11; t:=(1,(1|(2;3;x)));x = 10; t" # ((1,1)|(1,10))
 UNIFICATION
 """
 text = "x:int; x=23; x = 23;  x" # 23
-text = "x,y,p,q:int; if(x=0) then { p = r; r=10; p=11; r:int; q=4} else {p=333;q=444}; x=0; (p,q)" # !!!!!!!
+text = "x,y,p,q:int; if(x=0) then { p = r; r=10; p=11; r:int; q=4} else {p=333;q=444}; x=0; (p,q)" # FALSE
 text = "x:int; x = (z:int,2); x = (3,y:int,r:int); x" # FALSE
 text = "x:int; x = (z:int,2); x = (3,y:int); x" # (3,2)
 text = "x:int; x=23; x = 2;  x" # FALSE
@@ -74,8 +74,8 @@ text = "x:int; x:int; r=11; r:int; r" # FALSE
 text = "x:=10; x<7; 3" #FALSE
 text = "x,y:int; y= 4; x=y" # FALSE
 text = "x:int; x=7; x=3" # FALSE
+text = "x=(y|2); y=(1|3|z:int); x,y:int; t:int; t = (z = 10; 2); (x,y)"
 
-text = "x=(y|2); y=(1|3|z:int); x,y:int; t:int; t = (z = 10; 2); (x,y)" #
 lexer = lexicon(text)
 parser = Parser(lexer)
 interpreter = Interpreter(parser)

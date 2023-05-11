@@ -47,7 +47,9 @@ class BlockNode(BaseNode):
             i += 1
 
         i = 0
+        hasFailed = False
         while i < len(symboltable.symboltable):
+            hasFailed = False
             results = []
             symboltable.remove_all_except_self()
             if symboltable.checkAllUnificationValid() == False:
@@ -56,7 +58,7 @@ class BlockNode(BaseNode):
                 result = n.visit(symboltable)
                 if result != None:
                     if result.token.type == TokenTypes.FAIL:
-                        return result
+                        hasFailed = True
                     results.append(result)
             i += 1
         '''
@@ -65,6 +67,9 @@ class BlockNode(BaseNode):
         wenn er in diesem Block (z:=9; z) die liste übergibt kommt es später zu einem error.
         Er muss das z zurückgeben, sprich Ein resultat vom Block. 
         '''
+
+        if hasFailed:
+            return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value))
         return results[len(results)-1] 
 
 
@@ -469,10 +474,7 @@ class FlexibleEqNode(BaseNode):
 
     def visit(self, symboltable: SymbolTable):
         
-        val = symboltable.get_value(self.left_node.token.value,symboltable)
-        if val[0]:
-            val[1] != self.right_node
-            symboltable.addValue(self.left_node.token.value, self.right_node)
+        symboltable.addValue(self.left_node.token.value, self.right_node)
         return self.right_node.visit(symboltable)
 
 
