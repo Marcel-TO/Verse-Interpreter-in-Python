@@ -269,15 +269,16 @@ class ScopeNode(BaseNode):
         return "{}{}{}".format(self.seperator.join([repr(n) for n in self.nodes]),self.token.value, repr(self.type)) 
 
     def visit(self, symboltable: SymbolTable):
-        if self.isVisitted == False:
-            for n in self.nodes:
-                isValid = symboltable.addScope(n.token.value, self.type.visit(symboltable))
-                if isValid:
-                    self.isVisitted = True
-                else:
-                    return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
-            return self.nodes[0]
-        else: return self.nodes[0]
+        
+        for n in self.nodes:
+
+            isValid = symboltable.addScope(n.token.value, self.type.visit(symboltable))
+            
+            if isValid == False and self.isVisitted == False:
+                return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+            else: self.isVisitted = True
+                   
+        return self.nodes[0].visit(symboltable)
         
 
 '''

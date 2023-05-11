@@ -75,6 +75,7 @@ text = "x:=10; x<7; 3" #FALSE
 text = "x,y:int; y= 4; x=y" # FALSE
 text = "x:int; x=7; x=3" # FALSE
 
+text = "x,y:int; x = 7|22; y = 31|5; (x,y)" #  !!!!!!!!
 lexer = lexicon(text)
 parser = Parser(lexer)
 interpreter = Interpreter(parser)
