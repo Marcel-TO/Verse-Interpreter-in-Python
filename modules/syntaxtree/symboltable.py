@@ -1,4 +1,5 @@
 import string
+
 from structure.tokenTypes import TokenTypes
 from structure.logger import Console_Logger
 
@@ -8,12 +9,15 @@ class Symbol:
         self.value = value
         self.symbolType: TokenTypes | None = symbolType
         self.insideTable = insideTable
+        self.isUnified = True
+    
 
 class SymbolTable:
     def __init__(self) -> None:
         self.symboltable: list[Symbol] = []
         self.logger = Console_Logger()
-    
+        
+
     def __info__(self) -> None:
         for symbol in self.symboltable:
             self.logger.__log__("Symboltable: Name= {}, Value= {}, type= {} and inside table={}".format(symbol.symbol, symbol.value, symbol.symbolType, symbol.insideTable))
@@ -39,9 +43,12 @@ class SymbolTable:
             if sym.symbol == symbol and sym.symbolType != None and sym.value == None and value != None and sym.value != sym.symbol:
                 sym.value = value
                 self.logger.__log__("Added the value: {} to the existing symbol: {} in the symboltable: {}".format(value, sym.symbol, self))
-                return True
-        return False
-    
+            elif sym.symbol == symbol and sym.symbolType != None and sym.value != None and value != None and sym.value != sym.symbol:
+                isUnified = self.tryUnify(sym.value, value)
+                sym.value = value
+                if isUnified == False:
+                    sym.isUnified = isUnified
+
     def addBinding(self, symbol: string, value, symbolType: TokenTypes) -> None:
         # checks if the name already exists in the current symbol. Otherwise add to table.
         if self.check_if_exists(symbol, self) == False:
@@ -102,3 +109,81 @@ class SymbolTable:
         for sym in self.symboltable:
             newTable.symboltable.append(Symbol(sym.symbol, sym.value, sym.symbolType, self))
         return newTable
+    
+    def checkAllUnificationValid(self):
+        for sym in self.symboltable:
+            if sym.isUnified == False:
+                return False
+        return True
+
+
+
+
+
+
+    def tryUnify(self, l, r) -> bool: 
+      unifiedResult = self.unify(l,r)
+      if unifiedResult[0] == False:
+          return False
+      for u in unifiedResult[1]:
+          if u[0].token.type == TokenTypes.IDENTIFIER:
+            node = u[0]
+            self.addValue(node.token.value, u[1])
+      return True
+     
+    def unify(self,l, r) -> tuple[bool,list]:
+      unify_success = (False,"")
+      if l.token.type == TokenTypes.INTEGER and r.token.type == TokenTypes.INTEGER:
+        unify_success = self.U_LIT(l,r)
+      elif l.token.type == TokenTypes.TUPLE_TYPE and r.token.type == TokenTypes.TUPLE_TYPE:
+        unify_success =  self.U_TUP(l,r)
+      elif l.token.type == TokenTypes.IDENTIFIER:
+        if r.token.type == TokenTypes.IDENTIFIER:
+          unify_success = self.Var_Swap(l,r)
+        else: 
+        # exists = U_Occurs(l,r)
+        # if(exists):
+        #  return (False,"")
+        # else:
+            unify_success = self.Assign(l,r)
+      elif r.token.type == TokenTypes.IDENTIFIER:
+        unify_success = self.Hnf_Swap(l,r)
+      return unify_success
+
+        
+
+
+    def U_LIT(self,k1, k2) -> tuple[bool,list]:
+      u_str = [k1,k2]
+      if k1.token.value != k2.token.value:
+        return (False, [u_str])
+      return (True, [u_str])
+
+    def U_TUP(self,t1, t2) -> tuple[bool,list]: 
+        if len(t1.nodes) != len(t2.nodes):
+          return (False, None)
+
+        unified_vals = list(zip(t1.nodes,t2.nodes)) 
+
+        unifiedVals = []
+        for uv in unified_vals:
+          isUnified = self.unify(uv[0], uv[1])
+          if isUnified[0]:
+            unifiedVals.extend(isUnified[1])
+          else:  return (False, None)
+        return (True, unifiedVals)
+
+    def Var_Swap(self,id_l, id_r) -> tuple[bool,list]:
+        return (True,[[id_l,id_r],[id_r,id_l]])
+      
+
+    def Assign(self,id_l, r):
+        return (True,[[id_l,r]])
+
+    def Hnf_Swap(self,l,id_r):
+        return (True,[[id_r,l]])
+    
+
+
+
+    

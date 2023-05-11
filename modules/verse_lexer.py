@@ -122,6 +122,7 @@ class lexicon:
 
     def check_for_tokentypes(self, char: string) -> Token:
         # checks if the current character is a supported token type.
+        
         match char:
             case TokenTypes.INTEGER.value:
                 return Token(TokenTypes.INTEGER, TokenTypes.INTEGER.value)
