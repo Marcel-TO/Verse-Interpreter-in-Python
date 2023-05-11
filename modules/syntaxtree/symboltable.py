@@ -121,21 +121,30 @@ class SymbolTable:
 
 
 
-    def tryUnify(self, l, r) -> bool: 
-      unifiedResult = self.unify(l,r)
-      if unifiedResult[0] == False:
-          return False
-      for u in unifiedResult[1]:
-          if u[0].token.type == TokenTypes.IDENTIFIER:
-            node = u[0]
-            self.addValue(node.token.value, u[1])
-      return True
+    def tryUnify(self, l, r) -> bool:
+        try:
+            unifiedResult = self.unify(l,r)
+            if unifiedResult[0] == False:
+                return False
+            for u in unifiedResult[1]:
+                if u[0].token.type == TokenTypes.IDENTIFIER:
+                    node = u[0]
+                    self.addValue(node.token.value, u[1])
+            return True
+        except:
+            
+            lNew = l.visit(self)
+            rNew = r.visit(self)
+            if lNew.token.type != TokenTypes.FAIL and rNew.token.type != TokenTypes.FAIL:
+                unifiedResult = self.unify(lNew,rNew)
+                return unifiedResult[0]
+            return False
      
     def unify(self,l, r) -> tuple[bool,list]:
       unify_success = (False,"")
       if l.token.type == TokenTypes.INTEGER and r.token.type == TokenTypes.INTEGER:
         unify_success = self.U_LIT(l,r)
-      elif l.token.type == TokenTypes.TUPLE_TYPE and r.token.type == TokenTypes.TUPLE_TYPE:
+      elif (l.token.type == TokenTypes.TUPLE_TYPE and r.token.type == TokenTypes.TUPLE_TYPE) or (l.token.type == TokenTypes.CHOICE and r.token.type == TokenTypes.CHOICE):
         unify_success =  self.U_TUP(l,r)
       elif l.token.type == TokenTypes.IDENTIFIER:
         if r.token.type == TokenTypes.IDENTIFIER:
