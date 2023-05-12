@@ -39,7 +39,12 @@ class SymbolTable:
     
     def addValue(self, symbol: string, value) -> bool:
         # checks if the symbol is already defined with type or value.
-        for sym in self.symboltable:
+
+        # Had to set a max iteration count, due to the infinite adding of new symbols during iteration of symbol table while unification especially for the IfNode
+        i = 0
+        maxIterations = len(self.symboltable)
+        while i < maxIterations:
+            sym = self.symboltable[i]
             if sym.symbol == symbol and sym.symbolType != None and sym.value == None and value != None and sym.value != sym.symbol:
                 sym.value = value
                 self.logger.__log__("Added the value: {} to the existing symbol: {} in the symboltable: {}".format(value, sym.symbol, self))
@@ -48,7 +53,7 @@ class SymbolTable:
                 if isUnified == False:
                     sym.isUnified = isUnified
                 sym.value = value
-                
+            i += 1  
 
     def addBinding(self, symbol: string, value, symbolType: TokenTypes) -> None:
         # checks if the name already exists in the current symbol. Otherwise add to table.
@@ -151,24 +156,24 @@ class SymbolTable:
         unify_success = self.U_LIT(l,r)
       elif (l.token.type == TokenTypes.TUPLE_TYPE and r.token.type == TokenTypes.TUPLE_TYPE) or (l.token.type == TokenTypes.CHOICE and r.token.type == TokenTypes.CHOICE):
         unify_success =  self.U_TUP(l,r)
-      elif l.token.type == TokenTypes.IDENTIFIER:
-        if r.token.type == TokenTypes.IDENTIFIER:
-          unify_success = self.Var_Swap(l,r)
-        else: 
-        # exists = U_Occurs(l,r)
-        # if(exists):
-        #  return (False,"")
-        # else:
-            unify_success = self.Assign(l,r)
         
       elif r.token.type == TokenTypes.IDENTIFIER:
         unify_success = self.Hnf_Swap(l,r)
-      else: 
+      elif l.token.type == TokenTypes.SCOPE or r.token.type == TokenTypes.SCOPE: 
           if l.token.type == TokenTypes.SCOPE: 
               l = l.nodes[0]
           if r.token.type == TokenTypes.SCOPE: 
               r = r.nodes[0]
           unify_success = self.unify(l,r)  
+      else: 
+           if l.token.type == TokenTypes.IDENTIFIER and r.token.type == TokenTypes.IDENTIFIER:
+                unify_success = self.Var_Swap(l,r)
+           else: 
+                l = l.visit(self)
+                r = r.visit(self)
+                if l.token.type != TokenTypes.FAIL and r.token.type != TokenTypes.FAIL:   
+                    unify_success = self.unify(l,r)
+                else: unify_success = (True, [])
       return unify_success
 
         
@@ -197,9 +202,6 @@ class SymbolTable:
     def Var_Swap(self,id_l, id_r) -> tuple[bool,list]:
         return (True,[[id_l,id_r],[id_r,id_l]])
       
-
-    def Assign(self,id_l, r):
-        return (True,[[id_l,r]])
 
     def Hnf_Swap(self,l,id_r):
         return (True,[[id_r,l]])

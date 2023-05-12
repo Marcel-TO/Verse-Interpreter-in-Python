@@ -429,6 +429,8 @@ class IfNode(BaseNode):
         return "{}({}) then {} else {}".format(self.token.value, repr(self.if_node), repr(self.then_node),  repr(self.else_node))
 
     def visit(self, symboltable: SymbolTable):
+        # x = 10; r=11; if(x = r:int) then (x:int; 1) else (x:int; 3)
+
         result_if = self.if_node.visit(symboltable)
         if result_if != None and result_if.token.type != TokenTypes.FAIL:
             return self.then_node.visit(symboltable)
@@ -455,7 +457,6 @@ class RigidEqNode(BaseNode):
     def visit(self, symboltable: SymbolTable):
         res_left = self.left_node.visit(symboltable)
         res_right = self.right_node.visit(symboltable) # x = r:int
-        self.right_node = res_right
         if res_left.token.type != TokenTypes.IDENTIFIER and res_right.token.type != TokenTypes.IDENTIFIER:
             if res_left.token.value == res_right.token.value:
                 return res_left
@@ -473,7 +474,6 @@ class FlexibleEqNode(BaseNode):
         self.alreadyExists = False
 
     def visit(self, symboltable: SymbolTable):
-        
         symboltable.addValue(self.left_node.token.value, self.right_node)
         return self.right_node.visit(symboltable)
 
