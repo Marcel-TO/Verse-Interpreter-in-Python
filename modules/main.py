@@ -41,7 +41,7 @@ FUNCTION
 """
 #text = "x:int; z:int; f(p:int,q:int):int :=  (p = 1; q = 23; y:int; y = 100; (p+q)*100); f(x,z); x + z" # 
 #text = "x:int; f(p:int):int :=  (p = 1; y:int; y = 100; (p)*100); f(x); x" #  
-
+text = "f:=(x:int=> d(x) + 1 ); d(p:int):= (p*2); f(3)"
 
 """
 CHOICE
@@ -64,7 +64,7 @@ UNIFICATION
 #text = "x:int; x = (z:int,2); x = (3,y:int); x" # (3,2)
 #text = "x:int; x=23; x = 2;  x" # FALSE
 #text = "z:=x+y; x,y:int; x=7; y = 3;z" # 10
-text = "x:int; x=(2,3,(2;2;3)); x"
+
 
 
 

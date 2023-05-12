@@ -381,8 +381,9 @@ class FuncCallNode:
         self.args = args
 
     def visit(self, symboltable: SymbolTable):
-        table = SymbolTable()
+        table = symboltable.clone_table()
         scope = symboltable.get_value(self.identifier.token.value, symboltable)
+            
         if scope[0]:
             func_dec:FuncDeclNode = scope[1]
             index = 0
@@ -409,6 +410,7 @@ class FuncCallNode:
                         symboltable.addValue(arg, param_val_at_arg_pos[1])
                  index += 1
             return val
+        return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
         
     def getChildNodes(self):
         childNodes = []
