@@ -64,7 +64,7 @@ UNIFICATION
 #text = "x:int; x = (z:int,2); x = (3,y:int); x" # (3,2)
 #text = "x:int; x=23; x = 2;  x" # FALSE
 #text = "z:=x+y; x,y:int; x=7; y = 3;z" # 10
-text = "x:int; x = 3; x = x"
+text = "x:int; x=(2,3,(2;2;3)); x"
 
 
 

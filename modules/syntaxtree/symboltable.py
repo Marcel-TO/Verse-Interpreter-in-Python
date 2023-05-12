@@ -46,13 +46,21 @@ class SymbolTable:
         while i < maxIterations:
             sym = self.symboltable[i]
             if sym.symbol == symbol and sym.symbolType != None and sym.value == None and value != None and sym.value != sym.symbol:
-                sym.value = value
+                occurs = self.U_Occurs(symbol,value)
+                if occurs:
+                    sym.isUnified = False
+                else: sym.value = value
                 self.logger.__log__("Added the value: {} to the existing symbol: {} in the symboltable: {}".format(value, sym.symbol, self))
             elif sym.symbol == symbol and sym.symbolType != None and sym.value != None and value != None and sym.value != sym.symbol:
-                isUnified = self.tryUnify(sym.value, value)
-                if isUnified == False:
-                    sym.isUnified = isUnified
-                sym.value = value
+                occurs = self.U_Occurs(symbol,value)
+                if occurs:
+                    sym.isUnified = False
+                else: 
+                    isUnified = self.tryUnify(sym.value, value)
+                    if isUnified == False:
+                        sym.isUnified = isUnified
+                    sym.value = value
+                
             i += 1  
 
     def addBinding(self, symbol: string, value, symbolType: TokenTypes) -> None:
@@ -179,10 +187,10 @@ class SymbolTable:
         
 
 
-    def U_LIT(self,k1, k2) -> tuple[bool,list]:
+    def U_LIT(self, k1, k2) -> tuple[bool,list]:
       u_str = [k1,k2]
       if k1.token.value != k2.token.value:
-        return (False, [u_str])
+        return (False, [])
       return (True, [u_str])
 
     def U_TUP(self,t1, t2) -> tuple[bool,list]: 
@@ -205,6 +213,12 @@ class SymbolTable:
 
     def Hnf_Swap(self,l,id_r):
         return (True,[[id_r,l]])
+    
+    def U_Occurs(self,symbol, val) -> bool:
+        for child in val.getChildNodes():
+           if child.token.value == symbol:
+               return True
+        return False
     
 
 
