@@ -76,7 +76,7 @@ FALSE
 #text = "x,y:int; y= 4; x=y" # 4
 #text = "x:int; x=7; x=3" # FALSE
 #text = "x=(y|2); y=(1|3|z:int); x,y:int; t:int; t = (z = 10; 2); (x,y)"
-
+text = "for(x:=10|20) do (x | x+1)"
 lexer = lexicon(text)
 parser = Parser(lexer)
 interpreter = Interpreter(parser)
