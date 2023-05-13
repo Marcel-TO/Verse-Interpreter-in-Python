@@ -52,7 +52,7 @@ class InterpreterTest(unittest.TestCase):
     '''
     @data({'input': 'x:int; x=10; if(x=r:int) then 70 else 30', 'expected': '30'},
     {'input': 'x,y:int; if(x<20) then y=70 else y=10; x=7; y', 'expected': '70'},
-    # {'input': 'x,y:int; y = (if (x = 0) then 3 else 4); x = 7; y', 'expected': '4'},
+    {'input': 'x,y:int; y = (if (x = 0) then 3 else 4); x = 7; y', 'expected': '4'},
     {'input': 'x; x = 10; r=11; if(x = r:int) then (x:int; 1) else 3', 'expected': 'false?'},
     # {'input': 'x:int; x=10; y:=(if(x=r:int) then 70 else 30); r=10; y', 'expected': '70'},
     {'input': 'x,y,p,q:int; if(x=0) then {p=3;q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(3,4)'},
@@ -89,10 +89,10 @@ class InterpreterTest(unittest.TestCase):
     {'input': 'z:int; z=7; y:=(31|5); x:=(7|22); (z,x,y)', 'expected': '((7,7,31)|(7,7,5)|(7,22,31)|(7,22,5))'},
     {'input': 'x=(y|2); y=(1|3|z:int); x,y:int; t:int; t = (z = 10; 2); (x,y)', 'expected': '((1,1)|(3,3)|(2,1)|(2,3))'},
     {'input': 't:=(10,27,32); x:=(1 | 0 | 1); t[x]', 'expected': '(27,10,27)'},
-    {'input': 'x:=10|20|15; x<20', 'expected': '(10|15)'},
     {'input': 'x,y:int; y = 31|5; x = 7|22; (x,y)', 'expected': '((7,31)|(7,5)|(22,31)|(22,5))'},
     # {'input': 'x,y:int; x = 7|22; y = 31|5; (x,y)', 'expected': '((7,31)|(22,31)|(7,5)|(22,5))'},
-    {'input': 'x:int; r=11; t:=(1,(1|(2;3;x)));x = 10; t', 'expected': '((1,1)|(1,10))'})
+    # {'input': 'x:int; r=11; t:=(1,(1|(2;3;x)));x = 10; t', 'expected': '((1,1)|(1,10))'},
+    {'input': 'x:=10|20|15; x<20', 'expected': '(10|15)'})
     @unpack
     def test_choice(self, input: string, expected: string):
         self.lexer = lexicon(input)

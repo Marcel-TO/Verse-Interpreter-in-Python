@@ -8,7 +8,6 @@ TUPLE
 """
 text = "z:int; z=7; y:=(31|5); x:=(7|22); (z,x,y)" # ((7,7,31)|(7,7,5)|(7,22,31)|(7,22,5))
 # text = "x=(y|2); y=(1|3|z:int); x,y:int; t:int; t = (z = 10; 2); (x,y)" # ((1,1)|(3,3)|(2,1)|(2,3))
-text = "for(x:=10|20) do (x | x+1)"
 
 
 
@@ -30,7 +29,7 @@ IF
 """
 # text = "x:int; x=10; if(x=r:int) then 70 else 30" #!!!!!!! FALSE
 #text = "x,y:int; if(x<20) then y=70 else y=10; x=7; y" # 70
-#text = "x,y:int; y = (if (x = 0) then 3 else 4); x = 7; y" # 4
+text = "x,y:int; y = (if (x = 0) then 3 else 4); x = 7; y" # 4
 #text = "x; x = 10; r=11; if(x = r:int) then (x:int; 1) else 3" # !!!!!!! SOLL NICHT FUNKTIONIEREN, WEIL ER ERST SCOPED IM THEN ODER ELSE, ALSO SOLLTE ES GLAUB ICH PASSEN
 #text = "x:int; x=10; y:=(if(x=r:int) then 70 else 30); r=10; y" # 70
 #text = "x,y,p,q:int; if(x=0) then {p=3;q=4} else {p=333;q=444}; x=0; (p,q)" # (3,4)
@@ -56,6 +55,7 @@ CHOICE
 # text = "x,y:int; y = 31|5; x = 7|22; (x,y)" # ((7,31)|(7,5)|(22,31)|(22,5))
 # text = "x,y:int; x = 7|22; y = 31|5; (x,y)" # !!!!!!!!
 # text = "x:int; r=11; t:=(1,(1|(2;3;x)));x = 10; t" # ((1,1)|(1,10))
+# text = "x:int; r=11; t:=(1,(1|(2;3;x)));x = 10; t"
 
 """
 UNIFICATION

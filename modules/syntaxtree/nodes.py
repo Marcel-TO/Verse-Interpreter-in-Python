@@ -58,12 +58,13 @@ class BlockNode(BaseNode):
                 return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value))
             for n in self.nodes:
                 result = n.visit(symboltable)
+                symboltable.remove_all_except_self()
                 if result != None:
                     if result.token.type == TokenTypes.FAIL:
                         hasFailed = True
                     results.append(result)
             i += 1
-        symboltable.remove_all_except_self()
+        
         '''
         HIER GEÄNDERT Block Node, darf nur ein Value liefern.
         Bsp. y:= (31|(z:=9; z)); x:=(7|22); (x,y)
@@ -517,6 +518,10 @@ class IfNode(BaseNode):
         result_if = self.if_node.visit(symboltable)
         if result_if != None and result_if.token.type != TokenTypes.FAIL:
             return self.then_node.visit(symboltable)
+        
+        # result = self.else_node.visit(symboltable)
+        # for i in range(0, len(symboltable.symboltable)):
+        #     result =  self.else_node.visit(symboltable)
         
         if_symboltable = symboltable.clone_table()
         result = self.else_node.visit(if_symboltable)
