@@ -74,15 +74,16 @@ FALSE
 #text = "x:=10; x<7; 3" #FALSE
 #text = "x,y:int; y= 4; x=y" # 4
 #text = "x:int; x=7; x=3" # FALSE
-text = "x=(y|2); y=(1|3|z:int); x,y:int; t:int; t = (z = 10; 2); (x,y)" # Disregards z due to context
+#text = "x=(y|2); y=(1|3|z:int); x,y:int; t:int; t = (z = 10; 2); (x,y)" # Disregards z due to context
 #text = "for(x:=10|20) do (x | x+1)"
 #text = "x:int; (x=3; x+1)|(x=4; x+4)" # (4|8)
 # text = "x:int; x:int; r=11; r:int; r" # FALSE
 # text = "x:=10; x<7; 3" #FALSE
 # text = "x,y:int; y= 4; x=y" # FALSE
 # text = "x:int; x=7; x=3" # FALSE
-text = "z:int; x=(y|2); y=(1|3|z); x,y:int; t:int; t = (z = 10; 2); (x,y)" # ((1,1)|(3,3)|(10,10)|(2,1)|(2,3)|(2,10))
-
+#text = "z:int; x=(y|2); y=(1|3|z); x,y:int; t:int; t = (z = 10; 2); (x,y)" # ((1,1)|(3,3)|(10,10)|(2,1)|(2,3)|(2,10))
+text= "for(x,y:int; x = (10|20); y = (1|2|3))do(false?)(x:int =>  )"
+text = "x,y:int; y = (if (x = 0) then 3 else 4); x = 7; y"
 lexer = lexicon(text)
 parser = Parser(lexer)
 interpreter = Interpreter(parser)

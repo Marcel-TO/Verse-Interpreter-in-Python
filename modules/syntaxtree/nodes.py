@@ -38,17 +38,24 @@ class BlockNode(BaseNode):
     
     def visit(self, symboltable: SymbolTable):
         results = []
-        i = 0
-        for n in self.nodes:
-            result = n.visit(symboltable)
-            if result != None:
-                #if result.token.type == TokenTypes.IDENTIFIER:
-                #    self.nodes[i] = result
-                #if result.token.type == TokenTypes.FAIL:
-                    #return result
-                results.append(result)
-            i += 1
-
+        
+        hasFailed = False
+        i = -1
+        while i < len(symboltable.symboltable):
+            for n in self.nodes:
+                hasFailed = False
+                result = n.visit(symboltable)
+                if result != None:
+                    if result.token.type == TokenTypes.FAIL:
+                        hasFailed = True
+                    results.append(result)
+                    
+            if symboltable.checkAllUnificationValid() == False or hasFailed:
+                    return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value))
+            symboltable.remove_all_except_self()
+            i+=1
+        
+        '''
         i = 0
         hasFailed = False
         while i < len(symboltable.symboltable):
@@ -64,7 +71,7 @@ class BlockNode(BaseNode):
                     results.append(result)
             i += 1
         symboltable.remove_all_except_self()
-        '''
+       
         HIER GEÄNDERT Block Node, darf nur ein Value liefern.
         Bsp. y:= (31|(z:=9; z)); x:=(7|22); (x,y)
         wenn er in diesem Block (z:=9; z) die liste übergibt kommt es später zu einem error.
