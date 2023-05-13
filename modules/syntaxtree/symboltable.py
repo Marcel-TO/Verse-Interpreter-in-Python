@@ -104,8 +104,8 @@ class SymbolTable:
     def get_value(self, symbol: string, symboltable):
         for sym in self.symboltable:
             if sym.symbol == symbol:
-                if sym.insideTable == symboltable:
-                    return True, sym.value
+                #if sym.insideTable == symboltable:
+                return True, sym.value
         return False, None
     
     def change_value(self, symbol: string, value, symboltable):
