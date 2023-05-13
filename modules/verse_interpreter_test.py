@@ -71,7 +71,7 @@ class InterpreterTest(unittest.TestCase):
     Test: FUNCTION
     '''    
     @data({'input': 'x:=1; f(x:int):int := (x + 1)', 'expected': '1'},
-    # {'input': 'x:int; z:int; f(p:int,q:int):int :=  (p = 1; q = 23; y:int; y = 100; (p+q)*100); f(x,z); x + z', 'expected': 'false?'},
+    {'input': 'x:int; z:int; f(p:int,q:int):int :=  (p = 1; q = 23; y:int; y = 100; (p+q)*100); f(x,z); x + z', 'expected': '24'},
     {'input': 'x:int; f(p:int):int :=  (p = 1; y:int; y = 100; (p)*100); f(x); x', 'expected': '1'},
     {'input': 'f:=(x:int=> d(x) + 1 ); d(p:int):= (p*2); f(3)', 'expected': '7'})
     @unpack
@@ -123,7 +123,7 @@ class InterpreterTest(unittest.TestCase):
     '''    
     @data({'input': 'x:int; x:int; r=11; r:int; r', 'expected': 'false?'},
     {'input': 'x:=10; x<7; 3', 'expected': 'false?'},
-    # {'input': 'x,y:int; y= 4; x=y', 'expected': 'false?'},
+    {'input': 'x,y:int; x=7; y=4; x=y', 'expected': 'false?'},
     {'input': 'x:int; x=7; x=3', 'expected': 'false?'})
     @unpack
     def test_false(self, input: string, expected: string):
