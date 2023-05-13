@@ -13,7 +13,10 @@ class BaseNode:
         self.token = token 
 
     def visit(self, symboltable: SymbolTable):
-        pass 
+        return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value)) 
+
+    def getChildNodes(self):
+        return [FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value))]
 
 #Class that takes a parsed node, containes information if node could have been parsed
 class ParsedNode:
@@ -72,7 +75,11 @@ class BlockNode(BaseNode):
             return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value))
         return results[len(results)-1] 
 
-
+    def getChildNodes(self):
+        childNodes = []
+        for n in self.nodes:
+           childNodes.extend(n.getChildNodes())
+        return childNodes
 '''
 Top Node in tree.
 ''' 
@@ -82,6 +89,11 @@ class ProgramNode(BaseNode):
     
     def visit(self, symboltable: SymbolTable):
         return self.node.visit(symboltable) 
+    
+    def getChildNodes(self):
+        childNodes = []
+        childNodes.extend(self.node.getChildNodes())
+        return childNodes
 
 
 '''
@@ -99,6 +111,13 @@ class BindingNode(BaseNode):
     def visit(self, symboltable: SymbolTable):
         symboltable.addBinding(self.leftNode.token.value, self.rightNode, None)
         return self.rightNode
+    
+    def getChildNodes(self):
+        childNodes = []
+        childNodes.extend(self.leftNode.getChildNodes())
+        childNodes.extend(self.rightNode.getChildNodes())
+        return childNodes
+        
 
 
 '''
@@ -114,7 +133,11 @@ class NumberNode(BaseNode):
         return str(self.value)
     
     def visit(self, symboltable: SymbolTable):
-        return NumberNode(self.token) 
+        return NumberNode(self.token)
+
+    def getChildNodes(self):
+        childNodes = [self]
+        return childNodes 
 
 
 '''
@@ -219,6 +242,12 @@ class OperatorNode(BaseNode):
                     result = val1
                 else: return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value)) 
         return  NumberNode(Token(TokenTypes.INTEGER, result))  
+    
+    def getChildNodes(self):
+        childNodes = []
+        childNodes.extend(self.leftNode.getChildNodes())
+        childNodes.extend(self.rightNode.getChildNodes())
+        return childNodes
 
 '''
 If unary node is called, it calls visitor operator in following way:
@@ -239,6 +268,11 @@ class UnaryNode(BaseNode):
         res = OperatorNode(Token(TokenTypes.MULTIPLY, TokenTypes.MULTIPLY.value),
                                                  NumberNode(Token(TokenTypes.INTEGER,mul)),self.node)
         return res.visit(symboltable)
+
+    def getChildNodes(self):
+        childNodes = []
+        childNodes.extend(self.node.getChildNodes())
+        return childNodes
              
 
 '''
@@ -258,6 +292,10 @@ class IdentifierNode(BaseNode):
         if isValid and result != None:
             return result.visit(symboltable)
         return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+    
+    def getChildNodes(self):
+        childNodes = [self]
+        return childNodes
 
 '''
 Node for scoped identifiers.
@@ -284,6 +322,10 @@ class ScopeNode(BaseNode):
             else: self.isVisitted = True
                    
         return self.nodes[0].visit(symboltable)
+    
+    def getChildNodes(self):
+        childNodes = self.nodes
+        return childNodes
         
 
 '''
@@ -299,6 +341,10 @@ class TypeNode(BaseNode):
 
     def visit(self, symboltable: SymbolTable):
         return self.token.type 
+
+    def getChildNodes(self):
+        childNodes = [self]
+        return childNodes
 
 '''
 Node for sequence types (tuple).
@@ -319,6 +365,12 @@ class SequenceTypeNode(TypeNode):
         for n in self.types:
             result.append(n.visit(symboltable))
         return result 
+    
+    def getChildNodes(self):
+        childNodes = []
+        for t in self.types:
+            childNodes.extend(t.getChildNodes())
+        return childNodes
 
 '''
 Node for scoped func calls.
@@ -329,8 +381,9 @@ class FuncCallNode:
         self.args = args
 
     def visit(self, symboltable: SymbolTable):
-        table = SymbolTable()
+        table = symboltable.clone_table()
         scope = symboltable.get_value(self.identifier.token.value, symboltable)
+            
         if scope[0]:
             func_dec:FuncDeclNode = scope[1]
             index = 0
@@ -357,6 +410,13 @@ class FuncCallNode:
                         symboltable.addValue(arg, param_val_at_arg_pos[1])
                  index += 1
             return val
+        return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+        
+    def getChildNodes(self):
+        childNodes = []
+        for arg in self.args:
+            childNodes.extend(arg.getChildNodes())
+        return childNodes
 
 '''
 Node for func declarations.
@@ -373,7 +433,12 @@ class FuncDeclNode:
         symbol = self.identifier.token.value
         symboltable.addBinding(symbol, self, self.type)
 
-
+    def getChildNodes(self):
+        childNodes = []
+        for param in self.params:
+            childNodes.extend(param.getChildNodes()) 
+        childNodes.extend(self.block.getChildNodes())
+        return childNodes
 '''
 Node for loops.
 ''' 
@@ -404,6 +469,13 @@ class ForNode(BaseNode):
         symboltable.addSymbolTable(for_table)
         return result
     
+    def getChildNodes(self):
+        childNodes = []
+
+        childNodes.extend(self.node.getChildNodes()) 
+        childNodes.extend(self.do.getChildNodes())
+        return childNodes
+    
     def visit_curly(self, result: BaseNode):
         if type(result) == SequenceNode or type(result) == ChoiceSequenceNode:
             return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), result.nodes)
@@ -414,6 +486,11 @@ class ForNode(BaseNode):
         if result.token.type == TokenTypes.FAIL:
             return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), [])
 
+    def getChildNodes(self):
+        childNodes = []
+        for param in self.params:
+            childNodes.extend(param.getChildNodes())
+        return childNodes
 
 '''
 Node for if statements.
@@ -429,6 +506,8 @@ class IfNode(BaseNode):
         return "{}({}) then {} else {}".format(self.token.value, repr(self.if_node), repr(self.then_node),  repr(self.else_node))
 
     def visit(self, symboltable: SymbolTable):
+        # x = 10; r=11; if(x = r:int) then (x:int; 1) else (x:int; 3)
+
         result_if = self.if_node.visit(symboltable)
         if result_if != None and result_if.token.type != TokenTypes.FAIL:
             return self.then_node.visit(symboltable)
@@ -439,6 +518,14 @@ class IfNode(BaseNode):
                result =  self.else_node.visit(if_symboltable)
         symboltable.addSymbolTable(if_symboltable)
         return result 
+    
+    def getChildNodes(self):
+        childNodes = []
+
+        childNodes.extend(self.if_node.getChildNodes()) 
+        childNodes.extend(self.then_node.getChildNodes())
+        childNodes.extend(self.else_node.getChildNodes())
+        return childNodes
 
 '''
 Node for rigid equals.
@@ -455,11 +542,16 @@ class RigidEqNode(BaseNode):
     def visit(self, symboltable: SymbolTable):
         res_left = self.left_node.visit(symboltable)
         res_right = self.right_node.visit(symboltable) # x = r:int
-        self.right_node = res_right
         if res_left.token.type != TokenTypes.IDENTIFIER and res_right.token.type != TokenTypes.IDENTIFIER:
             if res_left.token.value == res_right.token.value:
                 return res_left
         return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+    
+    def getChildNodes(self):
+        childNodes = []
+        childNodes.extend(self.left_node.getChildNodes()) 
+        childNodes.extend(self.right_node.getChildNodes())
+        return childNodes
 
 
 '''
@@ -473,10 +565,14 @@ class FlexibleEqNode(BaseNode):
         self.alreadyExists = False
 
     def visit(self, symboltable: SymbolTable):
-        
         symboltable.addValue(self.left_node.token.value, self.right_node)
         return self.right_node.visit(symboltable)
 
+    def getChildNodes(self):
+        childNodes = []
+        childNodes.extend(self.left_node.getChildNodes()) 
+        childNodes.extend(self.right_node.getChildNodes())
+        return childNodes
 
 '''
 Node for sequences (tuple, array).
@@ -515,6 +611,11 @@ class SequenceNode(BaseNode):
 
         return ChoiceSequenceNode(Token(TokenTypes.CHOICE,TokenTypes.CHOICE.value),seq_nodes) 
 
+    def getChildNodes(self):
+        childNodes = []
+        for n in self.nodes:
+            childNodes.extend(n.getChildNodes()) 
+        return childNodes
 
 '''
 Node for indexing.
@@ -551,7 +652,10 @@ class IndexingNode(BaseNode):
                     except:
                         return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
                     
-
+    def getChildNodes(self):
+        childNodes = []
+        childNodes.extend(self.index.getChildNodes()) 
+        return childNodes
 
 
 '''
@@ -689,6 +793,12 @@ class ChoiceSequenceNode(BaseNode):
                 yield c.yieldVal()
             else: yield c
 
+    def getChildNodes(self):
+        childNodes = []
+        for n in self.nodes:
+            childNodes.extend(n.getChildNodes()) 
+        return childNodes
+
 class DotDotNode(BaseNode):
     def __init__(self, token:Token, start:BaseNode, end:BaseNode) -> None:
         super().__init__(token)
@@ -722,6 +832,12 @@ class DotDotNode(BaseNode):
                 nodes.append(NumberNode(Token(TokenTypes.INTEGER,currentInt)))
            
         return ChoiceSequenceNode(Token(TokenTypes.CHOICE,TokenTypes.CHOICE.value), nodes)
+    
+    def getChildNodes(self):
+        childNodes = []
+        childNodes.extend(self.start.getChildNodes()) 
+        childNodes.extend(self.end.getChildNodes()) 
+        return childNodes
 
 '''
 Fail node indicating false? in Verse.
@@ -735,3 +851,7 @@ class FailNode(BaseNode): # Technically not need, since Fail node is 1 to 1 a Ba
 
     def visit(self, symboltable: SymbolTable):
         return self 
+    
+    def getChildNodes(self):
+        childNodes = [self]
+        return childNodes

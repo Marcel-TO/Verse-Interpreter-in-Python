@@ -26,22 +26,22 @@ FOR
 """
 IF
 """
-# text = "x:int; x=10; if(x=r:int) then 70 else 30" # FALSE
-# text = "x,y:int; if(x<20) then y=70 else y=10; x=7; y" # 70
-# text = "x,y:int; y = (if (x = 0) then 3 else 4); x = 7; y" # 4
-# text = "x; x = 10; r=11; if(x = r:int) then (x:int; 1) else 3" # !!!!!!!
-# text = "x:int; x=10; y:=(if(x=r:int) then 70 else 30); r=10; y" # 70
-# text = "x,y,p,q:int; if(x=0) then {p=3;q=4} else {p=333;q=444}; x=0; (p,q)" # (3,4)
-# text = "x,y,p,q,r:int; if(x=0) then {p = r; r = 10; q=4} else {p=333;q=444}; x=0; (p,q)" # (10,4)
-# text = "x,y,p,q:int; if(x=0) then { p = r:int; r = 10; q=4} else {p=333;q=444}; x=0; (p,q)" # (10,4)
-# text = "x,y,p,q:int; if(x=0) then { p = r; r=10; r:int; q=4} else {p=333;q=444}; x=0; (p,q)" # (10,4)
+#text = "x:int; x=10; if(x=r:int) then 70 else 30" #!!!!!!! FALSE
+#text = "x,y:int; if(x<20) then y=70 else y=10; x=7; y" # 70
+#text = "x,y:int; y = (if (x = 0) then 3 else 4); x = 7; y" # 4
+#text = "x; x = 10; r=11; if(x = r:int) then (x:int; 1) else 3" # !!!!!!! SOLL NICHT FUNKTIONIEREN, WEIL ER ERST SCOPED IM THEN ODER ELSE, ALSO SOLLTE ES GLAUB ICH PASSEN
+#text = "x:int; x=10; y:=(if(x=r:int) then 70 else 30); r=10; y" # 70
+#text = "x,y,p,q:int; if(x=0) then {p=3;q=4} else {p=333;q=444}; x=0; (p,q)" # (3,4)
+#text = "x,y,p,q,r:int; if(x=0) then {p = r; r = 10; q=4} else {p=333;q=444}; x=0; (p,q)" # (10,4)
+#text = "x,y,p,q:int; if(x=0) then { p = r:int; r = 10; q=4} else {p=333;q=444}; x=0; (p,q)" # (10,4)
+#text = "x,y,p,q:int; if(x=0) then { p = r; r=10; r:int; q=4} else {p=333;q=444}; x=0; (p,q)" # (10,4)
 
 """
 FUNCTION
 """
-# text = "x:int; z:int; f(p:int,q:int):int :=  (p = 1; q = 23; y:int; y = 100; (p+q)*100); f(x,z); x + z" # 24
-# text = "x:int; f(p:int):int :=  (p = 1; y:int; y = 100; (p)*100); f(x); x" #  1
-
+#text = "x:int; z:int; f(p:int,q:int):int :=  (p = 1; q = 23; y:int; y = 100; (p+q)*100); f(x,z); x + z" # 
+#text = "x:int; f(p:int):int :=  (p = 1; y:int; y = 100; (p)*100); f(x); x" #  
+# text = "f:=(x:int=> d(x) + 1 ); d(p:int):= (p*2); f(3)"
 
 """
 CHOICE
