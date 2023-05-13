@@ -51,7 +51,7 @@ class BlockNode(BaseNode):
 
         i = 0
         hasFailed = False
-        while i < len(symboltable.symboltable):
+        for i in range(len(symboltable.symboltable)):
             hasFailed = False
             results = []
             if symboltable.checkAllUnificationValid() == False:
@@ -595,10 +595,13 @@ class SequenceNode(BaseNode):
 
     def visit(self, symboltable: SymbolTable):
         visited_nodes = []
+        isChoice = False
         for n in self.nodes:
             visited_node = n.visit(symboltable).visit(symboltable)
             if visited_node.token.type == TokenTypes.FAIL:
                 return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value))
+            elif visited_node.token.type == TokenTypes.CHOICE:
+                isChoice = True
             visited_nodes.append(visited_node)
         
         sequentor:Sequentor = Sequentor(visited_nodes)
@@ -608,6 +611,8 @@ class SequenceNode(BaseNode):
             return FailNode(TokenTypes.FAIL,TokenTypes.FAIL.value)
         
         if len(sequences) == 1:
+            if isChoice:
+                return ChoiceSequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),sequences[0])
             return SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),sequences[0])
 
         seq_nodes = []
@@ -615,6 +620,8 @@ class SequenceNode(BaseNode):
         for s in sequences:
             seq_nodes.append(SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),s))
 
+        if isChoice:
+            return ChoiceSequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),seq_nodes) 
         return SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),seq_nodes) 
 
     def getChildNodes(self):
