@@ -8,7 +8,7 @@ TUPLE
 """
 # text = "z:int; z=7; y:=(31|5); x:=(7|22); (z,x,y)" # ((7,7,31)|(7,7,5)|(7,22,31)|(7,22,5))
 text = "x=(y|2); y=(1|3|z:int); x,y:int; t:int; t = (z = 10; 2); (x,y)" # ((1,1)|(3,3)|(2,1)|(2,3))
-text = "for(x:=10|20; x>10; y:=1|2|3; y<3)do(x+y)"
+# text = "for(x:=10|20; x>10; y:=1|2|3; y<3)do(x+y)"
 
 
 """
@@ -22,7 +22,7 @@ FOR
 # text = "for(x:=2|3|5)do(x+1)" # (3|4|6)
 # text = "for(x:=10|20) do (x | x+1)" # ((10|20)|(11|21))
 # text = "for(x:=2|3|5; x > 2)do(x+(1|2))" # (4|5|6|7)
-# text = "t:=(1,1,1); for(i:int;x:=t[i]) do (x+i)" # !!!!!!!! indexing for still work in progress
+text = "t:=(1,1,1); for(i:int;x:=t[i]) do (x+i)" # !!!!!!!! indexing for still work in progress
 
 """
 IF
@@ -40,8 +40,8 @@ IF
 """
 FUNCTION
 """
-#text = "x:int; z:int; f(p:int,q:int):int :=  (p = 1; q = 23; y:int; y = 100; (p+q)*100); f(x,z); x + z" # 
-#text = "x:int; f(p:int):int :=  (p = 1; y:int; y = 100; (p)*100); f(x); x" #  
+# text = "x:int; z:int; f(p:int,q:int):int :=  (p = 1; q = 23; y:int; y = 100; (p+q)*100); f(x,z); x + z" # 
+# text = "x:int; f(p:int):int :=  (p = 1; y:int; y = 100; (p)*100); f(x); x" #  
 # text = "f:=(x:int=> d(x) + 1 ); d(p:int):= (p*2); f(3)" # 7
 
 """
