@@ -406,7 +406,7 @@ class FuncCallNode:
                  if arg.token.type == TokenTypes.IDENTIFIER:  
                     arg = arg.token.value            
                     id = params[index].nodes[0].token.value
-                    param_val_at_arg_pos = table.get_value(id, table)
+                    param_val_at_arg_pos = table.get_value(id)
                     if param_val_at_arg_pos[0]:
                         symboltable.addValue(arg, param_val_at_arg_pos[1])
                  index += 1

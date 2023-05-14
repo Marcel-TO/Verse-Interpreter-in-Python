@@ -71,10 +71,10 @@ class InterpreterTest(unittest.TestCase):
     '''
     Test: FUNCTION
     '''    
-    @data({'input': 'x:=1; f(x:int):int := (x + 1)', 'expected': '1'},)
-    # {'input': 'x:int; z:int; f(p:int,q:int):int :=  (p = 1; q = 23; y:int; y = 100; (p+q)*100); f(x,z); x + z', 'expected': '24'},
-    # {'input': 'x:int; f(p:int):int :=  (p = 1; y:int; y = 100; (p)*100); f(x); x', 'expected': '1'},
-    # {'input': 'f:=(x:int=> d(x) + 1 ); d(p:int):= (p*2); f(3)', 'expected': '7'})
+    @data({'input': 'x:=1; f(x:int):int := (x + 1)', 'expected': '1'},
+    {'input': 'x:int; f(p:int):int :=  (p = 1; y:int; y = 100; (p)*100); f(x); x', 'expected': '1'},
+    {'input': 'f:=(x:int=> d(x) + 1 ); d(p:int):= (p*2); f(3)', 'expected': '7'},
+    {'input': 'x:int; z:int; f(p:int,q:int):int :=  (p = 1; q = 23; y:int; y = 100; (p+q)*100); f(x,z); x + z', 'expected': '24'},)
     @unpack
     def test_function(self, input: string, expected: string):
         self.lexer = lexicon(input)
