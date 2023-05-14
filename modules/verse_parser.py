@@ -257,6 +257,7 @@ class Parser:
     """
     def if_statement(self) -> ParsedNode:
         token = self.current_token
+        index = self.lexer.index
 
         if token.type != TokenTypes.IF:
             return ParsedNode(None, True)
@@ -266,7 +267,14 @@ class Parser:
             return ParsedNode(None, True)
         
         self.forward()
+        token = self.current_token
+        index = self.lexer.index
+
         if_node = self.rigid_eq()
+        if if_node.hasSyntaxError == True or self.current_token.type != TokenTypes.RBRACKET:
+            self.set_to_token(index, token)
+            if_node = self.block()
+        
         if if_node.hasSyntaxError == True or self.current_token.type != TokenTypes.RBRACKET:
             return ParsedNode(None, True)
         

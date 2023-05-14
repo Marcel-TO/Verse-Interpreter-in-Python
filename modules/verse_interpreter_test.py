@@ -37,7 +37,8 @@ class InterpreterTest(unittest.TestCase):
     {'input': 'for(x:=10|20; x>10; y:=1|2|3; y<3)do(x+y)', 'expected': '(21,22)'}, # <- filtering variables
     {'input': 'for(x:=10|20; y:=1|2|3)do(x+y)', 'expected': '(11,12,13,21,22,23)'},
     {'input': 'for(x:=2|3|5)do(x+1)', 'expected': '(3,4,6)'},
-    # {'input': 't:=(1,1,1); for(i:int;x:=t[i]) do (x+i)', 'expected': 'd'}, # <- indexing still work in progress
+    {'input': 't:=(1,1,1); for(i:int;x:=t[i]) do (x+i)', 'expected': '(1,2,3)'}, # <- indexing still work in progress
+    {'input': 't:=(1,2,3); for(i:int;x:=t[1]) do (x)', 'expected': '(2,2,2)'},
     {'input': 'for(x:=2|3|5; x > 2)do(x+(1|2))', 'expected': '(4,5,6,7)'},
     {'input': 'for(x:=10|20) do (x | x+1)', 'expected': '((10,11)|(10,21)|(20,11)|(20,21))'},)
     @unpack
@@ -56,10 +57,12 @@ class InterpreterTest(unittest.TestCase):
     {'input': 'x,y:int; y = (if (x = 0) then 3 else 4); x = 7; y', 'expected': '4'},
     {'input': 'x; x = 10; r=11; if(x = r:int) then (x:int; 1) else 3', 'expected': 'false?'},
     # {'input': 'x:int; x=10; y:=(if(x=r:int) then 70 else 30); r=10; y', 'expected': '70'},
-    {'input': 'x,y,p,q:int; if(x=0) then {p=3;q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(3,4)'},
+    {'input': 'if(i:=(15|2|3)) then i else 30', 'expected': '15'},
+    {'input': 'if(i:=1|2|3; r:= 4|5|6) then i + r else r - i', 'expected': '5'},
     {'input': 'x,y,p,q,r:int; if(x=0) then {p = r; r = 10; q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(10,4)'},
     {'input': 'x,y,p,q:int; if(x=0) then { p = r:int; r = 10; q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(10,4)'},
-    {'input': 'x,y,p,q:int; if(x=0) then { p = r; r=10; r:int; q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(10,4)'})
+    {'input': 'x,y,p,q:int; if(x=0) then { p = r; r=10; r:int; q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(10,4)'},
+    {'input': 'x,y,p,q:int; if(x=0) then {p=3;q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(3,4)'},)
     @unpack
     def test_if(self, input: string, expected: string):
         self.lexer = lexicon(input)
@@ -92,7 +95,7 @@ class InterpreterTest(unittest.TestCase):
     {'input': 't:=(10,27,32); x:=(1 | 0 | 1); t[x]', 'expected': '(27,10,27)'},
     {'input': 'x,y:int; y = 31|5; x = 7|22; (x,y)', 'expected': '((7,31)|(7,5)|(22,31)|(22,5))'},
     # {'input': 'x,y:int; x = 7|22; y = 31|5; (x,y)', 'expected': '((7,31)|(22,31)|(7,5)|(22,5))'},
-    {'input': 'x:int; r=11; t:=(1,(1|(2;3;x)));x = 10; t', 'expected': '((1,1)|(1,10))'},
+    {'input': 'x:int; t:=(1,(1|(2;3;x)));x = 10; t', 'expected': '((1,1)|(1,10))'},
     {'input': 'x:=10|20|15; x<20', 'expected': '(10|15)'})
     @unpack
     def test_choice(self, input: string, expected: string):

@@ -41,10 +41,9 @@ class SymbolTable:
 
     
     def addValue(self, symbol: string, value) -> bool:
-        # checks if the symbol is already defined with type or value.
-
         # Had to set a max iteration count, due to the infinite adding of new symbols during iteration of symbol table while unification especially for the IfNode
         i = 0
+        isAdded = False
         maxIterations = len(self.symboltable)
         while i < maxIterations:
             sym = self.symboltable[i]
@@ -54,6 +53,8 @@ class SymbolTable:
                     sym.isUnified = False
                 else: sym.value = value
                 self.logger.__log__("Added the value: {} to the existing symbol: {} in the symboltable: {}".format(value, sym.symbol, self))
+                isAdded = True
+                # return True
             elif sym.symbol == symbol and sym.symbolType != None and sym.value != None and value != None and sym.value != sym.symbol:
                 occurs = self.U_Occurs(symbol,value)
                 if occurs:
@@ -63,8 +64,9 @@ class SymbolTable:
                     if isUnified == False:
                         sym.isUnified = isUnified
                     sym.value = value
-                
+                    isAdded = True
             i += 1  
+        return isAdded
 
     def addBinding(self, symbol: string, value, symbolType: TokenTypes) -> None:
         # checks if the name already exists in the current symbol. Otherwise add to table.
@@ -104,6 +106,8 @@ class SymbolTable:
         for sym in self.symboltable:
             if sym.symbol == symbol:
                 return True, sym.value
+        if self.parentTable != None:
+            return self.parentTable.get_value(symbol)
         return False, None
     
     def change_value(self, symbol: string, value):

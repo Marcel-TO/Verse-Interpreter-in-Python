@@ -458,23 +458,37 @@ class ForNode(BaseNode):
             return self.visit_curly(self.node.visit(symboltable))
 
         for_table = symboltable.createChildTable()
+        isIndexing = False
+        isBinding = False
+        indexingNode = None
 
         # check if block or not
         try: 
             for n in self.node.nodes:
+                # checks if there are filter options for the block
                 if self.check_type(n.token.type, [TokenTypes.LOWER, TokenTypes.LOWEREQ, TokenTypes.GREATER, TokenTypes.GREATEREQ]):
                     result = n.visit(for_table)
                     for_table.change_value(n.leftNode.token.value, result)
                     continue
+                # checks if there could be an indexing node in a binding/flex_eq
                 if self.check_type(n.token.type, [TokenTypes.BINDING, TokenTypes.EQUAL]):
                     if self.check_type(n.rightNode.token.type, [TokenTypes.SBL]):
-                        return self.for_indexing(for_table)
+                        isIndexing = True
+                        indexingNode = n
+                        isBinding = True
+                # checks if there is an indexing node
                 if self.check_type(n.token.type, [TokenTypes.SBL]):
-                    return self.for_indexing(for_table)
+                    isIndexing = True
+                    indexingNode = n
                 result = n.visit(for_table)
         except:
             result = self.node.visit(for_table)
         
+        # checks if there was an indexing node in the block
+        if isIndexing:
+            if isBinding:
+                return self.for_indexing_binding(for_table, indexingNode)
+            return self.for_indexing(symboltable, indexingNode)
         result = self.execDo(for_table)
         return self.convert(result,for_table)
     
@@ -486,17 +500,45 @@ class ForNode(BaseNode):
         return childNodes
     
     def visit_curly(self, result: BaseNode):
+        # returns converted choice into tuple
         if self.check_type(result.token.type, [TokenTypes.COMMA, TokenTypes.CHOICE]):
             return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), result.nodes)
 
+        # returns single tuple
         if self.check_type(result.token.type, [TokenTypes.INTEGER]):
             return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), [result.token.value])
-            
+
+        # returns empty tuple
         if self.check_type(result.token.type, [TokenTypes.FAIL]):
             return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), [])
     
-    def for_indexing(self, symboltable: SymbolTable):
-        pass
+    def for_indexing_binding(self, symboltable: SymbolTable, indexingNode: BaseNode):
+        # checks if the value contains already a value
+        (isValid, result) = symboltable.get_value(indexingNode.rightNode.index.token.value)
+        results = []
+        tuple = indexingNode.rightNode.identifier.visit(symboltable)
+        # checks if the symbol exists in table but has no value -> z.B for(i:int; t[i])....
+        if isValid and result == None:
+            for i in range(0, len(tuple.nodes)):
+                # iterates through nodes, overwrites current value and create tuple with results
+                symboltable.change_value(indexingNode.leftNode.token.value, tuple.nodes[i])
+                symboltable.change_value(indexingNode.rightNode.index.token.value, NumberNode(Token(TokenTypes.INTEGER, i)))
+                results.append(self.do.visit(symboltable))
+            return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), results)
+        # iterates through each node and gets tuple
+        for i in range(0, len(tuple.nodes)):
+            results.append(self.do.visit(symboltable))
+        return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), results)
+
+    def for_indexing(self, symboltable: SymbolTable, indexingNode: BaseNode):
+        # checks if the value contains already a value
+        (isValid, result) = symboltable.get_value(indexingNode.index.token.value)
+        results = []
+        tuple = indexingNode.identifier.visit(symboltable)
+        # iterates through each node and gets tuple
+        for i in range(0, len(tuple.nodes)):
+            results.append(self.do.visit(symboltable))
+        return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), results)
     
     def execDo(self, symboltable: SymbolTable):
         try:
@@ -539,16 +581,18 @@ class IfNode(BaseNode):
 
         result_if = self.if_node.visit(symboltable)
         if result_if != None and result_if.token.type != TokenTypes.FAIL:
-            return self.then_node.visit(symboltable)
-        
-        # result = self.else_node.visit(symboltable)
-        # for i in range(0, len(symboltable.symboltable)):
-        #     result =  self.else_node.visit(symboltable)
-        
+            result_then = self.then_node.visit(symboltable)
+            if self.check_type(result_then.token.type, [TokenTypes.TUPLE_TYPE, TokenTypes.CHOICE]):
+                return result_then.nodes[0]
+            return result_then
+            
+            
         if_symboltable = symboltable.createChildTable()
         result = self.else_node.visit(if_symboltable)
         for i in range(0, len(if_symboltable.symboltable)):
                result =  self.else_node.visit(if_symboltable)
+        if self.check_type(result.token.type, [TokenTypes.TUPLE_TYPE, TokenTypes.CHOICE]):
+            return result.nodes[0]
         return result 
     
     def getChildNodes(self):
@@ -558,6 +602,10 @@ class IfNode(BaseNode):
         childNodes.extend(self.then_node.getChildNodes())
         childNodes.extend(self.else_node.getChildNodes())
         return childNodes
+    
+    # checks if a type exists in the following type list.
+    def check_type(self,type:TokenTypes,types:list[TokenTypes]) -> bool:
+        return type in types
 
 '''
 Node for rigid equals.
@@ -597,8 +645,10 @@ class FlexibleEqNode(BaseNode):
         self.alreadyExists = False
 
     def visit(self, symboltable: SymbolTable):
-        symboltable.addValue(self.left_node.token.value, self.right_node)
-        return self.right_node.visit(symboltable)
+        isValid = symboltable.addValue(self.left_node.token.value, self.right_node)
+        if isValid:
+            return self.right_node.visit(symboltable)
+        return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
 
     def getChildNodes(self):
         childNodes = []
@@ -666,30 +716,30 @@ class IndexingNode(BaseNode):
         self.index = index
 
     def visit(self, symboltable: SymbolTable):
-        for symbol in symboltable.symboltable:
-            if self.identifier.token.value == symbol.symbol:
-                value = symbol.value.visit(symboltable)
-                index = self.index.visit(symboltable)
-                try:
-                    # checks if it is number
-                    if index.value >= len(value.nodes):
-                        print("Exception -> Index out of range")
-                        return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+        (isValid, result) = symboltable.get_value(self.identifier.token.value)
+        if isValid and result != None:
+            value = result.visit(symboltable)
+            index = self.index.visit(symboltable)
+            try:
+                # checks if it is number
+                if index.value >= len(value.nodes):
+                    print("Exception -> Index out of range")
+                    return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
 
-                    return value.nodes[index.value]
+                return value.nodes[index.value]
+            except:
+                # checks if it is tuple
+                try:
+                    result = []
+                    for iNode in index.nodes:
+                        i = iNode.visit(symboltable)
+                        if i.value >= len(value.nodes):
+                            print("Exception -> Index out of range")
+                            return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+                        result.append(value.nodes[i.value])
+                    return SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),result)
                 except:
-                    # checks if it is tuple
-                    try:
-                        result = []
-                        for iNode in index.nodes:
-                            i = iNode.visit(symboltable)
-                            if i.value >= len(value.nodes):
-                                print("Exception -> Index out of range")
-                                return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
-                            result.append(value.nodes[i.value])
-                        return SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),result)
-                    except:
-                        return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+                    return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
         return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
                     
     def getChildNodes(self):
