@@ -1,0 +1,23 @@
+(x:int,y:int => x + y) (1) (2)
+(x:int,y:int => (x:int;2)) (1) (2) | false?
+
+(x:int,y:int => (y:int => y * 2)) (1) (2)
+f := (x:int,y:int => x + y)
+
+(x:int => (y:int => (2 + 3)) (x)) (1)
+(x:int => (y:int => (2 + 3)) (x:int)) (1)
+
+f(1,2)
+
+
+LAMBDA
+params | body | values
+
+GetIdentifiers()
+Rename(identifierFrom, identifierTo)
+App_Beta()
+
+
+x:int; (x:int => (x:int => (2 + 3)) (x)) (1)
+x:int; (a:int => (a:int => (a + 3)) (a)) (1)
+x:int; (a:int => (b:int => (b + 3)) (a)) (1)
