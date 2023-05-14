@@ -109,6 +109,8 @@ class SymbolTable:
         if self.parentTable != None:
             return self.parentTable.get_value(symbol)
         return False, None
+        
+    
     
     def change_value(self, symbol: string, value):
         for sym in self.symboltable:

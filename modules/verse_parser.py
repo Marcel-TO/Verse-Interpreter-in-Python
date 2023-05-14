@@ -558,8 +558,11 @@ class Parser:
                 return ParsedNode(None, True)
             return ParsedNode(UnaryNode(token, node.node), False)
         
+        node = self.verse_lambda()
         #brackets check
-        node = self.brackets()
+        if(node.hasSyntaxError):
+            self.set_to_token(index, token)
+            node = self.brackets()
 
         #if node has failed check for loop
         if(node.hasSyntaxError):
@@ -608,15 +611,38 @@ class Parser:
     RULE --> brackets: LB expr RB
     """
     def brackets(self) -> ParsedNode: 
+        token = self.current_token
+        index = self.lexer.index
         if(self.current_token.type == TokenTypes.LBRACKET):
             self.forward()
             node = self.block()
-        
             if(self.current_token.type == TokenTypes.RBRACKET):
                 self.forward()
                 return node
         return ParsedNode(None,True)
         
+    def verse_lambda(self) -> ParsedNode:
+        if(self.current_token.type == TokenTypes.LBRACKET):
+            self.forward()
+            params = self.func_decl_param()
+            if params.hasSyntaxError == False and self.current_token.type == TokenTypes.LAMBDA:
+                token = self.current_token
+                self.forward()
+                body = self.block()
+                vals = []
+                if(self.current_token.type == TokenTypes.RBRACKET and body.hasSyntaxError == False):
+                    self.forward()
+                    while(self.current_token.type == TokenTypes.LBRACKET):
+                        if(self.current_token.type == TokenTypes.LBRACKET):
+                            self.forward()
+                            val = self.block()
+                            
+                            if(self.current_token.type == TokenTypes.RBRACKET and val.hasSyntaxError == False):
+                                self.forward()
+                                vals.append(val.node)
+                            else: return ParsedNode(None,True)
+                    return ParsedNode(LambdaNode(token, params.node,body.node,vals),False)
+        return ParsedNode(None,True)
 
     """
     y := 8 y:=(x:int)  y:= method(...)...

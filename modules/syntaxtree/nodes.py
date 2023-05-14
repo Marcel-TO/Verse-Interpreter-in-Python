@@ -1,8 +1,9 @@
+import copy
 from structure.token import Token
 from structure.tokenTypes import TokenTypes
 from syntaxtree.symboltable import SymbolTable
 from syntaxtree.sequentor import Sequentor
-
+from syntaxtree.identifier_creator import IdentifierCreator
 
 '''
 Top class of all nodes.
@@ -17,6 +18,9 @@ class BaseNode:
 
     def getChildNodes(self):
         return [FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value))]
+    
+    def App_Beta(self,identifierFrom, identifierTo):
+        pass
 
 #Class that takes a parsed node, containes information if node could have been parsed
 class ParsedNode:
@@ -81,6 +85,10 @@ class BlockNode(BaseNode):
         for n in self.nodes:
            childNodes.extend(n.getChildNodes())
         return childNodes
+    
+    def App_Beta(self,identifierFrom, identifierTo):
+        for n in self.nodes:
+            n.App_Beta(identifierFrom,identifierTo)
 '''
 Top Node in tree.
 ''' 
@@ -95,6 +103,9 @@ class ProgramNode(BaseNode):
         childNodes = []
         childNodes.extend(self.node.getChildNodes())
         return childNodes
+    
+    def App_Beta(self,identifierFrom, identifierTo):
+        self.node.App_Beta(identifierFrom,identifierTo)
 
 
 '''
@@ -118,7 +129,10 @@ class BindingNode(BaseNode):
         childNodes.extend(self.leftNode.getChildNodes())
         childNodes.extend(self.rightNode.getChildNodes())
         return childNodes
-        
+    
+    def App_Beta(self,identifierFrom, identifierTo):
+        self.leftNode.App_Beta(identifierFrom,identifierTo)
+        self.rightNode.App_Beta(identifierFrom,identifierTo)
 
 
 '''
@@ -249,6 +263,10 @@ class OperatorNode(BaseNode):
         childNodes.extend(self.leftNode.getChildNodes())
         childNodes.extend(self.rightNode.getChildNodes())
         return childNodes
+    
+    def App_Beta(self,identifierFrom, identifierTo):
+        self.leftNode.App_Beta(identifierFrom,identifierTo)
+        self.rightNode.App_Beta(identifierFrom,identifierTo)
 
 '''
 If unary node is called, it calls visitor operator in following way:
@@ -274,6 +292,9 @@ class UnaryNode(BaseNode):
         childNodes = []
         childNodes.extend(self.node.getChildNodes())
         return childNodes
+    
+    def App_Beta(self,identifierFrom, identifierTo):
+        self.node.App_Beta(identifierFrom,identifierTo)
              
 
 '''
@@ -301,6 +322,10 @@ class IdentifierNode(BaseNode):
     def getChildNodes(self):
         childNodes = [self]
         return childNodes
+    
+    def App_Beta(self,identifierFrom, identifierTo):
+        if(self.token.value == identifierFrom):
+            self.token.value = identifierTo
 
 '''
 Node for scoped identifiers.
@@ -331,6 +356,10 @@ class ScopeNode(BaseNode):
     def getChildNodes(self):
         childNodes = self.nodes
         return childNodes
+    
+    def App_Beta(self,identifierFrom, identifierTo):
+        for n in self.nodes:
+            n.App_Beta(identifierFrom, identifierTo)
         
 
 '''
@@ -422,6 +451,10 @@ class FuncCallNode:
         for arg in self.args:
             childNodes.extend(arg.getChildNodes())
         return childNodes
+    
+    def App_Beta(self,identifierFrom, identifierTo):
+        for arg in self.args:
+            arg.App_Beta(identifierFrom, identifierTo)
 
 '''
 Node for func declarations.
@@ -563,6 +596,9 @@ class ForNode(BaseNode):
     def check_type(self,type:TokenTypes,types:list[TokenTypes]) -> bool:
         return type in types
 
+    def App_Beta(self,identifierFrom, identifierTo):
+        self.node.App_Beta(identifierFrom, identifierTo)
+        self.do.App_Beta(identifierFrom, identifierTo)
 '''
 Node for if statements.
 ''' 
@@ -602,10 +638,15 @@ class IfNode(BaseNode):
         childNodes.extend(self.then_node.getChildNodes())
         childNodes.extend(self.else_node.getChildNodes())
         return childNodes
-    
+        
     # checks if a type exists in the following type list.
     def check_type(self,type:TokenTypes,types:list[TokenTypes]) -> bool:
         return type in types
+
+    def App_Beta(self,identifierFrom, identifierTo):
+        self.if_node.App_Beta(identifierFrom, identifierTo)
+        self.then_node.App_Beta(identifierFrom, identifierTo)
+        self.else_node.App_Beta(identifierFrom, identifierTo)
 
 '''
 Node for rigid equals.
@@ -632,6 +673,11 @@ class RigidEqNode(BaseNode):
         childNodes.extend(self.left_node.getChildNodes()) 
         childNodes.extend(self.right_node.getChildNodes())
         return childNodes
+    
+    def App_Beta(self,identifierFrom, identifierTo):
+        self.left_node.App_Beta(identifierFrom, identifierTo)
+        self.right_node.App_Beta(identifierFrom, identifierTo)
+       
 
 
 '''
@@ -655,6 +701,10 @@ class FlexibleEqNode(BaseNode):
         childNodes.extend(self.left_node.getChildNodes()) 
         childNodes.extend(self.right_node.getChildNodes())
         return childNodes
+    
+    def App_Beta(self,identifierFrom, identifierTo):
+        self.left_node.App_Beta(identifierFrom, identifierTo)
+        self.right_node.App_Beta(identifierFrom, identifierTo)
 
 '''
 Node for sequences (tuple, array).
@@ -705,6 +755,11 @@ class SequenceNode(BaseNode):
         for n in self.nodes:
             childNodes.extend(n.getChildNodes()) 
         return childNodes
+    
+    def App_Beta(self,identifierFrom, identifierTo):
+        for n in self.nodes:
+            n.App_Beta(identifierFrom, identifierTo)
+
 
 '''
 Node for indexing.
@@ -746,6 +801,7 @@ class IndexingNode(BaseNode):
         childNodes = []
         childNodes.extend(self.index.getChildNodes()) 
         return childNodes
+    
 
 
 '''
@@ -893,6 +949,11 @@ class ChoiceSequenceNode(BaseNode):
         for n in self.nodes:
             childNodes.extend(n.getChildNodes()) 
         return childNodes
+    
+    def App_Beta(self,identifierFrom, identifierTo):
+        for n in self.nodes:
+            n.App_Beta(identifierFrom, identifierTo)
+       
 
 class DotDotNode(BaseNode):
     def __init__(self, token:Token, start:BaseNode, end:BaseNode) -> None:
@@ -950,3 +1011,63 @@ class FailNode(BaseNode): # Technically not need, since Fail node is 1 to 1 a Ba
     def getChildNodes(self):
         childNodes = [self]
         return childNodes
+    
+   
+
+class LambdaNode(BaseNode):
+    def __init__(self, token:Token, params:list[ScopeNode], body:BlockNode, values:list[BaseNode]) -> None:
+        super().__init__(token)
+        self.params = params
+        self.body = body
+        self.values = values
+    
+    def __repr__(self) -> str:    
+        return "( " +  ",".join([repr(param) for param in self.params]) + " " + self.token.value + " " + repr(self.body) + " )" + "".join([" (" + repr(n) + ")" for n in self.values])
+
+    def visit(self, symboltable: SymbolTable):
+        if(len(self.params) != len(self.values)):
+            return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+        copiedTable = symboltable.createChildTable()
+        self.Rename(copiedTable)
+        copybody = copy.deepcopy(self.body)
+        newbody = BlockNode([])
+
+        index = 0
+        for p in self.params:
+            pav = FlexibleEqNode(Token(TokenTypes.EQUAL, TokenTypes.EQUAL.value),p.nodes[0],self.values[index].visit(symboltable))
+            index +=1
+            newbody.nodes.append(pav)
+        newbody.nodes.append(copybody)
+        result = newbody.visit(copiedTable)
+        return result 
+    
+        
+    def getChildNodes(self):
+        childNodes = [self]
+        return childNodes
+
+    
+    def getChildNodes(self):
+        childNodes = [self]
+        return childNodes
+    
+    def Rename(self, symboltable:SymbolTable):
+        symbols = []
+        for s in symboltable.symboltable:
+            symbols.append(s.symbol)
+
+        
+        for param in self.params:
+            if symboltable.check_if_exists(param.nodes[0].token.value):
+                newIdentifier = IdentifierCreator.create(symboltable)
+                self.body.App_Beta(param.nodes[0].token.value, newIdentifier)
+                param.nodes[0].token.value = newIdentifier
+            param.visit(symboltable)
+    
+    def App_Beta(self, identifierFrom, identifierTo):
+        for v in self.values:
+            v.App_Beta(identifierFrom, identifierTo)
+        
+        for param in self.params:
+            param.App_Beta(identifierFrom, identifierTo)
+        self.body.App_Beta(identifierFrom, identifierTo)
