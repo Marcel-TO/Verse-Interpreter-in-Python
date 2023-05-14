@@ -313,6 +313,10 @@ class IdentifierNode(BaseNode):
         (isValid, result) = symboltable.get_value(self.token.value)
         if isValid and result != None:
             return result.visit(symboltable)
+        if symboltable.parentTable != None:
+            (isValid, result) = symboltable.parentTable.get_value(self.token.value)
+            if isValid and result != None:
+                return result.visit(symboltable)
         return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
     
     def getChildNodes(self):
@@ -411,40 +415,36 @@ class FuncCallNode:
         self.args = args
 
     def visit(self, symboltable: SymbolTable):
-        try: 
-  
-            table = symboltable.clone_table()
-            scope = symboltable.get_value(self.identifier.token.value, symboltable)
-                
-            if scope[0]:
-                func_dec:FuncDeclNode = scope[1]
-                index = 0
-                params = func_dec.params
-                for param in params:
-                    id = param.nodes[0].token.value
+        table = symboltable.createChildTable()
+        scope = symboltable.get_value(self.identifier.token.value)
+            
+        if scope[0]:
+            func_dec:FuncDeclNode = scope[1]
+            index = 0
+            params = func_dec.params
+            for param in params:
+                id = param.nodes[0].token.value
 
-                    arg = self.args[index].visit(symboltable)
-                    if(arg.token.type == TokenTypes.IDENTIFIER):
-                        arg = None
+                arg = self.args[index].visit(symboltable)
+                if(arg.token.type == TokenTypes.IDENTIFIER):
+                     arg = None
 
-                    table.addBinding(id, arg ,param.type)
-                    index += 1
-                val = func_dec.block.visit(table)
+                table.addBinding(id, arg ,param.type)
+                index += 1
+            val = func_dec.block.visit(table)
 
-                # Check if a variable is given to argument that has not been set (Logic)
-                index = 0
-                for arg in self.args:
-                    if arg.token.type == TokenTypes.IDENTIFIER:  
-                        arg = arg.token.value            
-                        id = params[index].nodes[0].token.value
-                        param_val_at_arg_pos = table.get_value(id, table)
-                        if param_val_at_arg_pos[0]:
-                            symboltable.addValue(arg, param_val_at_arg_pos[1])
-                    index += 1
-                return val
-            return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
-        except:
-             return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+            # Check if a variable is given to argument that has not been set (Logic)
+            index = 0
+            for arg in self.args:
+                 if arg.token.type == TokenTypes.IDENTIFIER:  
+                    arg = arg.token.value            
+                    id = params[index].nodes[0].token.value
+                    param_val_at_arg_pos = table.get_value(id)
+                    if param_val_at_arg_pos[0]:
+                        symboltable.addValue(arg, param_val_at_arg_pos[1])
+                 index += 1
+            return val
+        return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
         
     def getChildNodes(self):
         childNodes = []
@@ -495,15 +495,20 @@ class ForNode(BaseNode):
         # check if block or not
         try: 
             for n in self.node.nodes:
-                if type(n) == OperatorNode:
+                if self.check_type(n.token.type, [TokenTypes.LOWER, TokenTypes.LOWEREQ, TokenTypes.GREATER, TokenTypes.GREATEREQ]):
                     result = n.visit(for_table)
                     for_table.change_value(n.leftNode.token.value, result)
                     continue
+                if self.check_type(n.token.type, [TokenTypes.BINDING, TokenTypes.EQUAL]):
+                    if self.check_type(n.rightNode.token.type, [TokenTypes.SBL]):
+                        return self.for_indexing(for_table)
+                if self.check_type(n.token.type, [TokenTypes.SBL]):
+                    return self.for_indexing(for_table)
                 result = n.visit(for_table)
         except:
             result = self.node.visit(for_table)
         
-        result = self.do.visit(for_table)
+        result = self.execDo(for_table)
         return self.convert(result,for_table)
     
     def getChildNodes(self):
@@ -514,14 +519,24 @@ class ForNode(BaseNode):
         return childNodes
     
     def visit_curly(self, result: BaseNode):
-        if type(result) == SequenceNode or type(result) == ChoiceSequenceNode:
+        if self.check_type(result.token.type, [TokenTypes.COMMA, TokenTypes.CHOICE]):
             return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), result.nodes)
 
-        if type(result) == NumberNode:
+        if self.check_type(result.token.type, [TokenTypes.INTEGER]):
             return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), [result.token.value])
             
-        if result.token.type == TokenTypes.FAIL:
+        if self.check_type(result.token.type, [TokenTypes.FAIL]):
             return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), [])
+    
+    def for_indexing(self, symboltable: SymbolTable):
+        pass
+    
+    def execDo(self, symboltable: SymbolTable):
+        try:
+            result =  self.do.visit(symboltable)
+        except:
+            return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+        return result
 
     def getChildNodes(self):
         childNodes = []
@@ -534,6 +549,10 @@ class ForNode(BaseNode):
             result = SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), result.nodes)
             result = result.visit(symboltable)
         return result
+    
+    # checks if a type exists in the following type list.
+    def check_type(self,type:TokenTypes,types:list[TokenTypes]) -> bool:
+        return type in types
 
     def App_Beta(self,identifierFrom, identifierTo):
         self.node.App_Beta(identifierFrom, identifierTo)
@@ -726,6 +745,7 @@ class IndexingNode(BaseNode):
                         return SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),result)
                     except:
                         return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+        return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
                     
     def getChildNodes(self):
         childNodes = []

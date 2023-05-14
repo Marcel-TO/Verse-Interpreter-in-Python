@@ -734,7 +734,7 @@ class Parser:
           
                 if(expr_node.hasSyntaxError == False and self.current_token.type == TokenTypes.SBR):
                      self.forward()
-                     return ParsedNode(IndexingNode(left_node.node.token, left_node.node, expr_node.node), False)
+                     return ParsedNode(IndexingNode(Token(TokenTypes.SBL, TokenTypes.SBL.value), left_node.node, expr_node.node), False)
                 return ParsedNode(None,True)
         return ParsedNode(None,True)
     
