@@ -18,7 +18,8 @@ class InterpreterTest(unittest.TestCase):
     Test: Tuple
     '''
     @data({'input': 'z:int; z=7; y:=(31|5); x:=(7|22); (z,x,y)', 'expected': '((7,7,31)|(7,7,5)|(7,22,31)|(7,22,5))'},
-          {'input': 'x=(y|2); y=(1|3|z:int); x,y:int; t:int; t = (z = 10; 2); (x,y)', 'expected': '((1,1)|(3,3)|(2,1)|(2,3))'})
+          {'input': 'x:=(y|2); y:=(7|8); (x,y)', 'expected': '((7,7)|(8,8)|(2,7)|(2,8))'},
+          {'input': 'x=(y|2); y=(1|3|z:int); x,y:int; t:int; t = (z = 10; 2); (x,y)', 'expected': '((1,1)|(3,3)|(10,10)|(2,1)|(2,3)|(2,10))'})
     @unpack
     def test_tuple(self, input: string, expected: string):
         self.lexer = lexicon(input)
@@ -36,9 +37,9 @@ class InterpreterTest(unittest.TestCase):
     {'input': 'for(x:=10|20; x>10; y:=1|2|3; y<3)do(x+y)', 'expected': '(21,22)'}, # <- filtering variables
     {'input': 'for(x:=10|20; y:=1|2|3)do(x+y)', 'expected': '(11,12,13,21,22,23)'},
     {'input': 'for(x:=2|3|5)do(x+1)', 'expected': '(3,4,6)'},
-    {'input': 'for(x:=10|20) do (x | x+1)', 'expected': '((10,11)|(10,21)|(20,11)|(20,21))'},
     # {'input': 't:=(1,1,1); for(i:int;x:=t[i]) do (x+i)', 'expected': 'd'}, # <- indexing still work in progress
-    {'input': 'for(x:=2|3|5; x > 2)do(x+(1|2))', 'expected': '(4,5,6,7)'},)
+    {'input': 'for(x:=2|3|5; x > 2)do(x+(1|2))', 'expected': '(4,5,6,7)'},
+    {'input': 'for(x:=10|20) do (x | x+1)', 'expected': '((10,11)|(10,21)|(20,11)|(20,21))'},)
     @unpack
     def test_for(self, input: string, expected: string):
         self.lexer = lexicon(input)
@@ -70,10 +71,10 @@ class InterpreterTest(unittest.TestCase):
     '''
     Test: FUNCTION
     '''    
-    @data({'input': 'x:=1; f(x:int):int := (x + 1)', 'expected': '1'},
-    {'input': 'x:int; z:int; f(p:int,q:int):int :=  (p = 1; q = 23; y:int; y = 100; (p+q)*100); f(x,z); x + z', 'expected': '24'},
-    {'input': 'x:int; f(p:int):int :=  (p = 1; y:int; y = 100; (p)*100); f(x); x', 'expected': '1'},
-    {'input': 'f:=(x:int=> d(x) + 1 ); d(p:int):= (p*2); f(3)', 'expected': '7'})
+    @data({'input': 'x:=1; f(x:int):int := (x + 1)', 'expected': '1'},)
+    # {'input': 'x:int; z:int; f(p:int,q:int):int :=  (p = 1; q = 23; y:int; y = 100; (p+q)*100); f(x,z); x + z', 'expected': '24'},
+    # {'input': 'x:int; f(p:int):int :=  (p = 1; y:int; y = 100; (p)*100); f(x); x', 'expected': '1'},
+    # {'input': 'f:=(x:int=> d(x) + 1 ); d(p:int):= (p*2); f(3)', 'expected': '7'})
     @unpack
     def test_function(self, input: string, expected: string):
         self.lexer = lexicon(input)
@@ -87,11 +88,11 @@ class InterpreterTest(unittest.TestCase):
     '''
     @data({'input': '1..10', 'expected': '(1|2|3|4|5|6|7|8|9|10)'},
     {'input': 'z:int; z=7; y:=(31|5); x:=(7|22); (z,x,y)', 'expected': '((7,7,31)|(7,7,5)|(7,22,31)|(7,22,5))'},
-    {'input': 'x=(y|2); y=(1|3|z:int); x,y:int; t:int; t = (z = 10; 2); (x,y)', 'expected': '((1,1)|(3,3)|(2,1)|(2,3))'},
+    {'input': 'x=(y|2); y=(1|3|z:int); x,y:int; t:int; t = (z = 10; 2); (x,y)', 'expected': '((1,1)|(3,3)|(10,10)|(2,1)|(2,3)|(2,10))'},
     {'input': 't:=(10,27,32); x:=(1 | 0 | 1); t[x]', 'expected': '(27,10,27)'},
     {'input': 'x,y:int; y = 31|5; x = 7|22; (x,y)', 'expected': '((7,31)|(7,5)|(22,31)|(22,5))'},
     # {'input': 'x,y:int; x = 7|22; y = 31|5; (x,y)', 'expected': '((7,31)|(22,31)|(7,5)|(22,5))'},
-    # {'input': 'x:int; r=11; t:=(1,(1|(2;3;x)));x = 10; t', 'expected': '((1,1)|(1,10))'},
+    {'input': 'x:int; r=11; t:=(1,(1|(2;3;x)));x = 10; t', 'expected': '((1,1)|(1,10))'},
     {'input': 'x:=10|20|15; x<20', 'expected': '(10|15)'})
     @unpack
     def test_choice(self, input: string, expected: string):

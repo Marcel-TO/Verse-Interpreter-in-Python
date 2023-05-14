@@ -289,7 +289,7 @@ class IdentifierNode(BaseNode):
 
     def visit(self, symboltable: SymbolTable):
         # checks if the identifier already exists in the scopetable.
-        (isValid, result) = symboltable.get_value(self.token.value, symboltable)
+        (isValid, result) = symboltable.get_value(self.token.value)
         if isValid and result != None:
             return result.visit(symboltable)
         return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
@@ -382,8 +382,8 @@ class FuncCallNode:
         self.args = args
 
     def visit(self, symboltable: SymbolTable):
-        table = symboltable.clone_table()
-        scope = symboltable.get_value(self.identifier.token.value, symboltable)
+        table = symboltable.createChildTable()
+        scope = symboltable.get_value(self.identifier.token.value)
             
         if scope[0]:
             func_dec:FuncDeclNode = scope[1]
@@ -453,22 +453,21 @@ class ForNode(BaseNode):
         if self.do == None:
             return self.visit_curly(self.node.visit(symboltable))
 
-        for_table = symboltable.clone_table()
+        for_table = symboltable.createChildTable()
 
         # check if block or not
         try: 
             for n in self.node.nodes:
                 if type(n) == OperatorNode:
                     result = n.visit(for_table)
-                    for_table.change_value(n.leftNode.token.value, result, for_table)
+                    for_table.change_value(n.leftNode.token.value, result)
                     continue
                 result = n.visit(for_table)
         except:
             result = self.node.visit(for_table)
         
         result = self.do.visit(for_table)
-        symboltable.addSymbolTable(for_table)
-        return self.convert(result,symboltable)
+        return self.convert(result,for_table)
     
     def getChildNodes(self):
         childNodes = []
@@ -523,11 +522,10 @@ class IfNode(BaseNode):
         # for i in range(0, len(symboltable.symboltable)):
         #     result =  self.else_node.visit(symboltable)
         
-        if_symboltable = symboltable.clone_table()
+        if_symboltable = symboltable.createChildTable()
         result = self.else_node.visit(if_symboltable)
         for i in range(0, len(if_symboltable.symboltable)):
                result =  self.else_node.visit(if_symboltable)
-        symboltable.addSymbolTable(if_symboltable)
         return result 
     
     def getChildNodes(self):
@@ -703,8 +701,9 @@ class ChoiceSequenceNode(BaseNode):
         # Choice appends all of its sequence, not containing false?
         if self.token.type == TokenTypes.CHOICE:
             for n in self.nodes:
-                    clonedTable = symboltable.clone_table()
-                    current_n = n.visit(clonedTable).visit(clonedTable)
+                    # clonedTable = symboltable.createChildTable()
+                    # current_n = n.visit(clonedTable).visit(clonedTable)
+                    current_n = n.visit(symboltable).visit(symboltable)
 
                     # Skip fail node
                     if current_n.token.type != TokenTypes.FAIL:
