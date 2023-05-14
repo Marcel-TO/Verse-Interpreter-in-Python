@@ -6,7 +6,7 @@ from structure.logger import *
 class Interpreter:
     def __init__(self, parser: Parser):
         self.parser = parser
-        self.symboltable = SymbolTable()
+        self.symboltable = SymbolTable(None)
 
 
     def interpret(self):

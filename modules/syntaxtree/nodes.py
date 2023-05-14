@@ -1,3 +1,4 @@
+import copy
 from structure.token import Token
 from structure.tokenTypes import TokenTypes
 from syntaxtree.symboltable import SymbolTable
@@ -41,40 +42,34 @@ class BlockNode(BaseNode):
     
     def visit(self, symboltable: SymbolTable):
         results = []
-        
-        hasFailed = False
-        i = -1
-        while i < len(symboltable.symboltable):
-            for n in self.nodes:
-                hasFailed = False
-                result = n.visit(symboltable)
-                if result != None:
-                    if result.token.type == TokenTypes.FAIL:
-                        hasFailed = True
-                    results.append(result)
-                    
-            if symboltable.checkAllUnificationValid() == False or hasFailed:
-                    return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value))
-            symboltable.remove_all_except_self()
-            i+=1
-        
-        '''
+        i = 0
+        for n in self.nodes:
+            result = n.visit(symboltable)
+            if result != None:
+                #if result.token.type == TokenTypes.IDENTIFIER:
+                #    self.nodes[i] = result
+                #if result.token.type == TokenTypes.FAIL:
+                    #return result
+                results.append(result)
+            i += 1
+
         i = 0
         hasFailed = False
-        while i < len(symboltable.symboltable):
+        for i in range(len(symboltable.symboltable)):
             hasFailed = False
             results = []
             if symboltable.checkAllUnificationValid() == False:
                 return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value))
             for n in self.nodes:
                 result = n.visit(symboltable)
+                symboltable.remove_all_except_self()
                 if result != None:
                     if result.token.type == TokenTypes.FAIL:
                         hasFailed = True
                     results.append(result)
             i += 1
-        symboltable.remove_all_except_self()
-       
+        
+        '''
         HIER GEÄNDERT Block Node, darf nur ein Value liefern.
         Bsp. y:= (31|(z:=9; z)); x:=(7|22); (x,y)
         wenn er in diesem Block (z:=9; z) die liste übergibt kommt es später zu einem error.
@@ -315,7 +310,7 @@ class IdentifierNode(BaseNode):
 
     def visit(self, symboltable: SymbolTable):
         # checks if the identifier already exists in the scopetable.
-        (isValid, result) = symboltable.get_value(self.token.value, symboltable)
+        (isValid, result) = symboltable.get_value(self.token.value)
         if isValid and result != None:
             return result.visit(symboltable)
         return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
@@ -495,22 +490,21 @@ class ForNode(BaseNode):
         if self.do == None:
             return self.visit_curly(self.node.visit(symboltable))
 
-        for_table = symboltable.clone_table()
+        for_table = symboltable.createChildTable()
 
         # check if block or not
         try: 
             for n in self.node.nodes:
                 if type(n) == OperatorNode:
                     result = n.visit(for_table)
-                    for_table.change_value(n.leftNode.token.value, result, for_table)
+                    for_table.change_value(n.leftNode.token.value, result)
                     continue
                 result = n.visit(for_table)
         except:
             result = self.node.visit(for_table)
         
         result = self.do.visit(for_table)
-        symboltable.addSymbolTable(for_table)
-        return self.convert(result,symboltable)
+        return self.convert(result,for_table)
     
     def getChildNodes(self):
         childNodes = []
@@ -564,11 +558,14 @@ class IfNode(BaseNode):
         if result_if != None and result_if.token.type != TokenTypes.FAIL:
             return self.then_node.visit(symboltable)
         
-        if_symboltable = symboltable.clone_table()
+        # result = self.else_node.visit(symboltable)
+        # for i in range(0, len(symboltable.symboltable)):
+        #     result =  self.else_node.visit(symboltable)
+        
+        if_symboltable = symboltable.createChildTable()
         result = self.else_node.visit(if_symboltable)
         for i in range(0, len(if_symboltable.symboltable)):
                result =  self.else_node.visit(if_symboltable)
-        symboltable.addSymbolTable(if_symboltable)
         return result 
     
     def getChildNodes(self):
@@ -655,10 +652,13 @@ class SequenceNode(BaseNode):
 
     def visit(self, symboltable: SymbolTable):
         visited_nodes = []
+        isChoice = False
         for n in self.nodes:
             visited_node = n.visit(symboltable).visit(symboltable)
             if visited_node.token.type == TokenTypes.FAIL:
                 return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value))
+            elif visited_node.token.type == TokenTypes.CHOICE:
+                isChoice = True
             visited_nodes.append(visited_node)
         
         sequentor:Sequentor = Sequentor(visited_nodes)
@@ -668,6 +668,8 @@ class SequenceNode(BaseNode):
             return FailNode(TokenTypes.FAIL,TokenTypes.FAIL.value)
         
         if len(sequences) == 1:
+            if isChoice:
+                return ChoiceSequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),sequences[0])
             return SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),sequences[0])
 
         seq_nodes = []
@@ -675,6 +677,8 @@ class SequenceNode(BaseNode):
         for s in sequences:
             seq_nodes.append(SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),s))
 
+        if isChoice:
+            return ChoiceSequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),seq_nodes) 
         return SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),seq_nodes) 
 
     def getChildNodes(self):
@@ -757,8 +761,9 @@ class ChoiceSequenceNode(BaseNode):
         # Choice appends all of its sequence, not containing false?
         if self.token.type == TokenTypes.CHOICE:
             for n in self.nodes:
-                    clonedTable = symboltable.clone_table()
-                    current_n = n.visit(clonedTable).visit(clonedTable)
+                    # clonedTable = symboltable.createChildTable()
+                    # current_n = n.visit(clonedTable).visit(clonedTable)
+                    current_n = n.visit(symboltable).visit(symboltable)
 
                     # Skip fail node
                     if current_n.token.type != TokenTypes.FAIL:
@@ -947,15 +952,24 @@ class LambdaNode(BaseNode):
         self.values = values
     
     def __repr__(self) -> str:    
-        return "(" + repr(self.params) + self.token.value + repr(self.body) + ")" + "".join([" (" + repr(n) + ")" for n in self.values])
+        return "( " +  ",".join([repr(param) for param in self.params]) + " " + self.token.value + " " + repr(self.body) + " )" + "".join([" (" + repr(n) + ")" for n in self.values])
 
     def visit(self, symboltable: SymbolTable):
         if(len(self.params) != len(self.values)):
             return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
-        copiedTable = symboltable.clone_table()
+        copiedTable = symboltable.createChildTable()
         self.Rename(copiedTable)
-        self.body.visit(copiedTable)
-        return self 
+        copybody = copy.deepcopy(self.body)
+        newbody = BlockNode([])
+
+        index = 0
+        for p in self.params:
+            pav = FlexibleEqNode(Token(TokenTypes.EQUAL, TokenTypes.EQUAL.value),p.nodes[0],self.values[index].visit(symboltable))
+            index +=1
+            newbody.nodes.append(pav)
+        newbody.nodes.append(copybody)
+        result = newbody.visit(copiedTable)
+        return result 
     
         
     def getChildNodes(self):
@@ -972,18 +986,18 @@ class LambdaNode(BaseNode):
         for s in symboltable.symboltable:
             symbols.append(s.symbol)
 
-        param = ""
+        
         for param in self.params:
-            if symboltable.check_if_exists(param.nodes[0].token.value, symboltable):
-                newIdentifier = IdentifierCreator.create(symbols)
+            if symboltable.check_if_exists(param.nodes[0].token.value):
+                newIdentifier = IdentifierCreator.create(symboltable)
                 self.body.App_Beta(param.nodes[0].token.value, newIdentifier)
                 param.nodes[0].token.value = newIdentifier
-                param.visit(symboltable)
+            param.visit(symboltable)
     
     def App_Beta(self, identifierFrom, identifierTo):
         for v in self.values:
             v.App_Beta(identifierFrom, identifierTo)
-        param = ""
+        
         for param in self.params:
             param.App_Beta(identifierFrom, identifierTo)
         self.body.App_Beta(identifierFrom, identifierTo)
