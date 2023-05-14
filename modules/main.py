@@ -82,8 +82,9 @@ FALSE
 # text = "x,y:int; y= 4; x=y" # FALSE
 # text = "x:int; x=7; x=3" # FALSE
 #text = "z:int; x=(y|2); y=(1|3|z); x,y:int; t:int; t = (z = 10; 2); (x,y)" # ((1,1)|(3,3)|(10,10)|(2,1)|(2,3)|(2,10))
-text= "for(x,y:int; x = (10|20); y = (1|2|3))do(false?)(x:int =>  )"
-text = "x,y:int; y = (if (x = 0) then 3 else 4); x = 7; y"
+text= "for(x,y:int; x = (10|20); y = (1|2|3))do(false?)"
+
+text = "x:int;a:int; (x:int => (x:int => (x:int => x + 2) (x)) (x)) (x)"
 lexer = lexicon(text)
 parser = Parser(lexer)
 interpreter = Interpreter(parser)

@@ -24,7 +24,7 @@ class SymbolTable:
     
     def check_if_exists(self, symbol: string, table) -> bool:
         for sym in self.symboltable:
-            if sym.symbol == symbol and table == sym.insideTable:
+            if sym.symbol == symbol:  # and table == sym.insideTable:
                 return True
         return False
     
