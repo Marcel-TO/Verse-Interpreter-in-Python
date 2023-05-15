@@ -474,6 +474,53 @@ class FuncDeclNode:
             childNodes.extend(param.getChildNodes()) 
         childNodes.extend(self.block.getChildNodes())
         return childNodes
+    
+'''
+Node for scoped data calls.
+''' 
+class DataCallNode:
+    def __init__(self,identifier:IdentifierNode, param:BaseNode) -> None:
+        self.identifier = identifier
+        self.param = param
+
+    def visit(self, symboltable: SymbolTable):
+        table = symboltable.createChildTable()
+        (isValid, result) = symboltable.get_value(self.identifier.token.value)
+        if isValid == False and result.token.type != TokenTypes.DATA:
+            return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+        return result.getParam(result, self.param)
+
+
+'''
+Node for data declarations.
+''' 
+class DataDeclNode:
+    def __init__(self,identifier:IdentifierNode, params:BlockNode, type:BaseNode) -> None:
+        self.identifier = identifier
+        self.params = params
+        self.type = type
+        self.symboltable_params = SymbolTable(None)
+
+    def visit(self, symboltable: SymbolTable):
+        self.symboltable_params = symboltable.createChildTable()
+        self.params.visit(self.symboltable_params)
+        symboltable.addBinding(self.identifier.token.value, self, self.type.visit(symboltable))
+    
+    def getParam(self, data: BaseNode, param: BaseNode):
+        (isValid, result) = data.symboltable_params.get_value(param.token.value)
+        if isValid and result != None:
+            return result.visit(data.symboltable_params)
+        return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+    
+    def getChildNodes(self):
+        childNodes = []
+        for param in self.params:
+            childNodes.extend(param.getChildNodes()) 
+        childNodes.extend(self.block.getChildNodes())
+        return childNodes
+
+
+
 '''
 Node for loops.
 ''' 

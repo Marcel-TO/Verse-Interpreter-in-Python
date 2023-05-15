@@ -85,11 +85,19 @@ FALSE
 # text= "for(x,y:int; x = (10|20); y = (1|2|3))do(false?)(x:int =>  )"
 # text = "x,y:int; y = (if (x = 0) then 3 else 4); x = 7; y"
 # text = "z:int; z=7; y:=(31|5); x:=(7|22); (z,x,y)"
-text = "x:string; x=\"4 +1 Hallo Welt\"; x"
-text = "x:=\"BLALBJALJFIDJFDJFJÖSDJ\"; x"
-text = "x=\"I DONT LIKE THIS TEST\"; x:string; x"
-text = "x:=\"df\"; y:=\"World\"; x>=y"
-text = "x:=(\"Hallo\" | \"Welt\" ); y:=(\"New\" | \"Old\" ); x + y"
+
+
+
+
+# text = "x:string; x=\"4 +1 Hallo Welt\"; x"
+# text = "x:=\"BLALBJALJFIDJFDJFJÖSDJ\"; x"
+# text = "x=\"I DONT LIKE THIS TEST\"; x:string; x"
+# text = "x:=\"df\"; y:=\"World\"; x>=y"
+# text = "x:=(\"Hallo\" | \"Welt\" ); y:=(\"New\" | \"Old\" ); x + y"
+
+
+
+text = "data rec Rectangle(width,height:int; width=7; height=3); rec.width"
 lexer = lexicon(text)
 parser = Parser(lexer)
 interpreter = Interpreter(parser)

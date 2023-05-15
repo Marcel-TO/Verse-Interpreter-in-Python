@@ -112,12 +112,10 @@ class lexicon:
         if char.isalpha():
             result = self.get_var()
             token = self.check_for_tokentypes(result)
+            if(token.type == TokenTypes.DATA):
+                return token
             if(token.type == TokenTypes.EOF):
                 token = Token(TokenTypes.IDENTIFIER, result)
-
-        if char == ".":
-            self.forward()
-            token = self.check_for_tokentypes(char + self.current_char)
         return token
 
     def check_for_tokentypes(self, char: string) -> Token:
@@ -196,18 +194,22 @@ class lexicon:
                 return self.get_longer_token(Token(TokenTypes.EQUAL, TokenTypes.EQUAL.value))
             case TokenTypes.SCOPE.value:
                 return Token(TokenTypes.SCOPE, TokenTypes.SCOPE.value)
+            case TokenTypes.DOT.value:
+                return self.get_longer_token(Token(TokenTypes.DOT, TokenTypes.DOT.value))
             case TokenTypes.DOTDOT.value:
                 return Token(TokenTypes.DOTDOT, TokenTypes.DOTDOT.value)
             case TokenTypes.LAMBDA.value:
                 return Token(TokenTypes.LAMBDA, TokenTypes.LAMBDA.value) 
             case TokenTypes.SPACE.value:
                 return Token(TokenTypes.SPACE, TokenTypes.SPACE.value)
+            case TokenTypes.DATA.value:
+                return Token(TokenTypes.DATA, TokenTypes.DATA.value)
             case _:
                 return Token(TokenTypes.EOF, None)
 
 
 if __name__ == '__main__':
-    lexer = lexicon(" ")
+    lexer = lexicon(".")
 
     while lexer.current_char is not None:
         token = lexer.get_token(lexer.current_char)

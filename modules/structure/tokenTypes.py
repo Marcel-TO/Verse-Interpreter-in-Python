@@ -44,3 +44,5 @@ class TokenTypes(Enum):
     DOTDOT = ".."
     LAMBDA = "=>"
     SPACE = " "
+    DOT = "."
+    DATA = "data"

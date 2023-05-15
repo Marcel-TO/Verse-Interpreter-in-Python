@@ -74,6 +74,10 @@ class Parser:
         if(node.hasSyntaxError == True):
             self.set_to_token(index,token)
             node = self.func_decl()
+        
+        if(node.hasSyntaxError == True):
+            self.set_to_token(index, token)
+            node = self.data_decl()
 
         # checks if current node is not a function declaration.
         if(node.hasSyntaxError == True):
@@ -248,6 +252,39 @@ class Parser:
                 nodes.append(node.node)
             return ParsedNode(nodes, False)
         return ParsedNode(None, True)
+    
+    def data_call(self) -> ParsedNode:
+        node = self.identifier()
+        if(node.hasSyntaxError):
+            return ParsedNode(None, True)
+        
+        if self.current_token.type != TokenTypes.DOT:
+            return ParsedNode(None, True)
+        self.forward()
+
+        param = self.identifier()
+        if param.hasSyntaxError:
+            return ParsedNode(None, True)
+        return ParsedNode(DataCallNode(node.node, param.node), False)
+
+    def data_decl(self) -> ParsedNode:
+        if self.current_token.type != TokenTypes.DATA:
+            return ParsedNode(None, True)
+        self.forward()
+
+        identifier = self.identifier()
+        if identifier.hasSyntaxError:
+            return ParsedNode(None, True)
+        
+        typeIdentifier = self.identifier()
+        if typeIdentifier.hasSyntaxError or self.current_token.type != TokenTypes.LBRACKET:
+            return ParsedNode(None, True)
+        
+        params = self.brackets()
+        if params.hasSyntaxError:
+            return ParsedNode(None, True)
+        return ParsedNode(DataDeclNode(identifier.node, params.node, TypeNode(Token(TokenTypes.DATA, TokenTypes.DATA.value))), False)
+
 
 
     """
@@ -592,6 +629,10 @@ class Parser:
         if(node.hasSyntaxError):
             self.set_to_token(index,token)
             node = self.func_call()
+            
+        if(node.hasSyntaxError):
+            self.set_to_token(index,token)
+            node = self.data_call()
         
         #if node has failed check for loop
         if(node.hasSyntaxError):
@@ -800,7 +841,7 @@ class Parser:
     Moves forward in the tokens list
     """
     def forward(self) -> None:
-        print(self.current_token.__info__())
+        # print(self.current_token.__info__())
         self.lexer.forward()
         self.current_token = self.lexer.get_token(self.lexer.current_char)
         if self.current_token.type == TokenTypes.SPACE:
@@ -809,7 +850,7 @@ class Parser:
             self.end = True
     
     def forward_incl_space(self) -> None:
-        print(self.current_token.__info__())
+        # print(self.current_token.__info__())
         self.lexer.forward()
         self.current_token = self.lexer.get_token(self.lexer.current_char)
         if self.current_token.type == TokenTypes.EOF:
