@@ -4,8 +4,10 @@ import string
 class TokenTypes(Enum):
     # Data
     INTEGER = int
+    STRING = "\""
     IDENTIFIER = string #Names/Variables
     INT_TYPE = "int"
+    STRING_TYPE = "string"
     TUPLE_TYPE = "tuple"
     ARRAY_TYPE = "array"
     FAIL = "false?"
@@ -41,3 +43,4 @@ class TokenTypes(Enum):
     SCOPE = ":"
     DOTDOT = ".."
     LAMBDA = "=>"
+    SPACE = " "

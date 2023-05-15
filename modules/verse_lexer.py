@@ -99,10 +99,10 @@ class lexicon:
         if char == None:
             return token
             
-        # skip spaces.
-        if char == ' ':
-            self.forward()
-            return self.get_token(self.current_char)
+        # # skip spaces.
+        # if char == ' ':
+        #     self.forward()
+        #     return self.get_token(self.current_char)
 
         # checks if the current character is a number.
         if char.isnumeric():
@@ -126,10 +126,14 @@ class lexicon:
         match char:
             case TokenTypes.INTEGER.value:
                 return Token(TokenTypes.INTEGER, TokenTypes.INTEGER.value)
+            case TokenTypes.STRING.value:
+                return Token(TokenTypes.STRING, TokenTypes.STRING.value)
             case TokenTypes.IDENTIFIER.value:
                 return Token(TokenTypes.IDENTIFIER, TokenTypes.IDENTIFIER.value)
             case TokenTypes.INT_TYPE.value:
                 return Token(TokenTypes.INT_TYPE, TokenTypes.INT_TYPE.value)
+            case TokenTypes.STRING_TYPE.value:
+                return Token(TokenTypes.STRING_TYPE, TokenTypes.STRING_TYPE.value)
             case TokenTypes.TUPLE_TYPE.value:
                 return Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value)
             case TokenTypes.ARRAY_TYPE.value:
@@ -196,12 +200,14 @@ class lexicon:
                 return Token(TokenTypes.DOTDOT, TokenTypes.DOTDOT.value)
             case TokenTypes.LAMBDA.value:
                 return Token(TokenTypes.LAMBDA, TokenTypes.LAMBDA.value) 
+            case TokenTypes.SPACE.value:
+                return Token(TokenTypes.SPACE, TokenTypes.SPACE.value)
             case _:
                 return Token(TokenTypes.EOF, None)
 
 
 if __name__ == '__main__':
-    lexer = lexicon("= >")
+    lexer = lexicon(" ")
 
     while lexer.current_char is not None:
         token = lexer.get_token(lexer.current_char)
