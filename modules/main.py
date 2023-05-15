@@ -84,12 +84,16 @@ FALSE
 # text = "x,y:int; y= 4; x=y" # FALSE
 # text = "x:int; x=7; x=3" # FALSE
 #text = "z:int; x=(y|2); y=(1|3|z); x,y:int; t:int; t = (z = 10; 2); (x,y)" # ((1,1)|(3,3)|(10,10)|(2,1)|(2,3)|(2,10))
-text= "for(x,y:int; x = (10|20); y = (1|2|3))do(false?)"
+#text= "for(x,y:int; x = (10|20); y = (1|2|3))do(false?)"
 # text = "z:int; x=(y|2); y=(1|3|z); x,y:int; t:int; t = (z = 10; 2); (x,y)" # ((1,1)|(3,3)|(10,10)|(2,1)|(2,3)|(2,10))
 
-text = "x:int;a:int; x=2; (x:int => (x:int => (x:int => x + 2) (x)) (x)) (x)"
-text = "y=3; (x:int => 2 + x) (y:int)"
-text = "f(x:int):int := x+1; f(3)"
+#text = "x:int;a:int; x=2; (x:int => (x:int => (x:int => x + 2) (x)) (x)) (x)"
+#text = "y=3; (x:int => 2 + x) (y:int)"
+#text = "f(x:int):int := x+1; f(3)"
+#text = "f:=(x:int=>(x:int=> x + x) (2)); f(3)"
+
+text = "if(i:=(1|2|3)) then i else 30"
+text = "x:int; x=10; if(x=r:int) then 70 else 30"
 lexer = lexicon(text)
 parser = Parser(lexer)
 interpreter = Interpreter(parser)

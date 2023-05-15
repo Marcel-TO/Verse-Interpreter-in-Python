@@ -575,6 +575,8 @@ class IfNode(BaseNode):
 
         result_if = self.if_node.visit(symboltable)
         if result_if != None and result_if.token.type != TokenTypes.FAIL:
+            if result_if.token.type == TokenTypes.CHOICE:
+               result_if = result_if.nodes[0]
             return self.then_node.visit(symboltable)
         
         # result = self.else_node.visit(symboltable)
@@ -613,8 +615,8 @@ class RigidEqNode(BaseNode):
         return "{}{}{}".format(repr(self.left_node),self.token.value, repr(self.right_node)) 
 
     def visit(self, symboltable: SymbolTable):
-        res_left = self.left_node.visit(symboltable)
-        res_right = self.right_node.visit(symboltable) # x = r:int
+        res_left = self.left_node.visit(symboltable).visit(symboltable)
+        res_right = self.right_node.visit(symboltable).visit(symboltable) # x = r:int
         if res_left.token.type != TokenTypes.IDENTIFIER and res_right.token.type != TokenTypes.IDENTIFIER:
             if res_left.token.value == res_right.token.value:
                 return res_left
@@ -1021,3 +1023,12 @@ class LambdaNode(BaseNode):
         for param in self.params:
             param.App_Beta(identifierFrom, identifierTo)
         self.body.App_Beta(identifierFrom, identifierTo)
+
+
+class Context(BaseNode):
+    def __init__(self, node) -> None:
+        self.node = node
+
+    def visit(self, symboltable):
+        result = self.node.visit()
+       
