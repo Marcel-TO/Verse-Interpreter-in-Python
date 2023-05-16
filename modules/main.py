@@ -28,11 +28,11 @@ FOR
 """
 IF
 """
-text = "x:int; x=10; if(x=r:int) then 70 else 30" #!!!!!!! # 30
+# text = "x:int; x=10; if(x=r:int) then 70 else 30" #!!!!!!! # 30
 #text = "x,y:int; if(x<20) then y=70 else y=10; x=7; y" # 70
 # text = "x,y:int; y = (if (x = 0) then 3 else 4); x = 7; y" # 4
 #text = "x; x = 10; r=11; if(x = r:int) then (x:int; 1) else 3" # !!!!!!! SOLL NICHT FUNKTIONIEREN, WEIL ER ERST SCOPED IM THEN ODER ELSE, ALSO SOLLTE ES GLAUB ICH PASSEN
-#text = "x:int; x=10; y:=(if(x=r:int) then 70 else 30); r=10; y" # 70
+text = "x:int; x=10; y:=(if(x=r:int) then 70 else 30); r=10; y" # 70
 #text = "x,y,p,q:int; if(x=0) then {p=3;q=4} else {p=333;q=444}; x=0; (p,q)" # (3,4)
 #text = "x,y,p,q,r:int; if(x=0) then {p = r; r = 10; q=4} else {p=333;q=444}; x=0; (p,q)" # (10,4)
 #text = "x,y,p,q:int; if(x=0) then { p = r:int; r = 10; q=4} else {p=333;q=444}; x=0; (p,q)" # (10,4)
@@ -58,7 +58,7 @@ CHOICE
 # text = "x:=10|20|15; x<20" # (10|15)
 # text = "x,y:int; y = 31|5; x = 7|22; (x,y)" # ((7,31)|(7,5)|(22,31)|(22,5))
 # text = "x,y:int; x = 7|22; y = 31|5; (x,y)" # !!!!!!!!
-text = "x:int; t:=(1,(1|(2;3;x)));x = 10; t" # ((1,1)|(1,10))
+# text = "x:int; t:=(1,(1|(2;3;x)));x = 10; t" # ((1,1)|(1,10))
 
 """
 UNIFICATION
@@ -88,12 +88,12 @@ FALSE
 # text = "x,y:int; y= 4; x=y" # FALSE
 # text = "x:int; x=7; x=3" # FALSE
 #text = "z:int; x=(y|2); y=(1|3|z); x,y:int; t:int; t = (z = 10; 2); (x,y)" # ((1,1)|(3,3)|(10,10)|(2,1)|(2,3)|(2,10))
-text= "for(x,y:int; x = (10|20); y = (1|2|3))do(false?)"
+# text= "for(x,y:int; x = (10|20); y = (1|2|3))do(false?)"
 # text = "z:int; x=(y|2); y=(1|3|z); x,y:int; t:int; t = (z = 10; 2); (x,y)" # ((1,1)|(3,3)|(10,10)|(2,1)|(2,3)|(2,10))
 
-text = "x:int;a:int; x=2; (x:int => (x:int => (x:int => x + 2) (x)) (x)) (x)"
-text = "y=3; (x:int => 2 + x) (y:int)"
-text = "f(x:int):int := x+1; f(3)"
+# text = "x:int;a:int; x=2; (x:int => (x:int => (x:int => x + 2) (x)) (x)) (x)"
+# text = "y=3; (x:int => 2 + x) (y:int)"
+# text = "f(x:int):int := x+1; f(3)"
 lexer = lexicon(text)
 parser = Parser(lexer)
 interpreter = Interpreter(parser)

@@ -9,6 +9,10 @@ class lexicon:
         self.index = 0
         self.current_char = self.input[self.index]
     
+    def reset(self):
+        self.index = 0
+        self.current_char = self.input[self.index]
+    
     # moves the pointer a character forward
     def forward(self) -> None:
         self.index += 1
