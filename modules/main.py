@@ -2,6 +2,7 @@ from syntaxtree.nodes import *
 from verse_lexer import lexicon
 from verse_parser import Parser
 from verse_interpreter import Interpreter
+import start_text
 
 """
 TUPLE
@@ -94,6 +95,7 @@ FALSE
 # text = "x:int;a:int; x=2; (x:int => (x:int => (x:int => x + 2) (x)) (x)) (x)"
 # text = "y=3; (x:int => 2 + x) (y:int)"
 # text = "f(x:int):int := x+1; f(3)"
+start_text
 lexer = lexicon(text)
 parser = Parser(lexer)
 interpreter = Interpreter(parser)

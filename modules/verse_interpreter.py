@@ -8,7 +8,11 @@ class Interpreter:
         self.parser = parser
         self.symboltable = SymbolTable(None)
     
+    def reset_input(self):
+        self.parser.reset()
+    
     def reset(self):
+        self.symboltable = SymbolTable(None)
         self.parser.reset()
 
 
