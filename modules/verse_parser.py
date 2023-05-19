@@ -10,12 +10,12 @@ class Parser:
        self.current_token = lexer.get_token(self.lexer.current_char)
        
 
-    def parse(self) -> BaseNode:     
+    def parse(self) -> ParsedNode:     
         node = self.program()
         if node.hasSyntaxError or self.current_token.type != TokenTypes.EOF:
             self.logger.__log_error__("it appears there was a problem", ErrorType.SyntaxError)
             return ParsedNode(None, True)
-        return node.node
+        return ParsedNode(node.node, False)
        
 
     #####################################
@@ -544,11 +544,11 @@ class Parser:
         #Integer check
         if(token.type == TokenTypes.INTEGER):
             self.forward()
-            return ParsedNode(NumberNode(token), False)
+            return ParsedNode(IntegerNode(token.value), False)
         
         if(token.type == TokenTypes.FAIL):
             self.forward()
-            return ParsedNode(FailNode(token), False)
+            return ParsedNode(FailureNode(), False)
         
         #Unary operation check
         if(self.check_type(self.current_token.type, [TokenTypes.PLUS, TokenTypes.MINUS])):
@@ -563,6 +563,11 @@ class Parser:
         if(node.hasSyntaxError):
             self.set_to_token(index, token)
             node = self.brackets()
+
+        # --HIER GEÄNDERT string Funktion gebaut, damit er string erkennt im Verse Program
+        if(node.hasSyntaxError):
+            self.set_to_token(index, token)
+            node = self.string()
 
         #if node has failed check for loop
         if(node.hasSyntaxError):
@@ -605,7 +610,19 @@ class Parser:
             node = self.identifier()
         return node
     
-
+    def string(self):
+        # --HIER GEÄNDERT Hier alles, er holt sich zurzeit, Identifier Token mit dem String Wert. Identifier Token sollte lieber unbennant werden
+        token = self.current_token
+        if(token.type == TokenTypes.String):
+            self.forward()
+            val = ""
+            while(self.current_token.type == TokenTypes.IDENTIFIER):
+                val += self.current_token.value
+                self.forward()
+            if(token.type == TokenTypes.String):
+                self.forward()
+                return ParsedNode(StringNode(val), False)
+        return ParsedNode(None, True) 
     """
     Checks for brackets (highest priority)
     RULE --> brackets: LB expr RB
@@ -699,6 +716,11 @@ class Parser:
     def type(self) -> ParsedNode: 
         token = self.current_token
         if(token.type == TokenTypes.INT_TYPE):
+            self.forward()
+            return ParsedNode(TypeNode(token),False)
+        
+        # --HIER GEÄNDERT damit er string typen akzeptiert
+        if(token.type == TokenTypes.STRING_TYPE):
             self.forward()
             return ParsedNode(TypeNode(token),False)
         

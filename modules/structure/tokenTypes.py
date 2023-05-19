@@ -4,7 +4,9 @@ import string
 class TokenTypes(Enum):
     # Data
     INTEGER = int
+    String = "\"" # --HIER GEÄNDERT String Token
     IDENTIFIER = string #Names/Variables
+    STRING_TYPE = "string"
     INT_TYPE = "int"
     TUPLE_TYPE = "tuple"
     ARRAY_TYPE = "array"

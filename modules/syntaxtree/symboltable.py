@@ -157,6 +157,10 @@ class SymbolTable:
       unify_success = (False,"")
       if l.token.type == TokenTypes.INTEGER and r.token.type == TokenTypes.INTEGER:
         unify_success = self.U_LIT(l,r)
+
+      # --HIER GEÄNDERT unifikation für string
+      if l.token.type == TokenTypes.STRING_TYPE and r.token.type == TokenTypes.STRING_TYPE:
+        unify_success = self.U_String(l,r)
       elif (l.token.type == TokenTypes.TUPLE_TYPE and r.token.type == TokenTypes.TUPLE_TYPE) or (l.token.type == TokenTypes.CHOICE and r.token.type == TokenTypes.CHOICE):
         unify_success =  self.U_TUP(l,r)
         
@@ -180,7 +184,12 @@ class SymbolTable:
       return unify_success
 
         
-
+    # --HIER GEÄNDERT Damit die Unifikation funktioniert
+    def U_String(self, k1, k2) -> tuple[bool,list]:
+      u_str = [k1,k2]
+      if k1.token.value != k2.token.value:
+        return (False, [])
+      return (True, [u_str])
 
     def U_LIT(self, k1, k2) -> tuple[bool,list]:
       u_str = [k1,k2]

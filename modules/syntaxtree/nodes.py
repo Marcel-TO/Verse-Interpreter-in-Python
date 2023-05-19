@@ -14,10 +14,10 @@ class BaseNode:
         self.token = token 
 
     def visit(self, symboltable: SymbolTable):
-        return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value)) 
+        return FailureNode() 
 
     def getChildNodes(self):
-        return [FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value))]
+        return [FailureNode()]
     
     def App_Beta(self,identifierFrom, identifierTo):
         pass
@@ -59,7 +59,7 @@ class BlockNode(BaseNode):
             hasFailed = False
             results = []
             if symboltable.checkAllUnificationValid() == False:
-                return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value))
+                return FailureNode()
             for n in self.nodes:
                 result = n.visit(symboltable)
                 symboltable.remove_all_except_self()
@@ -77,7 +77,7 @@ class BlockNode(BaseNode):
         '''
 
         if hasFailed:
-            return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value))
+            return FailureNode()
         return results[len(results)-1] 
 
     def getChildNodes(self):
@@ -180,12 +180,17 @@ class OperatorNode(BaseNode):
 
         node_left = self.leftNode.visit(symboltable).visit(symboltable)
         if node_left.token.type in fail_conditions:
-                return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+                return FailureNode()
        
         node_right = self.rightNode.visit(symboltable).visit(symboltable)
         if node_right.token.type in fail_conditions:
-                return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
-
+                return FailureNode()
+        
+        # --HIER GEÄNDERT Check für string
+        if(node_right.token.type == TokenTypes.STRING_TYPE or node_left.token.type == TokenTypes.STRING_TYPE):
+           return self.doStringOperation(node_left, node_right, self.token)
+           
+        
         sequentor = Sequentor([node_left,node_right])
         sequences = sequentor.getSequences()
 
@@ -193,8 +198,8 @@ class OperatorNode(BaseNode):
         if len(sequences) == 1:
             for s in sequences:
                 if s[0].token.type == TokenTypes.IDENTIFIER or s[1].token.type == TokenTypes.IDENTIFIER:
-                    return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
-            return self.doOperation(sequences[0][0].value,sequences[0][1].value, self.token)
+                    return FailureNode()
+            return self.doNumberOperation(sequences[0][0].value,sequences[0][1].value, self.token)
         
         # Else left or/and right node of operation had to be a choice.
         nodes = []
@@ -207,10 +212,10 @@ class OperatorNode(BaseNode):
             If node save fail node in nodes
             '''
             if (left_val.token.type in fail_conditions) or (right_val.token.type in fail_conditions):
-                nodes.append( FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value)))
+                nodes.append( FailureNode())
            
             # Else save vale of done operation of left_val and right_val (nodes) into the nodes list.
-            else: nodes.append(self.doOperation(left_val.value,right_val.value, self.token))
+            else: nodes.append(self.doNumberOperation(left_val.value,right_val.value, self.token))
 
         # creates the choice
         choice = ChoiceSequenceNode(Token(TokenTypes.CHOICE,TokenTypes.CHOICE.value), nodes)
@@ -226,7 +231,8 @@ class OperatorNode(BaseNode):
     Does any of the following operations in the match case
     for two values and returns a new node.
     '''
-    def doOperation(self,val1:int,val2:int, token:Token):
+    # --HIER GEÄNDERT Funktions Namen geändert
+    def doNumberOperation(self,val1:int,val2:int, token:Token):
         result = 0
         match token.type:
             case TokenTypes.DIVIDE:
@@ -243,20 +249,57 @@ class OperatorNode(BaseNode):
             case TokenTypes.GREATER:
                 if val1 > val2:
                     result = val1
-                else: return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value)) 
+                else: return FailureNode() 
             case TokenTypes.GREATEREQ:
                 if val1 >= val2:
                     result = val1
-                else: return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value)) 
+                else: return FailureNode() 
             case TokenTypes.LOWEREQ:
                 if val1 <= val2:
                     result = val1
-                else: return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value)) 
+                else: return FailureNode() 
             case TokenTypes.LOWER:
                 if val1 < val2:
                     result = val1
-                else: return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value)) 
-        return  NumberNode(Token(TokenTypes.INTEGER, result))  
+                else: return FailureNode() 
+        return  IntegerNode(result)  
+    
+
+    # --HIER GEÄNDERT Simple Operationen mit Strings
+    def doStringOperation(self,lNode, rNode, token:Token):
+        val1 = lNode.value
+        val2 = rNode.value
+        if(lNode.token.type == TokenTypes.STRING_TYPE and rNode.token.type == TokenTypes.STRING_TYPE):      
+               match token.type:  
+                    case TokenTypes.GREATER:
+                        if val1 > val2:
+                            result = val1
+                        else: return FailureNode() 
+                    case TokenTypes.GREATEREQ:
+                        if val1 >= val2:
+                            result = val1
+                        else: return FailureNode() 
+                    case TokenTypes.LOWEREQ:
+                        if val1 <= val2:
+                            result = val1
+                        else: return FailureNode() 
+                    case TokenTypes.LOWER:
+                        if val1 < val2:
+                            result = val1
+                        else: return FailureNode() 
+                    case TokenTypes.MINUS:
+                       return FailureNode() 
+                    case TokenTypes.MULTIPLY:
+                       return FailureNode()
+
+        if(token.type == TokenTypes.PLUS):
+            try:
+                result = str(val1) + str(val2)
+                return StringNode(result)
+            except:
+                return FailureNode() 
+        return StringNode(result)
+
     
     def getChildNodes(self):
         childNodes = []
@@ -285,7 +328,7 @@ class UnaryNode(BaseNode):
         if self.token.type == TokenTypes.MINUS:
             mul = -1
         res = OperatorNode(Token(TokenTypes.MULTIPLY, TokenTypes.MULTIPLY.value),
-                                                 NumberNode(Token(TokenTypes.INTEGER,mul)),self.node)
+                                                 IntegerNode(mul),self.node)
         return res.visit(symboltable)
 
     def getChildNodes(self):
@@ -317,7 +360,7 @@ class IdentifierNode(BaseNode):
             (isValid, result) = symboltable.parentTable.get_value(self.token.value)
             if isValid and result != None:
                 return result.visit(symboltable)
-        return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+        return FailureNode()
     
     def getChildNodes(self):
         childNodes = [self]
@@ -348,7 +391,7 @@ class ScopeNode(BaseNode):
             isValid = symboltable.addScope(n.token.value, self.type.visit(symboltable))
             
             if isValid == False and self.isVisitted == False:
-                return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+                return FailureNode()
             else: self.isVisitted = True
                    
         return self.nodes[0]
@@ -444,7 +487,7 @@ class FuncCallNode:
                         symboltable.addValue(arg, param_val_at_arg_pos[1])
                  index += 1
             return val
-        return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+        return FailureNode()
         
     def getChildNodes(self):
         childNodes = []
@@ -555,7 +598,7 @@ class ForNode(BaseNode):
             for i in range(0, len(tuple.nodes)):
                 # iterates through nodes, overwrites current value and create tuple with results
                 symboltable.change_value(indexingNode.leftNode.token.value, tuple.nodes[i])
-                symboltable.change_value(indexingNode.rightNode.index.token.value, NumberNode(Token(TokenTypes.INTEGER, i)))
+                symboltable.change_value(indexingNode.rightNode.index.token.value,  i)
                 results.append(self.do.visit(symboltable))
             return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), results)
         # iterates through each node and gets tuple
@@ -577,7 +620,7 @@ class ForNode(BaseNode):
         try:
             result =  self.do.visit(symboltable)
         except:
-            return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+            return FailureNode()
         return result
 
     def getChildNodes(self):
@@ -664,9 +707,9 @@ class RigidEqNode(BaseNode):
         res_left = self.left_node.visit(symboltable).visit(symboltable)
         res_right = self.right_node.visit(symboltable).visit(symboltable) # x = r:int
         if res_left.token.type != TokenTypes.IDENTIFIER and res_right.token.type != TokenTypes.IDENTIFIER:
-            if res_left.token.value == res_right.token.value:
+            if res_left.value == res_right.value:
                 return res_left
-        return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+        return FailureNode()
     
     def getChildNodes(self):
         childNodes = []
@@ -694,7 +737,7 @@ class FlexibleEqNode(BaseNode):
         isValid = symboltable.addValue(self.left_node.token.value, self.right_node)
         if isValid:
             return self.right_node.visit(symboltable)
-        return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+        return FailureNode()
 
     def getChildNodes(self):
         childNodes = []
@@ -725,7 +768,7 @@ class SequenceNode(BaseNode):
         for n in self.nodes:
             visited_node = n.visit(symboltable).visit(symboltable)
             if visited_node.token.type == TokenTypes.FAIL:
-                return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value))
+                return FailureNode()
             elif visited_node.token.type == TokenTypes.CHOICE:
                 isChoice = True
             visited_nodes.append(visited_node)
@@ -779,7 +822,7 @@ class IndexingNode(BaseNode):
                 # checks if it is number
                 if index.value >= len(value.nodes):
                     print("Exception -> Index out of range")
-                    return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+                    return FailureNode()
 
                 return value.nodes[index.value]
             except:
@@ -790,12 +833,12 @@ class IndexingNode(BaseNode):
                         i = iNode.visit(symboltable)
                         if i.value >= len(value.nodes):
                             print("Exception -> Index out of range")
-                            return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+                            return FailureNode()
                         result.append(value.nodes[i.value])
                     return SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),result)
                 except:
-                    return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
-        return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+                    return FailureNode()
+        return FailureNode()
                     
     def getChildNodes(self):
         childNodes = []
@@ -841,7 +884,7 @@ class ChoiceSequenceNode(BaseNode):
 
             # If choise sequence is empty, return false?
             if(len(nodes) == 0):
-                return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value))
+                return FailureNode()
             
             # If choise has atleast one return the node it only contains instead od a choice sequence node.
             if(len(nodes) == 1):
@@ -964,11 +1007,11 @@ class DotDotNode(BaseNode):
     def visit(self, symboltable: SymbolTable):
         startNode = self.start.visit(symboltable)
         if startNode.token.type != TokenTypes.INTEGER:
-            return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+            return FailureNode()
         
         endNode = self.end.visit(symboltable)
         if endNode.token.type != TokenTypes.INTEGER:
-            return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+            return FailureNode()
         
         fac = 1
         if startNode.value > endNode.value:
@@ -985,7 +1028,7 @@ class DotDotNode(BaseNode):
                 endGen = True
             else:
                 currentInt += fac
-                nodes.append(NumberNode(Token(TokenTypes.INTEGER,currentInt)))
+                nodes.append(IntegerNode(currentInt))
            
         return ChoiceSequenceNode(Token(TokenTypes.CHOICE,TokenTypes.CHOICE.value), nodes)
     
@@ -1026,7 +1069,7 @@ class LambdaNode(BaseNode):
 
     def visit(self, symboltable: SymbolTable):
         if(len(self.params) != len(self.values)):
-            return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+            return FailureNode()
         copiedTable = symboltable.createChildTable()
         self.Rename(copiedTable)
         copybody = copy.deepcopy(self.body)
@@ -1079,4 +1122,84 @@ class Context(BaseNode):
 
     def visit(self, symboltable):
         result = self.node.visit()
+
+
+
+
+
+# --HIER GEÄNDERT Typen und ober Klasse für Typen
+class VerseType():
+    def __init__(self, typeToken):
+        self.typeToken = typeToken
+
+
+class StringType(VerseType):
+    def __init__(self):
+        super().__init__(Token(TokenTypes.STRING_TYPE, TokenTypes.STRING_TYPE.value))
+
+class IntegerType(VerseType):
+    def __init__(self):
+        super().__init__(Token(TokenTypes.INT_TYPE, TokenTypes.INT_TYPE.value))
+
+class FailureType(VerseType):
+    def __init__(self):
+        super().__init__(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+    
+class SequenceType(VerseType):
+    def __init__(self):
+        super().__init__(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value))
+
+
+# --HIER GEÄNDERT ValueNode
+class ValueNode(BaseNode):
+    def __init__(self, verse_type):
+        self.verse_type = verse_type
+    
+# --HIER GEÄNDERT StringNode mit StringTypen
+class StringNode(ValueNode):
+    def __init__(self, value:str):
+        super().__init__(StringType())
+        self.value = value
+        self.token = self.verse_type.typeToken
+
+    def visit(self, symboltable):
+        return self
+
+    def __repr__(self) -> str:
+        return self.value
+
+
+# --HIER GEÄNDERT Neuer IntegerNode mit IntegerTypen
+class IntegerNode(ValueNode):
+    def __init__(self, value:int):
+        super().__init__(IntegerType())
+        self.value = value
+        self.token = self.verse_type.typeToken
+
+    def visit(self, symboltable):
+        return self
+
+    def __repr__(self) -> str:
+        try:
+            rep = str(self.value)
+            return rep
+        except:
+            return repr(FailureNode())
+    
+        
+# --HIER GEÄNDERT Neuer FailNode mit FaliureTypen
+class FailureNode(ValueNode):
+    def __init__(self):
+        super().__init__(FailureType())
+        self.token = self.verse_type.typeToken
+
+    def visit(self, symboltable):
+        return FailureNode(self.value)
+
+    def __repr__(self) -> str:
+        return self.token.value
+
+
+
+
        

@@ -8,6 +8,7 @@ class lexicon:
         self.input = input
         self.index = 0
         self.current_char = self.input[self.index]
+        self.stringMode = False
     
     # moves the pointer a character forward
     def forward(self) -> None:
@@ -91,6 +92,14 @@ class lexicon:
     
    
     def get_token(self, char: string) -> Token:
+        # --HIER GEÄNDERT schaut nach ob im string modus ist, wenn ja liefer den char ansonst mach weiter.
+        # Wenn das String Zeichen " als nächstes drann ist also hier das char, dann geht er vom string mode wieder zurück ins normale suchen von tokens
+        if(char == TokenTypes.String.value and self.stringMode):
+            self.stringMode = False
+            return Token(TokenTypes.String, TokenTypes.String.value)
+           
+        elif self.stringMode:
+            return Token(TokenTypes.IDENTIFIER, char)
         token = self.check_for_tokentypes(char)
 
         if token.type != TokenTypes.EOF:
@@ -134,6 +143,8 @@ class lexicon:
                 return Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value)
             case TokenTypes.ARRAY_TYPE.value:
                 return Token(TokenTypes.ARRAY_TYPE, TokenTypes.ARRAY_TYPE.value)
+            case TokenTypes.STRING_TYPE.value:
+                return Token(TokenTypes.STRING_TYPE, TokenTypes.STRING_TYPE.value)
             case TokenTypes.FAIL.value:
                 return Token(TokenTypes.FAIL, TokenTypes.FAIL.value)
             case TokenTypes.PLUS.value:
@@ -196,9 +207,33 @@ class lexicon:
                 return Token(TokenTypes.DOTDOT, TokenTypes.DOTDOT.value)
             case TokenTypes.LAMBDA.value:
                 return Token(TokenTypes.LAMBDA, TokenTypes.LAMBDA.value) 
+            # --HIER GEÄNDERT Extra case für String und aktiviert stringMode
+            case TokenTypes.String.value: 
+                self.stringMode = True
+                return Token(TokenTypes.String, TokenTypes.String.value)
             case _:
                 return Token(TokenTypes.EOF, None)
 
+    def getString(self):
+        if self.index >= len(self.input):
+                return None
+            
+        result = self.input[self.index]
+
+            # checks if there is a longer variable name
+        search = True
+        while search:
+                self.forward()
+
+                if self.index < len(self.input) and self.input[self.index] != None and self.input[self.index].isalpha():
+                    result += self.input[self.index]
+                elif self.index < len(self.input) and self.input[self.index] != None and self.input[self.index] == '?':
+                    result += self.input[self.index]
+                else:
+                    self.backward()
+                    break
+            
+        return result
 
 if __name__ == '__main__':
     lexer = lexicon("= >")
