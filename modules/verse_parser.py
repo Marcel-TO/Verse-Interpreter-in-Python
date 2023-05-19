@@ -8,6 +8,10 @@ class Parser:
        self.end = False
        self.lexer = lexer
        self.current_token = lexer.get_token(self.lexer.current_char)
+    
+    def reset(self):
+        self.lexer.reset()
+        self.current_token = self.lexer.get_token(self.lexer.current_char)
        
 
     def parse(self) -> ParsedNode:     
@@ -818,7 +822,7 @@ class Parser:
     Moves forward in the tokens list
     """
     def forward(self) -> None:
-        print(self.current_token.__info__())
+        # print(self.current_token.__info__())
         self.lexer.forward()
         self.current_token = self.lexer.get_token(self.lexer.current_char)
         if self.current_token.type == TokenTypes.EOF:

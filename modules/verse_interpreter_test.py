@@ -56,7 +56,6 @@ class InterpreterTest(unittest.TestCase):
     {'input': 'x,y:int; if(x<20) then y=70 else y=10; x=7; y', 'expected': '70'},
     {'input': 'x,y:int; y = (if (x = 0) then 3 else 4); x = 7; y', 'expected': '4'},
     {'input': 'x; x = 10; r=11; if(x = r:int) then (x:int; 1) else 3', 'expected': 'false?'},
-    # {'input': 'x:int; x=10; y:=(if(x=r:int) then 70 else 30); r=10; y', 'expected': '70'},
     {'input': 'if(i:=(15|2|3)) then i else 30', 'expected': '15'},
     {'input': 'if(i:=1|2|3; r:= 4|5|6) then i + r else r - i', 'expected': '5'},
     {'input': 'x,y,p,q,r:int; if(x=0) then {p = r; r = 10; q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(10,4)'},
@@ -76,7 +75,7 @@ class InterpreterTest(unittest.TestCase):
     '''    
     @data({'input': 'x:=1; f(x:int):int := (x + 1)', 'expected': '1'},
     {'input': 'x:int; f(p:int):int :=  (p = 1; y:int; y = 100; (p)*100); f(x); x', 'expected': '1'},
-    # {'input': 'f:=(x:int=> d(x) + 1 ); d(p:int):= (p*2); f(3)', 'expected': '7'},
+    {'input': 'f:=(x:int=> d(x) + 1 ); d(p:int):= (p*2); f(3)', 'expected': '7'},
     {'input': 'x:int; z:int; f(p:int,q:int):int :=  (p = 1; q = 23; y:int; y = 100; (p+q)*100); f(x,z); x + z', 'expected': '24'},)
     @unpack
     def test_function(self, input: string, expected: string):
