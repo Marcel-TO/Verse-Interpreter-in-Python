@@ -95,6 +95,19 @@ FALSE
 # text = "x:int;a:int; x=2; (x:int => (x:int => (x:int => x + 2) (x)) (x)) (x)"
 # text = "y=3; (x:int => 2 + x) (y:int)"
 # text = "f(x:int):int := x+1; f(3)"
+
+"""
+STRING
+"""
+text = "x:=\"Hello \"; y:=\"World\"; x + y" # Hello World
+text = "x:=\"World\"; y:=\"World\"; if(x=y)then 1 else 0" # 1
+text = "x:=\"df\"; y:=\"World\"; x<y" # df
+text = "x:=\"OMGODF\"; y:=\"World\"; x>=y" # OMGODF
+text = "x:=\"df\"; y:=\"World\"; x>=y" # false?
+text = "x:=(\"Hallo\" | \"Welt\" ); x" # (Hallo|Welt)
+text = "x:=(\"Hallo\" | \"Welt\" ); y:=(\"New\" | \"Old\" ); x + y" # (HalloNew|HalloOld|WeltNew|WeltOld)
+
+
 start_text
 lexer = lexicon(text)
 parser = Parser(lexer)

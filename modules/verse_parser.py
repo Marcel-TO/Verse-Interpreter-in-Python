@@ -421,6 +421,25 @@ class Parser:
             return ParsedNode(None, True)
 
         return ParsedNode(ScopeNode(token, scope_nodes, type.node), False)
+    
+    def string_statement(self) -> ParsedNode:
+        token = self.current_token
+        index = self.lexer.index
+
+        if token.type != TokenTypes.STRING:
+            return ParsedNode(None, True)
+        self.forward()
+        result = ""
+        
+        while self.current_token.type != TokenTypes.STRING:
+            # checks if end of file is reached.
+            if self.current_token.type == TokenTypes.EOF:
+                return ParsedNode(None, True)
+            
+            result += str(self.current_token.value)
+            self.forward_incl_space()
+        self.forward()
+        return ParsedNode(StringNode(Token(TokenTypes.STRING, result)), False)
         
         
     #####################################
@@ -597,6 +616,10 @@ class Parser:
         if(node.hasSyntaxError):
             self.set_to_token(index,token)
             node = self.if_statement()
+        
+        if(node.hasSyntaxError):
+            self.set_to_token(index, token)
+            node = self.string_statement()
         
         #if node has failed check sequence
         if(node.hasSyntaxError):
@@ -800,6 +823,15 @@ class Parser:
     Moves forward in the tokens list
     """
     def forward(self) -> None:
+        # print(self.current_token.__info__())
+        self.lexer.forward()
+        self.current_token = self.lexer.get_token(self.lexer.current_char)
+        if self.current_token.type == TokenTypes.SPACE:
+            self.forward()
+        if self.current_token.type == TokenTypes.EOF:
+            self.end = True
+
+    def forward_incl_space(self) -> None:
         # print(self.current_token.__info__())
         self.lexer.forward()
         self.current_token = self.lexer.get_token(self.lexer.current_char)

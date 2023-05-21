@@ -138,7 +138,6 @@ class BindingNode(BaseNode):
 '''
 Node representing a number.
 ''' 
-
 class NumberNode(BaseNode):
     def __init__(self, token:Token) -> None:
         super().__init__(token)
@@ -153,6 +152,19 @@ class NumberNode(BaseNode):
     def getChildNodes(self):
         childNodes = [self]
         return childNodes 
+
+'''
+Node representing a string.
+''' 
+class StringNode(BaseNode):
+    def __init__(self, token) -> None:
+        super().__init__(token)
+
+    def __repr__(self) -> str:
+        return self.token.value
+        
+    def visit(self, symboltable: SymbolTable):
+        return StringNode(self.token)
 
 
 '''
@@ -194,7 +206,10 @@ class OperatorNode(BaseNode):
             for s in sequences:
                 if s[0].token.type == TokenTypes.IDENTIFIER or s[1].token.type == TokenTypes.IDENTIFIER:
                     return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
-            return self.doOperation(sequences[0][0].value,sequences[0][1].value, self.token)
+            # checks if the sequences are string or not
+            if s[0].token.type == TokenTypes.STRING or s[1].token.type == TokenTypes.STRING:
+                return self.doOperationStr(sequences[0][0].token.value,sequences[0][1].token.value, self.token)
+            return self.doOperationInt(sequences[0][0].value,sequences[0][1].value, self.token)
         
         # Else left or/and right node of operation had to be a choice.
         nodes = []
@@ -210,7 +225,11 @@ class OperatorNode(BaseNode):
                 nodes.append( FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value)))
            
             # Else save vale of done operation of left_val and right_val (nodes) into the nodes list.
-            else: nodes.append(self.doOperation(left_val.value,right_val.value, self.token))
+            else: 
+                if left_val.token.type == TokenTypes.STRING or right_val.token.type == TokenTypes.STRING:
+                    nodes.append(self.doOperationStr(left_val.token.value, right_val.token.value, self.token))
+                    continue
+                nodes.append(self.doOperationInt(left_val.value,right_val.value, self.token))
 
         # creates the choice
         choice = ChoiceSequenceNode(Token(TokenTypes.CHOICE,TokenTypes.CHOICE.value), nodes)
@@ -226,7 +245,7 @@ class OperatorNode(BaseNode):
     Does any of the following operations in the match case
     for two values and returns a new node.
     '''
-    def doOperation(self,val1:int,val2:int, token:Token):
+    def doOperationInt(self,val1:int,val2:int, token:Token):
         result = 0
         match token.type:
             case TokenTypes.DIVIDE:
@@ -257,6 +276,30 @@ class OperatorNode(BaseNode):
                     result = val1
                 else: return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value)) 
         return  NumberNode(Token(TokenTypes.INTEGER, result))  
+    
+    def doOperationStr(self, val1: str, val2: str, token: Token):
+        result = ""
+        match token.type:
+            case TokenTypes.PLUS:
+                result = val1 + val2
+            case TokenTypes.GREATER:
+                if len(val1) > len(val2):
+                    result = val1
+                else: return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value)) 
+            case TokenTypes.GREATEREQ:
+                if len(val1) >= len(val2):
+                    result = val1
+                else: return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value)) 
+            case TokenTypes.LOWEREQ:
+                if len(val1) <= len(val2):
+                    result = val1
+                else: return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value)) 
+            case TokenTypes.LOWER:
+                if len(val1) < len(val2):
+                    result = val1
+                else: return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value)) 
+        
+        return StringNode(Token(TokenTypes.STRING, result))
     
     def getChildNodes(self):
         childNodes = []

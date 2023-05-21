@@ -135,6 +135,24 @@ class InterpreterTest(unittest.TestCase):
         self.interpreter = Interpreter(self.parser)
         result = self.interpreter.interpret()
         self.assertTrue(repr(result) == expected)
+    
+    '''
+    Test: STRING
+    '''    
+    @data({'input': 'x:=\"Hello \"; y:=\"World\"; x + y', 'expected': 'Hello World'},
+    {'input': 'x:=\"World\"; y:=\"World\"; if(x=y)then 1 else 0', 'expected': '1'},
+    {'input': 'x:=\"df\"; y:=\"World\"; x<y', 'expected': 'df'},
+    {'input': 'x:=\"OMGODF\"; y:=\"World\"; x>=y', 'expected': 'OMGODF'},
+    {'input': 'x:=\"df\"; y:=\"World\"; x>=y', 'expected': 'false?'},
+    {'input': 'x:=(\"Hallo\" | \"Welt\" ); x', 'expected': '(Hallo|Welt)'},
+    {'input': 'x:=(\"Hallo\" | \"Welt\" ); y:=(\"New\" | \"Old\" ); x + y', 'expected': '(HalloNew|HalloOld|WeltNew|WeltOld)'})
+    @unpack
+    def test_string(self, input: string, expected: string):
+        self.lexer = lexicon(input)
+        self.parser = Parser(self.lexer)
+        self.interpreter = Interpreter(self.parser)
+        result = self.interpreter.interpret()
+        self.assertTrue(repr(result) == expected)
 
 if __name__ == '__main__':
     unittest.main(argv=['first-arg-is-ignored'], exit=False)       
