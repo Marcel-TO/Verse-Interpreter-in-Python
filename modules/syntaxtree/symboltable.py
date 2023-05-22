@@ -142,6 +142,8 @@ class SymbolTable:
                         nodeR = u[1].visit(self)
                         if nodeR.token.type != TokenTypes.FAIL:
                             self.addValue(u[0].token.value, nodeR)
+
+                    # Unification fix for different identifiers
                     elif u[0].token.type == TokenTypes.IDENTIFIER and u[1].token.type == TokenTypes.IDENTIFIER:
                         val0 = u[0].visit(self.symboltable)
                         val1 = u[1].visit(self.symboltable)
