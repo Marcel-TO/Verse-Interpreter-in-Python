@@ -142,7 +142,15 @@ class SymbolTable:
                         nodeR = u[1].visit(self)
                         if nodeR.token.type != TokenTypes.FAIL:
                             self.addValue(u[0].token.value, nodeR)
-                    elif u[1].token.type != TokenTypes.IDENTIFIER: self.addValue(u[0].token.value, u[1])
+                    elif u[0].token.type == TokenTypes.IDENTIFIER and u[1].token.type == TokenTypes.IDENTIFIER:
+                        val0 = u[0].visit(self.symboltable)
+                        val1 = u[1].visit(self.symboltable)
+
+                        if(val0.token.value != val1.token.value) and (val0.token.type != TokenTypes.FAIL and val1.token.type != TokenTypes.FAIL):
+                            return False
+
+                    elif u[1].token.type != TokenTypes.IDENTIFIER: 
+                        self.addValue(u[0].token.value, u[1])
             return True
         except:
             

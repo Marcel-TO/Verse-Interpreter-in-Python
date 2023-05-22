@@ -101,7 +101,7 @@ STRING
 """
 # text = "x:=\"Hello \"; y:=\"World\"; x + y" # Hello World
 # text = "x:=\"World\"; y:=\"World\"; if(x=y)then 1 else 0" # 1
-# text = "x:=\"df\"; y:=\"World\"; x<y" # df
+text = "x:=1; y:=2; z:int; z = x; z = y; z" # df
 # text = "x:=\"OMGODF\"; y:=\"World\"; x>=y" # OMGODF
 # text = "x:=\"df\"; y:=\"World\"; x>=y" # false?
 # text = "x:=(\"Hallo\" | \"Welt\" ); x" # (Hallo|Welt)
