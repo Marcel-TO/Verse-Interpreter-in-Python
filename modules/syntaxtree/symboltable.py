@@ -169,9 +169,6 @@ class SymbolTable:
         unify_success = self.U_LIT(l,r)
       elif (l.token.type == TokenTypes.TUPLE_TYPE and r.token.type == TokenTypes.TUPLE_TYPE) or (l.token.type == TokenTypes.CHOICE and r.token.type == TokenTypes.CHOICE):
         unify_success =  self.U_TUP(l,r)
-        
-      elif r.token.type == TokenTypes.IDENTIFIER:
-        unify_success = self.Hnf_Swap(l,r)
       elif l.token.type == TokenTypes.SCOPE or r.token.type == TokenTypes.SCOPE: 
           if l.token.type == TokenTypes.SCOPE: 
               l = l.nodes[0]
@@ -179,14 +176,19 @@ class SymbolTable:
               r = r.nodes[0]
           unify_success = self.unify(l,r)  
       else: 
-           if l.token.type == TokenTypes.IDENTIFIER and r.token.type == TokenTypes.IDENTIFIER:
-                unify_success = self.Var_Swap(l,r)
-           else: 
-                l = l.visit(self)
-                r = r.visit(self)
-                if l.token.type != TokenTypes.FAIL and r.token.type != TokenTypes.FAIL:   
-                    unify_success = self.unify(l,r)
-                else: unify_success = (True, [])
+            if l.token.type == TokenTypes.IDENTIFIER or r.token.type == TokenTypes.IDENTIFIER:
+                if l.token.type == TokenTypes.IDENTIFIER and r.token.type == TokenTypes.IDENTIFIER:
+                    unify_success = self.Var_Swap(l,r)
+                elif r.token.type == TokenTypes.IDENTIFIER:
+                    unify_success = self.Hnf_Swap(l,r)
+                else: 
+                    l = l.visit(self)
+                    r = r.visit(self)
+                    if l.token.type != TokenTypes.FAIL and r.token.type != TokenTypes.FAIL:   
+                        unify_success = self.unify(l,r)
+                    else: unify_success = (True, [])
+            else: (False, [])
+               
       return unify_success
 
         
