@@ -34,9 +34,24 @@ x:=(2); y:=(8); (x,y)       | Context 2.2
 x:= 1|2; if (x = 1|2) then 10 else 20
 
 x:= 1; if (x = 1|2) then 10 else 20
-x:= 1; if (x = 1) then 10 else 20
+x:= 1; if (x = 1) then 10 else 20 |
 x:= 1; if (x = 2) then 10 else 20
 
 x:= 2; if (x = 1|2) then 10 else 20
-x:= 2; if (x = 1) then 10 else 20
+x:= 2; if (x = 1) then 10 else 20 |
 x:= 2; if (x = 2) then 10 else 20
+
+
+tree -> x:int; x = 1|2; x
+x:int; x = 1|2; x   C1 | visit choice
+is choice -> return ChoiceContext, replace current context
+
+tree 
+-> x:int; x = 1; x C2 |iterate again 
+-> x:int; x = 2; x C3
+
+
+
+tree
+-> x:=(y|2); y:=(7|8); (x,y)    C1|Context
+x is choice -> return ChoiceContext, replace current context (C1)

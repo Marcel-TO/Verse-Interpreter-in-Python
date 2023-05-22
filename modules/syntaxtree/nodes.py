@@ -1192,6 +1192,7 @@ class FailureNode(ValueNode):
     def __init__(self):
         super().__init__(FailureType())
         self.token = self.verse_type.typeToken
+        self.value = self.verse_type.typeToken.value
 
     def visit(self, symboltable):
         return FailureNode(self.value)

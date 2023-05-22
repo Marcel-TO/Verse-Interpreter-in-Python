@@ -155,11 +155,11 @@ class SymbolTable:
      
     def unify(self,l, r) -> tuple[bool,list]:
       unify_success = (False,"")
-      if l.token.type == TokenTypes.INTEGER and r.token.type == TokenTypes.INTEGER:
+      if l.token.type == TokenTypes.INT_TYPE and r.token.type == TokenTypes.INT_TYPE:
         unify_success = self.U_LIT(l,r)
 
       # --HIER GEÄNDERT unifikation für string
-      if l.token.type == TokenTypes.STRING_TYPE and r.token.type == TokenTypes.STRING_TYPE:
+      elif l.token.type == TokenTypes.STRING_TYPE and r.token.type == TokenTypes.STRING_TYPE:
         unify_success = self.U_String(l,r)
       elif (l.token.type == TokenTypes.TUPLE_TYPE and r.token.type == TokenTypes.TUPLE_TYPE) or (l.token.type == TokenTypes.CHOICE and r.token.type == TokenTypes.CHOICE):
         unify_success =  self.U_TUP(l,r)
