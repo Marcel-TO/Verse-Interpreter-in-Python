@@ -78,6 +78,10 @@ class Parser:
         if(node.hasSyntaxError == True):
             self.set_to_token(index,token)
             node = self.func_decl()
+        
+        if(node.hasSyntaxError == True):
+            self.set_to_token(index, token)
+            node = self.data_decl()
 
         # checks if current node is not a function declaration.
         if(node.hasSyntaxError == True):
@@ -252,6 +256,71 @@ class Parser:
                 nodes.append(node.node)
             return ParsedNode(nodes, False)
         return ParsedNode(None, True)
+    
+    def data_call(self) -> ParsedNode:
+        node = self.identifier()
+        if(node.hasSyntaxError):
+            return ParsedNode(None, True)
+        
+        if self.current_token.type != TokenTypes.DOT:
+            return ParsedNode(None, True)
+        self.forward()
+
+        param = self.identifier()
+        if param.hasSyntaxError:
+            return ParsedNode(None, True)
+        return ParsedNode(DataCallNode(node.node, param.node), False)
+
+    # def data_decl(self) -> ParsedNode:
+    #     if self.current_token.type != TokenTypes.DATA:
+    #         return ParsedNode(None, True)
+    #     self.forward()
+
+    #     identifier = self.identifier()
+    #     if identifier.hasSyntaxError:
+    #             return ParsedNode(None, True)
+        
+    #     if self.current_token.type == TokenTypes.LBRACKET:
+    #             self.forward()
+
+    #             params = self.func_decl_param()
+
+    #             if self.current_token.type == TokenTypes.RBRACKET:
+    #                 self.forward()
+    #                 type = None
+    #                 if(self.current_token.type == TokenTypes.COLON):
+    #                     self.forward()
+    #                     type = self.type()
+    #                     if(type.hasSyntaxError):
+    #                         return ParsedNode(None,True)
+
+    #                 if self.current_token.type == TokenTypes.BINDING:
+    #                     self.forward()
+    #                     block = self.expr()
+    #                     if(block.hasSyntaxError == False):
+    #                         return ParsedNode(DataDeclNode(identifier.node, params.node, type.node, block.node), False)
+    #             return ParsedNode(None,True)
+
+    #     return ParsedNode(None,True)
+        
+    def data_decl(self) -> ParsedNode:
+        if self.current_token.type != TokenTypes.DATA:
+            return ParsedNode(None, True)
+        self.forward()
+
+        identifier = self.identifier()
+        if identifier.hasSyntaxError or self.current_token.type != TokenTypes.LBRACKET:
+                return ParsedNode(None, True)
+
+        self.forward()
+        params = self.func_decl_param()
+        if params.hasSyntaxError:
+            return ParsedNode(None, True)
+        
+        if self.current_token.type != TokenTypes.RBRACKET:
+            return ParsedNode(None, True)
+        self.forward()
+        return ParsedNode(DataDeclNode(identifier.node, params.node, TypeNode(Token(TokenTypes.DATA, TokenTypes.DATA.value))), False)
 
 
     """
@@ -606,6 +675,10 @@ class Parser:
         if(node.hasSyntaxError):
             self.set_to_token(index,token)
             node = self.func_call()
+        
+        if(node.hasSyntaxError):
+            self.set_to_token(index,token)
+            node = self.data_call()
         
         #if node has failed check for loop
         if(node.hasSyntaxError):

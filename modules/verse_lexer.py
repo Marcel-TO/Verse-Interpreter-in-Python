@@ -212,7 +212,7 @@ class lexicon:
 
 
 if __name__ == '__main__':
-    lexer = lexicon(". ..")
+    lexer = lexicon(". .. data")
 
     while lexer.current_char is not None:
         token = lexer.get_token(lexer.current_char)

@@ -64,8 +64,11 @@ class BlockNode(BaseNode):
                 result = n.visit(symboltable)
                 symboltable.remove_all_except_self()
                 if result != None:
-                    if result.token.type == TokenTypes.FAIL:
-                        hasFailed = True
+                    try:
+                        if result.token.type == TokenTypes.FAIL:
+                            hasFailed = True
+                    except: 
+                        pass
                     results.append(result)
             i += 1
         
@@ -459,10 +462,17 @@ class FuncCallNode:
 
     def visit(self, symboltable: SymbolTable):
         table = symboltable.createChildTable()
-        scope = symboltable.get_value(self.identifier.token.value)
+        (isValid, result) = symboltable.get_value(self.identifier.token.value)
             
-        if scope[0]:
-            func_dec:FuncDeclNode = scope[1]
+        if isValid:
+            try:
+                # checks if it is not a func call but a data call instead
+                if result.type.token.type == TokenTypes.DATA:
+                    return result.setParam(self.args)
+            except: 
+                pass
+            
+            func_dec:FuncDeclNode = result
             index = 0
             params = func_dec.params
             for param in params:
@@ -520,6 +530,77 @@ class FuncDeclNode:
             childNodes.extend(param.getChildNodes()) 
         childNodes.extend(self.block.getChildNodes())
         return childNodes
+
+
+'''
+Node for scoped data calls.
+''' 
+class DataCallNode:
+    def __init__(self,identifier:IdentifierNode, param:BaseNode) -> None:
+        self.identifier = identifier
+        self.param = param
+
+    def visit(self, symboltable: SymbolTable):
+        table = symboltable.createChildTable()
+        # Change that DataDecl is returned"
+        (isValid, value) = symboltable.get_value(self.identifier.token.value)
+
+        if isValid == False:
+            return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+        
+        result = value.visit(symboltable)
+        
+        return result.getParam(self.param)
+
+
+'''
+Node for data declarations.
+''' 
+class DataDeclNode:
+    def __init__(self,identifier:IdentifierNode, params:list[ScopeNode], type:BaseNode, block: BlockNode) -> None:
+        self.identifier = identifier
+        self.params = params
+        self.type = type
+        self.block = block
+        self.symboltable_params = SymbolTable(None)
+    
+    def __init__(self,identifier:IdentifierNode, params:list[ScopeNode], type:BaseNode) -> None:
+        self.identifier = identifier
+        self.params = params
+        self.type = type
+        self.symboltable_params = SymbolTable(None)
+
+    def visit(self, symboltable: SymbolTable):
+        self.symboltable_params = symboltable.createChildTable()
+        for param in self.params:
+            param.visit(self.symboltable_params)
+        symboltable.addBinding(self.identifier.token.value, self, self.type.visit(symboltable))
+    
+    def setParam(self, args: list[BaseNode]):
+        if len(self.params) != len(args):
+            return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+        try:
+            for i in range(0, len(self.params)):
+                for node in self.params[i].nodes:
+                    self.symboltable_params.addValue(node.token.value, args[i])
+        except:
+            return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+        return self
+    
+    def getParam(self, param: BaseNode):
+        (isValid, result) = self.symboltable_params.get_value(param.token.value)
+        if isValid and result != None:
+            return result.visit(self.symboltable_params)
+        return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+    
+    def getChildNodes(self):
+        childNodes = []
+        for param in self.params:
+            childNodes.extend(param.getChildNodes()) 
+        childNodes.extend(self.block.getChildNodes())
+        return childNodes
+
+
 '''
 Node for loops.
 ''' 
