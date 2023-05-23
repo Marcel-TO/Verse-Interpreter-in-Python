@@ -145,8 +145,8 @@ class SymbolTable:
 
                     # Unification fix for different identifiers
                     elif u[0].token.type == TokenTypes.IDENTIFIER and u[1].token.type == TokenTypes.IDENTIFIER:
-                        val0 = u[0].visit(self.symboltable)
-                        val1 = u[1].visit(self.symboltable)
+                        val0 = u[0].visit(self)
+                        val1 = u[1].visit(self)
 
                         if(val0.token.value != val1.token.value) and (val0.token.type != TokenTypes.FAIL and val1.token.type != TokenTypes.FAIL):
                             return False
