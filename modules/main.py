@@ -72,6 +72,7 @@ text = "x:int; x=23; x = 2;  x" # FALSE
 text = "z:=x+y; x,y:int; x=7; y = 3;z" # 10
 text = "x:=1; y:=2; z:int; z = x; z = y; z" # false?
 text = "x:int; x=\"Hello \";x" # false?, no unification defined
+text = "x,y,p,q:int; if(x=0) then { p = r; r=10; r:int; q=4} else {p=333;q=444}; x=0; (p,q)"
 
 """
 FALSE
