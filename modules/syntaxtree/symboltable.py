@@ -187,13 +187,13 @@ class SymbolTable:
     # --HIER GEÄNDERT Damit die Unifikation funktioniert
     def U_String(self, k1, k2) -> tuple[bool,list]:
       u_str = [k1,k2]
-      if k1.token.value != k2.token.value:
+      if k1.value != k2.value:
         return (False, [])
       return (True, [u_str])
 
     def U_LIT(self, k1, k2) -> tuple[bool,list]:
       u_str = [k1,k2]
-      if k1.token.value != k2.token.value:
+      if k1.value != k2.value:
         return (False, [])
       return (True, [u_str])
 

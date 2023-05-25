@@ -24,10 +24,16 @@ class Interpreter:
         tree = tree.node
         result = None
         if tree != None:
-            result =  tree.visit(self.symboltable)
+            contexts = Contexts([tree])
+            result = contexts.visit(self.symboltable)
 
             self.symboltable.remove_all_except_self()
-            result =  tree.visit(self.symboltable)
-            
-        
-        return result
+            result =  contexts.visit(self.symboltable)
+
+        res=[]
+        if(len(result) > 1):
+            nodes = []
+            for r in result:
+                nodes.append(r)
+            return ChoiceSequenceNode(Token(TokenTypes.CHOICE,TokenTypes.CHOICE),nodes)
+        return result[0]

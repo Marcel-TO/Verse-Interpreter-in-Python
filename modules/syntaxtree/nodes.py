@@ -5,6 +5,13 @@ from syntaxtree.symboltable import SymbolTable
 from syntaxtree.sequentor import Sequentor
 from syntaxtree.identifier_creator import IdentifierCreator
 
+
+class ContextValues():
+     def __init__(self, nodes, needsContext, alreadyInContext) -> None:
+         self.nodes = nodes
+         self.needContext = needsContext
+         self.alreadyInContext = alreadyInContext
+
 '''
 Top class of all nodes.
 '''
@@ -12,6 +19,7 @@ Top class of all nodes.
 class BaseNode:
     def __init__(self, token) -> None:
         self.token = token 
+        self.usedSymbolTable = SymbolTable(None)
 
     def visit(self, symboltable: SymbolTable):
         return FailureNode() 
@@ -22,13 +30,16 @@ class BaseNode:
     def App_Beta(self,identifierFrom, identifierTo):
         pass
 
+    def getContexts(self, currentContext):
+        return ContextValues([currentContext],False, False)
+
 #Class that takes a parsed node, containes information if node could have been parsed
 class ParsedNode:
     def __init__(self, node: BaseNode, hasSyntaxError:bool ):
         self.node = node
         self.hasSyntaxError = hasSyntaxError
-
-     
+        self.usedSymbolTable = SymbolTable(None)
+    
 '''
 Node for block statements.
 '''  
@@ -41,6 +52,7 @@ class BlockNode(BaseNode):
         return self.seperator.join([repr(n) for n in self.nodes])
     
     def visit(self, symboltable: SymbolTable):
+        self.usedSymbolTable = symboltable
         results = []
         i = 0
         for n in self.nodes:
@@ -89,6 +101,24 @@ class BlockNode(BaseNode):
     def App_Beta(self,identifierFrom, identifierTo):
         for n in self.nodes:
             n.App_Beta(identifierFrom,identifierTo)
+
+    def getContexts(self, currentContext):
+        index = 0
+        for n in self.nodes:
+            contextValues = n.getContexts(currentContext)
+            if(contextValues.alreadyInContext == False and contextValues.needContext):
+                contexts = []
+                for val in contextValues.nodes:
+                    self.nodes[index] = val
+                    context = Contexts([copy.deepcopy(currentContext)])
+                    contexts.append(context)
+                return ContextValues(contexts,True, True)
+            elif contextValues.alreadyInContext:
+                return contextValues
+            index +=1
+        return contextValues
+
+
 '''
 Top Node in tree.
 ''' 
@@ -97,6 +127,7 @@ class ProgramNode(BaseNode):
         self.node = node
     
     def visit(self, symboltable: SymbolTable):
+        self.usedSymbolTable = symboltable
         return self.node.visit(symboltable) 
     
     def getChildNodes(self):
@@ -107,6 +138,8 @@ class ProgramNode(BaseNode):
     def App_Beta(self,identifierFrom, identifierTo):
         self.node.App_Beta(identifierFrom,identifierTo)
 
+    def getContexts(self,currentContext):
+        return self.node.getContexts(currentContext)
 
 '''
 Node for binded identifiers.
@@ -121,7 +154,9 @@ class BindingNode(BaseNode):
         return "{}:={}".format(repr(self.leftNode),repr(self.rightNode))  
     
     def visit(self, symboltable: SymbolTable):
+        self.usedSymbolTable = symboltable
         symboltable.addBinding(self.leftNode.token.value, self.rightNode, None)
+        self.rightNode.usedSymbolTable = symboltable
         return self.rightNode
     
     def getChildNodes(self):
@@ -134,6 +169,17 @@ class BindingNode(BaseNode):
         self.leftNode.App_Beta(identifierFrom,identifierTo)
         self.rightNode.App_Beta(identifierFrom,identifierTo)
 
+    def getContexts(self, currentContext):
+        
+        contextValues = self.rightNode.getContexts(currentContext)
+        contexts = []
+        if contextValues.needContext:
+            for val in contextValues.nodes:
+                self.rightNode = val
+                context = Contexts([copy.deepcopy(currentContext)])
+                contexts.append(context)
+            return ContextValues(contexts,True, True)
+        return contextValues
 
 '''
 Node representing a number.
@@ -148,11 +194,13 @@ class NumberNode(BaseNode):
         return str(self.value)
     
     def visit(self, symboltable: SymbolTable):
+        self.usedSymbolTable = symboltable
         return NumberNode(self.token)
 
     def getChildNodes(self):
         childNodes = [self]
         return childNodes 
+    
 
 
 '''
@@ -176,6 +224,7 @@ class OperatorNode(BaseNode):
         return "({}) {} ({})".format(repr(self.leftNode),self.token.value,repr(self.rightNode))  
 
     def visit(self, symboltable: SymbolTable):
+        self.usedSymbolTable = symboltable
         fail_conditions = [TokenTypes.FAIL, TokenTypes.TUPLE_TYPE, TokenTypes.ARRAY_TYPE]
 
         node_left = self.leftNode.visit(symboltable).visit(symboltable)
@@ -188,7 +237,7 @@ class OperatorNode(BaseNode):
         
         # --HIER GEÄNDERT Check für string
         if(node_right.token.type == TokenTypes.STRING_TYPE or node_left.token.type == TokenTypes.STRING_TYPE):
-           return self.doStringOperation(node_left, node_right, self.token)
+           return self.doStringOperation(node_left, node_right, self.token, symboltable)
            
         
         sequentor = Sequentor([node_left,node_right])
@@ -199,7 +248,7 @@ class OperatorNode(BaseNode):
             for s in sequences:
                 if s[0].token.type == TokenTypes.IDENTIFIER or s[1].token.type == TokenTypes.IDENTIFIER:
                     return FailureNode()
-            return self.doNumberOperation(sequences[0][0].value,sequences[0][1].value, self.token)
+            return self.doNumberOperation(sequences[0][0].value,sequences[0][1].value, self.token, symboltable)
         
         # Else left or/and right node of operation had to be a choice.
         nodes = []
@@ -215,7 +264,7 @@ class OperatorNode(BaseNode):
                 nodes.append( FailureNode())
            
             # Else save vale of done operation of left_val and right_val (nodes) into the nodes list.
-            else: nodes.append(self.doNumberOperation(left_val.value,right_val.value, self.token))
+            else: nodes.append(self.doNumberOperation(left_val.value,right_val.value, self.token,symboltable))
 
         # creates the choice
         choice = ChoiceSequenceNode(Token(TokenTypes.CHOICE,TokenTypes.CHOICE.value), nodes)
@@ -232,7 +281,7 @@ class OperatorNode(BaseNode):
     for two values and returns a new node.
     '''
     # --HIER GEÄNDERT Funktions Namen geändert
-    def doNumberOperation(self,val1:int,val2:int, token:Token):
+    def doNumberOperation(self,val1:int,val2:int, token:Token, symboltable):
         result = 0
         match token.type:
             case TokenTypes.DIVIDE:
@@ -262,7 +311,9 @@ class OperatorNode(BaseNode):
                 if val1 < val2:
                     result = val1
                 else: return FailureNode() 
-        return  IntegerNode(result)  
+        res = IntegerNode(result)
+        res.usedSymbolTable = symboltable
+        return res
     
 
     # --HIER GEÄNDERT Simple Operationen mit Strings
@@ -311,6 +362,35 @@ class OperatorNode(BaseNode):
         self.leftNode.App_Beta(identifierFrom,identifierTo)
         self.rightNode.App_Beta(identifierFrom,identifierTo)
 
+
+    def getContexts(self, currentContext):
+        copiedContext = copy.deepcopy(currentContext)
+        contextValues = self.leftNode.getContexts(copiedContext)
+        
+        if contextValues.alreadyInContext == False and contextValues.needContext:    
+                contexts = []
+                for val in contextValues.nodes:
+
+                        self.leftNode = val
+                        context = Contexts([copy.deepcopy(currentContext)])
+                        contexts.append(context)
+                return ContextValues(contexts,True, True)
+        else:
+            contextValues = self.rightNode.getContexts(copiedContext)
+            if contextValues.alreadyInContext == False and contextValues.needContext:
+                contexts = []
+                for val in contextValues.nodes:
+
+                        self.leftNode = val
+                        context = Contexts([copy.deepcopy(currentContext)])
+                        contexts.append(context)
+                return ContextValues(contexts,True, True)
+                
+        return contextValues
+
+
+        
+
 '''
 If unary node is called, it calls visitor operator in following way:
 creates multiplication operator node containg -1 and its val it has to multiply.
@@ -324,6 +404,7 @@ class UnaryNode(BaseNode):
         return "{}{}".format(self.token.value,repr(self.node)) 
 
     def visit(self, symboltable: SymbolTable):
+        self.usedSymbolTable = symboltable
         mul:int = 1
         if self.token.type == TokenTypes.MINUS:
             mul = -1
@@ -338,6 +419,20 @@ class UnaryNode(BaseNode):
     
     def App_Beta(self,identifierFrom, identifierTo):
         self.node.App_Beta(identifierFrom,identifierTo)
+
+    def getContexts(self, currentContext):
+        copied = copy.deepcopy(currentContext)
+        contextValues = self.node.getContexts(copied)
+
+        if(contextValues.alreadyInContext == False and contextValues.needContext):
+            contexts = []
+            for val in contextValues.nodes:
+
+                        self.node = val
+                        context = Contexts([copy.deepcopy(currentContext)])
+                        contexts.append(context)
+            return ContextValues(contexts,True, True) 
+        return ContextValues([currentContext],False, False)
              
 
 '''
@@ -385,7 +480,7 @@ class ScopeNode(BaseNode):
         return "{}{}{}".format(self.seperator.join([repr(n) for n in self.nodes]),self.token.value, repr(self.type)) 
 
     def visit(self, symboltable: SymbolTable):
-        
+        self.usedSymbolTable = symboltable
         for n in self.nodes:
 
             isValid = symboltable.addScope(n.token.value, self.type.visit(symboltable))
@@ -403,6 +498,7 @@ class ScopeNode(BaseNode):
     def App_Beta(self,identifierFrom, identifierTo):
         for n in self.nodes:
             n.App_Beta(identifierFrom, identifierTo)
+
         
 
 '''
@@ -417,11 +513,13 @@ class TypeNode(BaseNode):
         return str(self.token.value)
 
     def visit(self, symboltable: SymbolTable):
+        self.usedSymbolTable = symboltable
         return self.token.type 
 
     def getChildNodes(self):
         childNodes = [self]
         return childNodes
+    
 
 '''
 Node for sequence types (tuple).
@@ -438,6 +536,7 @@ class SequenceTypeNode(TypeNode):
         return "array{{}}".format(self.seperator.join([repr(t) for t in self.types]))
 
     def visit(self, symboltable: SymbolTable):
+        self.usedSymbolTable = symboltable
         result = []
         for n in self.types:
             result.append(n.visit(symboltable))
@@ -458,6 +557,7 @@ class FuncCallNode:
         self.args = args
 
     def visit(self, symboltable: SymbolTable):
+        self.usedSymbolTable = symboltable
         table = symboltable.createChildTable()
         scope = symboltable.get_value(self.identifier.token.value)
             
@@ -467,29 +567,61 @@ class FuncCallNode:
             params = func_dec.params
             for param in params:
                 id = param.nodes[0].token.value
+                table.addScope(id,param.type)
 
-                arg = self.args[index].visit(symboltable)
-                if(arg.token.type == TokenTypes.IDENTIFIER):
-                     arg = None
+            while(index < len(params) and index < len(self.args)):
+                param = params[index]
+                id = param.nodes[0].token.value
 
-                table.addBinding(id, arg ,param.type)
+                try:
+                    if(self.args[index].token.type == TokenTypes.IDENTIFIER):
+                        arg = None
+                    else: 
+                        arg = self.args[index].visit(symboltable)
+                        if(arg.token.type == TokenTypes.IDENTIFIER):
+                            arg = arg.visit(symboltable)
+                            if(arg.token.type == TokenTypes.FAIL):
+                                arg = None
+                except:
+                    arg = self.args[index].visit(symboltable)
+                    if(arg.token.type == TokenTypes.IDENTIFIER):
+                        arg = None
+                table.addValue(id, arg)
                 index += 1
-            val = func_dec.block.visit(table)
+            val = func_dec.body.visit(table)
 
             # Check if a variable is given to argument that has not been set (Logic)
             index = 0
             for arg in self.args:
-                 if arg.token.type == TokenTypes.IDENTIFIER:  
-                    arg = arg.token.value            
-                    id = params[index].nodes[0].token.value
-                    param_val_at_arg_pos = table.get_value(id)
-                    if param_val_at_arg_pos[0]:
-                        symboltable.addValue(arg, param_val_at_arg_pos[1])
-                 index += 1
+                isId = False
+                try:
+
+                    arg = self.args[index]
+                    if arg.token.type == TokenTypes.IDENTIFIER:
+                        arg = arg.token.value       
+                        isId = True 
+                    else: 
+                        arg = arg.visit(symboltable)
+                        if arg.token.type == TokenTypes.IDENTIFIER:
+                            arg = arg.token.value       
+                            isId = True
+                except:
+                    arg = arg.visit(symboltable)
+                    if arg.token.type == TokenTypes.IDENTIFIER:
+                        arg = arg.token.value       
+                        isId = True     
+  
+                finally:  
+                    if(isId):
+                        id = params[index].nodes[0].token.value
+                        param_val_at_arg_pos = table.get_value(id)
+                        if param_val_at_arg_pos[0]:
+                            symboltable.addValue(arg, param_val_at_arg_pos[1])      
+                    index += 1
             return val
         return FailureNode()
         
-    def getChildNodes(self):
+    def getChildNodes(self, cur):
         childNodes = []
         for arg in self.args:
             childNodes.extend(arg.getChildNodes())
@@ -499,18 +631,31 @@ class FuncCallNode:
         for arg in self.args:
             arg.App_Beta(identifierFrom, identifierTo)
 
+    def getContexts(self, currentContext):
+        for n in self.args:
+            contextValues = n.getContexts(currentContext)
+            if(contextValues.alreadyInContext == False and contextValues.needContext):
+                contexts = []
+                for val in contextValues.nodes:
+                    n = val
+                    context = Contexts([copy.deepcopy(currentContext)])
+                    contexts.append(context)
+                return ContextValues(contexts,True, True)
+        return ContextValues([currentContext],False, False)
+
 '''
 Node for func declarations.
 ''' 
-class FuncDeclNode:
-    def __init__(self,identifier:IdentifierNode, params:list[ScopeNode],usesLambda:bool, type:TypeNode, block:BlockNode) -> None:
+class FuncDeclNode(BaseNode):
+    def __init__(self,identifier:IdentifierNode, params:list[ScopeNode],usesLambda:bool, type:TypeNode, body:BlockNode) -> None:
         self.identifier = identifier
         self.params = params
         self.usesLambda = usesLambda
         self.type = type
-        self.block = block
+        self.body = body
 
     def visit(self, symboltable: SymbolTable):
+        self.usedSymbolTable = symboltable
         symbol = self.identifier.token.value
         symboltable.addBinding(symbol, self, self.type)
 
@@ -518,8 +663,20 @@ class FuncDeclNode:
         childNodes = []
         for param in self.params:
             childNodes.extend(param.getChildNodes()) 
-        childNodes.extend(self.block.getChildNodes())
+        childNodes.extend(self.body.getChildNodes())
         return childNodes
+    
+    def getContexts(self, currentContext):   
+        contextValues = self.body.getContexts(currentContext)
+        if(contextValues.alreadyInContext == False and contextValues.needContext):
+            contexts = []
+            for val in contextValues.nodes:
+                self.body = val
+                context = Contexts([copy.deepcopy(currentContext)])
+                contexts.append(context)
+            return ContextValues(contexts,True, True)
+        return ContextValues([currentContext],False, False)
+    
 '''
 Node for loops.
 ''' 
@@ -530,15 +687,39 @@ class ForNode(BaseNode):
         self.do = do
 
     def visit(self, symboltable: SymbolTable):
+        self.usedSymbolTable = symboltable
         if self.do == None:
             return self.visit_curly(self.node.visit(symboltable))
+        
+        doResults = []
+        nodeContexts = Contexts([copy.deepcopy(self.node)])
+        results = nodeContexts.visit(symboltable)
+        for result in results:
+            if(result.token.type != TokenTypes.FAIL and result.token.type != TokenTypes.IDENTIFIER):
+               doContext = Contexts([copy.deepcopy(self.do)])
+               res = doContext.visit(result.usedSymbolTable)
+               
+               try:
+                if(len(res)>1):
+                    doResults.append(ChoiceSequenceNode(Token(TokenTypes.CHOICE, TokenTypes.CHOICE.value),res))
+               
+               except:
+                doResults.append(res)
 
+        resContext = Contexts([SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),doResults)])
+        results = resContext.visit(symboltable)
+        result = SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),results)
+        return result
+
+        """
         for_table = symboltable.createChildTable()
         isIndexing = False
         isBinding = False
         indexingNode = None
 
         # check if block or not
+        
+        
         try: 
             for n in self.node.nodes:
                 # checks if there are filter options for the block
@@ -567,6 +748,7 @@ class ForNode(BaseNode):
             return self.for_indexing(symboltable, indexingNode)
         result = self.execDo(for_table)
         return self.convert(result,for_table)
+        """
     
     def getChildNodes(self):
         childNodes = []
@@ -642,6 +824,9 @@ class ForNode(BaseNode):
     def App_Beta(self,identifierFrom, identifierTo):
         self.node.App_Beta(identifierFrom, identifierTo)
         self.do.App_Beta(identifierFrom, identifierTo)
+
+    
+
 '''
 Node for if statements.
 ''' 
@@ -656,6 +841,7 @@ class IfNode(BaseNode):
         return "{}({}) then {} else {}".format(self.token.value, repr(self.if_node), repr(self.then_node),  repr(self.else_node))
 
     def visit(self, symboltable: SymbolTable):
+        self.usedSymbolTable = symboltable
         # x = 10; r=11; if(x = r:int) then (x:int; 1) else (x:int; 3)
 
         result_if = self.if_node.visit(symboltable)
@@ -691,6 +877,25 @@ class IfNode(BaseNode):
         self.then_node.App_Beta(identifierFrom, identifierTo)
         self.else_node.App_Beta(identifierFrom, identifierTo)
 
+    def getContexts(self, currentContext):    
+        contextValues = self.node.getContexts(currentContext)
+        contexts = []
+        if(contextValues.alreadyInContext == False and contextValues.needContext):
+                for val in contextValues.nodes:
+                    self.node = val
+                    context = Contexts([copy.deepcopy(currentContext)])
+                    contexts.append(context)
+                return ContextValues(contexts,True, True)
+        else:
+            contextValues = self.do.getContexts(currentContext)
+            if(contextValues.alreadyInContext == False and contextValues.needContext):
+                for val in contextValues.nodes:
+                    self.do = val
+                    context = Contexts([copy.deepcopy(currentContext)])
+                    contexts.append(context)
+                return ContextValues(contexts,True, True)         
+        return ContextValues(contexts,False, False)
+
 '''
 Node for rigid equals.
 ''' 
@@ -704,6 +909,7 @@ class RigidEqNode(BaseNode):
         return "{}{}{}".format(repr(self.left_node),self.token.value, repr(self.right_node)) 
 
     def visit(self, symboltable: SymbolTable):
+        self.usedSymbolTable = symboltable
         res_left = self.left_node.visit(symboltable).visit(symboltable)
         res_right = self.right_node.visit(symboltable).visit(symboltable) # x = r:int
         if res_left.token.type != TokenTypes.IDENTIFIER and res_right.token.type != TokenTypes.IDENTIFIER:
@@ -734,6 +940,7 @@ class FlexibleEqNode(BaseNode):
         self.alreadyExists = False
 
     def visit(self, symboltable: SymbolTable):
+        self.usedSymbolTable = symboltable
         isValid = symboltable.addValue(self.left_node.token.value, self.right_node)
         if isValid:
             return self.right_node.visit(symboltable)
@@ -749,6 +956,18 @@ class FlexibleEqNode(BaseNode):
         self.left_node.App_Beta(identifierFrom, identifierTo)
         self.right_node.App_Beta(identifierFrom, identifierTo)
 
+    def getContexts(self, currentContext):
+        copiedContext = copy.deepcopy(currentContext)
+        contextValues = self.right_node.getContexts(copiedContext)
+        contexts = []
+        if contextValues.needContext:
+            for val in contextValues.nodes:
+                self.right_node = val
+                context = Contexts([copy.deepcopy(currentContext)])
+                contexts.append(context)
+            return ContextValues(contexts,True, True)
+        return ContextValues(contexts,False, False)
+
 '''
 Node for sequences (tuple, array).
 ''' 
@@ -763,6 +982,7 @@ class SequenceNode(BaseNode):
         return "(" + self.seperator.join([repr(n) for n in self.nodes]) + ")"
 
     def visit(self, symboltable: SymbolTable):
+        self.usedSymbolTable = symboltable
         visited_nodes = []
         isChoice = False
         for n in self.nodes:
@@ -803,6 +1023,22 @@ class SequenceNode(BaseNode):
         for n in self.nodes:
             n.App_Beta(identifierFrom, identifierTo)
 
+    def getContexts(self, currentContext):
+        index = 0
+        contexts = []
+        for n in self.nodes:
+            contextValues = n.getContexts(currentContext)
+            if(contextValues.alreadyInContext == False and contextValues.needContext):
+                for val in contextValues.nodes:
+                    self.nodes[index] = val
+                    context = Contexts([copy.deepcopy(currentContext)])
+                    contexts.append(context)
+                return ContextValues(contexts,True, True)
+            elif contextValues.alreadyInContext:
+                return contextValues
+            index +=1
+        return ContextValues(contexts,False,False)
+
 
 '''
 Node for indexing.
@@ -814,6 +1050,7 @@ class IndexingNode(BaseNode):
         self.index = index
 
     def visit(self, symboltable: SymbolTable):
+        self.usedSymbolTable = symboltable
         (isValid, result) = symboltable.get_value(self.identifier.token.value)
         if isValid and result != None:
             value = result.visit(symboltable)
@@ -869,6 +1106,7 @@ class ChoiceSequenceNode(BaseNode):
         return "(" + self.seperator.join([repr(n) for n in self.nodes]) + ")"
 
     def visit(self, symboltable: SymbolTable):
+        self.usedSymbolTable = symboltable
         nodes = []
 
         # Choice appends all of its sequence, not containing false?
@@ -996,6 +1234,11 @@ class ChoiceSequenceNode(BaseNode):
     def App_Beta(self,identifierFrom, identifierTo):
         for n in self.nodes:
             n.App_Beta(identifierFrom, identifierTo)
+
+
+    def getContexts(self, currentContext):   
+        return ContextValues(self.nodes,True, False)
+
        
 
 class DotDotNode(BaseNode):
@@ -1005,6 +1248,7 @@ class DotDotNode(BaseNode):
         self.end = end
 
     def visit(self, symboltable: SymbolTable):
+        self.usedSymbolTable = symboltable
         startNode = self.start.visit(symboltable)
         if startNode.token.type != TokenTypes.INTEGER:
             return FailureNode()
@@ -1028,7 +1272,9 @@ class DotDotNode(BaseNode):
                 endGen = True
             else:
                 currentInt += fac
-                nodes.append(IntegerNode(currentInt))
+                res = IntegerNode(currentInt)
+                res.usedSymbolTable = symboltable
+                nodes.append(res)
            
         return ChoiceSequenceNode(Token(TokenTypes.CHOICE,TokenTypes.CHOICE.value), nodes)
     
@@ -1049,6 +1295,7 @@ class FailNode(BaseNode): # Technically not need, since Fail node is 1 to 1 a Ba
         return self.token.value 
 
     def visit(self, symboltable: SymbolTable):
+        self.usedSymbolTable = symboltable
         return self 
     
     def getChildNodes(self):
@@ -1068,6 +1315,7 @@ class LambdaNode(BaseNode):
         return "( " +  ",".join([repr(param) for param in self.params]) + " " + self.token.value + " " + repr(self.body) + " )" + "".join([" (" + repr(n) + ")" for n in self.values])
 
     def visit(self, symboltable: SymbolTable):
+        self.usedSymbolTable = symboltable
         if(len(self.params) != len(self.values)):
             return FailureNode()
         copiedTable = symboltable.createChildTable()
@@ -1116,12 +1364,42 @@ class LambdaNode(BaseNode):
         self.body.App_Beta(identifierFrom, identifierTo)
 
 
-class Context(BaseNode):
-    def __init__(self, node) -> None:
-        self.node = node
+class Contexts(BaseNode):
+    def __init__(self, contexts:list) -> None:
+        self.contexts = contexts
 
     def visit(self, symboltable):
-        result = self.node.visit()
+        self.usedSymbolTable = symboltable
+        index = 0
+        checkContext = True
+        while checkContext:
+            for c in self.contexts:
+                context = c.getContexts(c)
+                if context.alreadyInContext or (context.needContext and context.alreadyInContext == False):
+                    self.contexts.pop(index)
+                    self.contexts.extend(context.nodes)
+                index +=1
+                checkContext = context.alreadyInContext
+            results = []
+        for c in self.contexts:
+            res = c.visit(copy.deepcopy(symboltable))
+            try:
+                results.extend(res)
+            except:
+                results.append(res)      
+        return results
+
+    def __repr__(self) -> str:    
+        return "\n".join([repr(c) for c in self.contexts])
+    
+    def getContexts(self, currentContext):
+        for c in self.contexts:
+           context = c.getContexts(c)
+           return context
+
+
+
+    
 
 
 
@@ -1154,7 +1432,7 @@ class SequenceType(VerseType):
 class ValueNode(BaseNode):
     def __init__(self, verse_type):
         self.verse_type = verse_type
-    
+        self.usedSymbolTable = SymbolTable(None)
 # --HIER GEÄNDERT StringNode mit StringTypen
 class StringNode(ValueNode):
     def __init__(self, value:str):
@@ -1163,6 +1441,7 @@ class StringNode(ValueNode):
         self.token = self.verse_type.typeToken
 
     def visit(self, symboltable):
+        self.usedSymbolTable = symboltable
         return self
 
     def __repr__(self) -> str:
@@ -1177,6 +1456,7 @@ class IntegerNode(ValueNode):
         self.token = self.verse_type.typeToken
 
     def visit(self, symboltable):
+        self.usedSymbolTable = symboltable
         return self
 
     def __repr__(self) -> str:
@@ -1195,7 +1475,8 @@ class FailureNode(ValueNode):
         self.value = self.verse_type.typeToken.value
 
     def visit(self, symboltable):
-        return FailureNode(self.value)
+        self.usedSymbolTable = symboltable
+        return FailureNode()
 
     def __repr__(self) -> str:
         return self.token.value
