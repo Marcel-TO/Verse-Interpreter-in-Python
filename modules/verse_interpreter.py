@@ -30,10 +30,4 @@ class Interpreter:
             self.symboltable.remove_all_except_self()
             result =  contexts.visit(self.symboltable)
 
-        res=[]
-        if(len(result) > 1):
-            nodes = []
-            for r in result:
-                nodes.append(r)
-            return ChoiceSequenceNode(Token(TokenTypes.CHOICE,TokenTypes.CHOICE),nodes)
-        return result[0]
+        return result

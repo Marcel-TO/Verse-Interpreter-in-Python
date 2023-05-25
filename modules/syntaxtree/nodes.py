@@ -687,6 +687,7 @@ class ForNode(BaseNode):
         self.do = do
 
     def visit(self, symboltable: SymbolTable):
+        resultSeq = SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),[])
         self.usedSymbolTable = symboltable
         if self.do == None:
             return self.visit_curly(self.node.visit(symboltable))
@@ -694,22 +695,31 @@ class ForNode(BaseNode):
         doResults = []
         nodeContexts = Contexts([copy.deepcopy(self.node)])
         results = nodeContexts.visit(symboltable)
+        if(results.token.type == TokenTypes.CHOICE):
+            results = results.nodes
+        else: results = [results]
         for result in results:
             if(result.token.type != TokenTypes.FAIL and result.token.type != TokenTypes.IDENTIFIER):
                doContext = Contexts([copy.deepcopy(self.do)])
                res = doContext.visit(result.usedSymbolTable)
                
-               try:
-                if(len(res)>1):
-                    doResults.append(ChoiceSequenceNode(Token(TokenTypes.CHOICE, TokenTypes.CHOICE.value),res))
-               
-               except:
-                doResults.append(res)
+              
+               doResults.append(res)
 
-        resContext = Contexts([SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),doResults)])
+
+        
+
+        if len(doResults) == 1:
+            if doResults[0].token.type == TokenTypes.CHOICE:
+                resultSeq.nodes = doResults[0].nodes
+            elif doResults[0].token.type == TokenTypes.TUPLE_TYPE:
+                resultSeq = doResults[0].nodes
+            else: resultSeq.nodes = doResults[0]
+        else:
+            resultSeq.nodes = doResults
+        resContext = Contexts([resultSeq])
         results = resContext.visit(symboltable)
-        result = SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),results)
-        return result
+        return results
 
         """
         for_table = symboltable.createChildTable()
@@ -877,24 +887,6 @@ class IfNode(BaseNode):
         self.then_node.App_Beta(identifierFrom, identifierTo)
         self.else_node.App_Beta(identifierFrom, identifierTo)
 
-    def getContexts(self, currentContext):    
-        contextValues = self.node.getContexts(currentContext)
-        contexts = []
-        if(contextValues.alreadyInContext == False and contextValues.needContext):
-                for val in contextValues.nodes:
-                    self.node = val
-                    context = Contexts([copy.deepcopy(currentContext)])
-                    contexts.append(context)
-                return ContextValues(contexts,True, True)
-        else:
-            contextValues = self.do.getContexts(currentContext)
-            if(contextValues.alreadyInContext == False and contextValues.needContext):
-                for val in contextValues.nodes:
-                    self.do = val
-                    context = Contexts([copy.deepcopy(currentContext)])
-                    contexts.append(context)
-                return ContextValues(contexts,True, True)         
-        return ContextValues(contexts,False, False)
 
 '''
 Node for rigid equals.
@@ -1372,22 +1364,30 @@ class Contexts(BaseNode):
         self.usedSymbolTable = symboltable
         index = 0
         checkContext = True
+        
         while checkContext:
+            newContexts = []
             for c in self.contexts:
                 context = c.getContexts(c)
+                
                 if context.alreadyInContext or (context.needContext and context.alreadyInContext == False):
-                    self.contexts.pop(index)
-                    self.contexts.extend(context.nodes)
+                    newContexts.extend(context.nodes)
+                else: newContexts.append(c)
                 index +=1
                 checkContext = context.alreadyInContext
+            self.contexts = newContexts
             results = []
         for c in self.contexts:
             res = c.visit(copy.deepcopy(symboltable))
             try:
                 results.extend(res)
             except:
-                results.append(res)      
-        return results
+                results.append(res)   
+        result = None   
+        if len(results)>1:
+            result = ChoiceSequenceNode(Token(TokenTypes.CHOICE,TokenTypes.CHOICE.value),results)
+        else: result = results[0]
+        return result
 
     def __repr__(self) -> str:    
         return "\n".join([repr(c) for c in self.contexts])

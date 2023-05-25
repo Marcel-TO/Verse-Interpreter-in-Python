@@ -41,20 +41,24 @@ IF
 #text = "x,y,p,q:int; if(x=0) then { p = r; r=10; r:int; q=4} else {p=333;q=444}; x=0; (p,q)" # (10,4)
 # text = "if(i:=(15|2|3)) then i else 30"
 # text = "i:=(1|2|3); r:=(4|5|6); t:=0; if(t=0) then (i + r) else (r - i)"
-# text = "if(i:=1|2|3; r:= 4|5|6) then i + r else r - i"
+text = "if(i:=1|2|3; r:= 4|5|6) then i + r else r - i"
 
+
+text = "z:=(if(x=0) then 120|2 else 30); x:= 0|1; z"
+text = "(1|2); (3|4)"
+text = "x:int; x = 2; x=2; x"
 """
 FUNCTION
 """
 # text = "x:int; z:int; f(p:int,q:int):int :=  (p = 1; q = 23; y:int; y = 100; (p+q)*100); f(x,z); x + z" # 
 # text = "x:int; f(p:int):int :=  (p = 1; y:int; y = 100; (p)*100); f(x); x" #  
 # text = "f:=(x:int=> d(x) + 1 ); d(p:int):= (p*2); f(3)" # 7
-text = "f:= ((x:int =>(x=2; 1 + x)) | (x:int => (x=22; 3 + x))); f()"
-text = "z:int; f:= ((x:int =>(x=2; 1 + x)) | (x:int => (x=22; 3 + x))); f(2)" #(3|false?)
-text = "y:int; f:= ((x:int =>(x=2; 1 + x)) | (x:int => (x=22; 3 + x))); f(y); y"
-text = "f:= ((x:int =>(x=2; 1 + x)) | (x:int => (x=22; 3 + x))); f(y:int); y"
-text = "f(x:int):int := x+1; f(3)" #4
-text = "f(x:int):int := x+1|2; f(3)" #4|2
+#text = "f:= ((x:int =>(x=2; 1 + x)) | (x:int => (x=22; 3 + x))); f()"
+#text = "z:int; f:= ((x:int =>(x=2; 1 + x)) | (x:int => (x=22; 3 + x))); f(2)" #(3|false?)
+#text = "y:int; f:= ((x:int =>(x=2; 1 + x)) | (x:int => (x=22; 3 + x))); f(y); y"
+#text = "f:= ((x:int =>(x=2; 1 + x)) | (x:int => (x=22; 3 + x))); f(y:int); y"
+#text = "f(x:int):int := x+1; f(3)" #4
+#text = "f(x:int):int := x+1|2; f(3)" #4|2
 """
 CHOICE
 """
@@ -97,16 +101,18 @@ FALSE
 # text = "x,y:int; y= 4; x=y" # FALSE
 # text = "x:int; x=7; x=3" # FALSE
 #text = "z:int; x=(y|2); y=(1|3|z); x,y:int; t:int; t = (z = 10; 2); (x,y)" # ((1,1)|(3,3)|(10,10)|(2,1)|(2,3)|(2,10))
-text= "for(x,y:int; x = (10|20); y = (1|2|3))do(false?)"
-text= "for(x,y:int; x = (10|20); y = (1|2|3); y > 2)do(x+y)"
-text = "( (1|8), (2|9), (3|10) )"
-text = "for (i:=1|2|3) do (i|i+7)"
+#text= "for(x,y:int; x = (10|20); y = (1|2|3))do(false?)" #false?
+#text= "for(x,y:int; x = (10|20); y = (1|2|3); y > 2)do(x+y)" #(13,23)
+#text = "( (1|8), (2|9), (3|10) )" #((1,2,3)|(1,2,10)|(1,9,3)|(1,9,10)|(8,2,3)|(8,2,10)|(8,9,3)|(8,9,10))
+#text = "for (i:=1|2|3) do (i|i+7)" #((1,2,3)|(1,2,10)|(1,9,3)|(1,9,10)|(8,2,3)|(8,2,10)|(8,9,3)|(8,9,10))
+#text = "for(x,y:int; x = (10|20); y = (1|2|3)) do (x + y)" #(11,12,13,21,22,23)
+#text = "i:= (1|2|3); for (i) do (i|i+7)" #((1,8)|(2,9)|(3,10))
+#text = "x:=(for (i:=1|2|3) do (i|i+7)); 2" # 2 but top context doesn't get duplicated if x has choices
+#text = "z:int; x=(y|2); y=(1|3|z); x,y:int; t:int; t = (z = 10; 2); (x,y)" # ((1,1)|(3,3)|(10,10)|(2,1)|(2,3)|(2,10))
 
-# text = "z:int; x=(y|2); y=(1|3|z); x,y:int; t:int; t = (z = 10; 2); (x,y)" # ((1,1)|(3,3)|(10,10)|(2,1)|(2,3)|(2,10))
-
-# text = "x:int;a:int; x=2; (x:int => (x:int => (x:int => x + 2) (x)) (x)) (x)" #4
-# text = "y=3; (x:int => 2 + x) (y:int)" # 5
-
+#text = "x:int;a:int; x=2; (x:int => (x:int => (x:int => x + 2) (x)) (x)) (x)" #4
+#text = "y=3; (x:int => 2 + x) (y:int)" # 5
+#text = "f:= ((x:int =>(x=2; 1 + x)) | (x:int => (x=22; 3 + x))); f(y:int); y"
 
 #text = "x:int; x = false?|2; (x,2|1)" # C1 ->       Res: (false?|false?|(2,2)|(2,1)) Another visit should elem. false?
 

@@ -357,7 +357,7 @@ class Parser:
         if node.hasSyntaxError and self.current_token.type != TokenTypes.CBR:
             return ParsedNode(None, True)
         self.forward()
-        return ParsedNode(ForNode(TokenTypes.FOR, node=node.node, do=None), False)
+        return ParsedNode(ForNode(Token(TokenTypes.FOR,TokenTypes.FOR.value), node=node.node, do=None), False)
     
     def for_loop_bracket(self) -> ParsedNode:
         node = self.block()
@@ -382,7 +382,7 @@ class Parser:
         if do.hasSyntaxError:
             return ParsedNode(None, True)
         
-        return ParsedNode(ForNode(TokenTypes.FOR, node=node.node, do=do.node), False)
+        return ParsedNode(ForNode(Token(TokenTypes.FOR,TokenTypes.FOR.value), node=node.node, do=do.node), False)
 
 
     """
