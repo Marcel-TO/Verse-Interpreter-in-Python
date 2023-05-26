@@ -1,10 +1,28 @@
-from syntaxtree.nodes import *
-from verse_lexer import lexicon
-from verse_parser import Parser
-from verse_interpreter import Interpreter
-import start_text
+from verse_lexer.verse_lexer import lexicon
+from verse_parser.verse_parser import Parser
+from verse_interpreter.verse_interpreter import Interpreter
 
-start_text
+print("=========================================")
+print(" ")
+print(" ")
+print(" ")
+print("This is an interpreter written in python for the upcoming programming language Verse. Feel free to test verse features to your hearts content")
+print("Authors: Kariyampalli Christy, Turobin-Ort Marcel")
+print("License: MIT")
+print(" ")
+print("=========================================")
+print(" ")
+print(" ██▒   █▓▓█████  ██▀███    ██████ ▓█████ ")
+print("▓██░   █▒▓█   ▀ ▓██ ▒ ██▒▒██    ▒ ▓█   ▀ ")
+print(" ▓██  █▒░▒███   ▓██ ░▄█ ▒░ ▓██▄   ▒███   ")
+print("  ▒██ █░░▒▓█  ▄ ▒██▀▀█▄    ▒   ██▒▒▓█  ▄ ")
+print("   ▒▀█░  ░▒████▒░██▓ ▒██▒▒██████▒▒░▒████▒")
+print("   ░ ▐░  ░░ ▒░ ░░ ▒▓ ░▒▓░▒ ▒▓▒ ▒ ░░░ ▒░ ░")
+print("   ░ ░░   ░ ░  ░  ░▒ ░ ▒░░ ░▒  ░ ░ ░ ░  ░")
+print("     ░░     ░     ░░   ░ ░  ░  ░     ░   ")
+print("      ░     ░  ░   ░           ░     ░  ░")
+print("     ░                                   ")
+print("                                         ")      
 print("=========================================")
 print(" ")
 print("To quit the interpreter console, just enter QUIT or EXIT")
@@ -16,7 +34,7 @@ parser = Parser(lexer)
 interpreter = Interpreter(parser)
 
 while True:
-    text = input(">>> ")
+    text = input("verse >>> ")
     if text.lower() == "quit" or text.lower() == "exit":
         break
     elif text.lower() == "reset":
