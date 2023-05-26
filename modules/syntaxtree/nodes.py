@@ -159,7 +159,8 @@ class BindingNode(BaseNode):
     
     def visit(self, symboltable: SymbolTable):
         self.usedSymbolTable = symboltable
-        symboltable.addBinding(self.leftNode.token.value, self.rightNode, None)
+        type = self.rightNode.getType(symboltable)
+        symboltable.addBinding(self.leftNode.token.value, self.rightNode, type)
         self.rightNode.usedSymbolTable = symboltable
         return self.rightNode
     
@@ -205,8 +206,8 @@ class NumberNode(BaseNode):
         childNodes = [self]
         return childNodes 
     
-    def getType(self, symboltable:SymbolTable):
-        return self.type.value
+    def getType(self, symboltable:SymbolTable) -> list[ValueTypes]:
+        return [self.type]
     
 
 '''
@@ -224,8 +225,8 @@ class StringNode(BaseNode):
     def visit(self, symboltable: SymbolTable):
         return StringNode(self.token)
 
-    def getType(self, symboltable:SymbolTable):
-        return self.type.value
+    def getType(self, symboltable:SymbolTable) -> list[ValueTypes]:
+        return [self.type]
 
 
 '''
@@ -487,11 +488,11 @@ class IdentifierNode(BaseNode):
         if(self.token.value == identifierFrom):
             self.token.value = identifierTo
 
-    def getType(self,symboltable:SymbolTable):
+    def getType(self,symboltable:SymbolTable) -> list[ValueTypes]:
         valtype = symboltable.get_type(self.token.value)
         if(valtype[0]):
-            return valtype.getType(symboltable)
-        return ValueTypes.ANY
+            return [valtype[1].getType(symboltable)]
+        return [ValueTypes.ANY]
 
 '''
 Node for scoped identifiers.
@@ -533,8 +534,7 @@ class ScopeNode(BaseNode):
 Top class node for types (int, tuple, etc.).
 ''' 
 class TypeNode(BaseNode):
-    def __init__(self, token:Token, verseType) -> None: 
-        super().__init__(token)
+    def __init__(self, verseType) -> None: 
         self.type = verseType
 
     def __repr__(self) -> str:
@@ -548,23 +548,22 @@ class TypeNode(BaseNode):
         childNodes = [self]
         return childNodes
     
-    def getType(self, symboltable:SymbolTable):
-        return self.type.value
+    def getType(self, symboltable:SymbolTable) -> list[ValueTypes]:
+        return [self.type.value]
     
 
 '''
 Node for sequence types (tuple).
 ''' 
 class SequenceTypeNode(TypeNode):
-    def __init__(self, token:Token, types:list[TypeNode]) -> None: 
-        super().__init__(token,ValueTypes.SEQUENCE_TYPE)
+    def __init__(self, types:list[TypeNode]) -> None: 
+        super().__init__(ValueTypes.SEQUENCE_TYPE)
         self.types = types
         self.seperator = ","
 
-    def __repr__(self) -> str:
-        if(self.token.type == TokenTypes.TUPLE_TYPE):
-            return "tuple({})".format(self.seperator.join([repr(t) for t in self.types]))
-        return "array{{}}".format(self.seperator.join([repr(t) for t in self.types]))
+    def __repr__(self) -> str:      
+        return "tuple({})".format(self.seperator.join([repr(t) for t in self.types]))
+
 
     def visit(self, symboltable: SymbolTable):
         self.usedSymbolTable = symboltable
@@ -579,11 +578,12 @@ class SequenceTypeNode(TypeNode):
             childNodes.extend(t.getChildNodes())
         return childNodes
     
-    def getType(self,symboltable:SymbolTable):
-        return []
-    "tuple(" + ",".join([t.getType(symboltable) for t in self.types]) + ")"
+    def getType(self,symboltable:SymbolTable) -> list[ValueTypes]:
+        types = [ValueTypes.SEQUENCE_TYPE]
+        for t in self.types:
+            types.extend(t.getType(symboltable))
     
-# --HIER GEÄNDERT Typen und ober Klasse für Typen
+    
 class VerseType():
     def __init__(self, valueType = ValueTypes.ANY):
         self.valueType = valueType
@@ -1176,8 +1176,10 @@ class SequenceNode(BaseNode):
             index +=1
         return ContextValues(contexts,False,False)
 
-    def getType(self, symboltable:SymbolTable):
-        return "tuple(" + ",".join([t.getType(symboltable) for t in self.nodes]) + ")"
+    def getType(self,symboltable:SymbolTable) -> list[ValueTypes]:
+        types = [ValueTypes.SEQUENCE_TYPE]
+        for t in self.types:
+            types.extend(t.getType(symboltable))
 '''
 Node for indexing.
 ''' 

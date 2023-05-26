@@ -1,4 +1,5 @@
 import string
+from structure.valueTypes import ValueTypes
 
 from structure.tokenTypes import TokenTypes
 from structure.logger import Console_Logger
@@ -48,7 +49,7 @@ class SymbolTable:
         while i < maxIterations:
             sym = self.symboltable[i]
             if sym.symbol == symbol:
-                if sym.symbolType.getType(self) != value.getType(self):
+                if self.U_Types(sym.symbolType.getType(self), value.getType(self)) == False:
                     sym.isUnified = False
                 if sym.symbolType != None and sym.value == None and value != None and sym.value != sym.symbol:
                     occurs = self.U_Occurs(symbol,value)
@@ -206,7 +207,18 @@ class SymbolTable:
                
       return unify_success
 
+    def U_Types(self, t1:list[ValueTypes], t2:list[ValueTypes]) -> bool:
+        t1Len = len(t1)
+        t2Len = len(t2)
+        if t1Len != t2Len:
+            return False
         
+        index = 0
+        while (index < t1Len and index < t2Len):
+            if (t1[index] != t2[index]) and (t1[index] != ValueTypes.ANY) and (t1[index] != ValueTypes.ANY):
+                return False
+        return True
+
     # --HIER GEÄNDERT Damit die Unifikation funktioniert
     def U_String(self, k1, k2) -> tuple[bool,list]:
       u_str = [k1,k2]

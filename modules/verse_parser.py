@@ -320,7 +320,7 @@ class Parser:
         if self.current_token.type != TokenTypes.RBRACKET:
             return ParsedNode(None, True)
         self.forward()
-        return ParsedNode(DataDeclNode(identifier.node, params.node, TypeNode(Token(TokenTypes.DATA, TokenTypes.DATA.value))), False)
+        return ParsedNode(DataDeclNode(identifier.node, params.node, TypeNode(ValueTypes.DATA_TYPE)), False)
 
 
     """
@@ -800,11 +800,11 @@ class Parser:
         token = self.current_token
         if(token.type == TokenTypes.INT_TYPE):
             self.forward()
-            return ParsedNode(TypeNode(token,ValueTypes.INT_TYPE),False)
+            return ParsedNode(TypeNode(ValueTypes.INT_TYPE),False)
         
         if(token.type == TokenTypes.STRING_TYPE):
             self.forward()
-            return ParsedNode(TypeNode(token,ValueTypes.STRING_TYPE),False)
+            return ParsedNode(TypeNode(ValueTypes.STRING_TYPE),False)
         
         if(token.type == TokenTypes.TUPLE_TYPE):
           
@@ -828,7 +828,7 @@ class Parser:
                      
             if(self.current_token.type == TokenTypes.RBRACKET):  
                 self.forward()
-                return ParsedNode(SequenceTypeNode(token, types), False)
+                return ParsedNode(SequenceTypeNode(types), False)
             
         return ParsedNode(None, True) 
         
