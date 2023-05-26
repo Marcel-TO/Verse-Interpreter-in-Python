@@ -37,10 +37,10 @@ while True:
     text = input("verse >>> ")
     if text.lower() == "quit" or text.lower() == "exit":
         break
-    elif text.lower() == "reset":
-        interpreter.reset()
-        continue
+    # elif text.lower() == "reset":
+    #     interpreter.reset()
+    #     continue
     lexer.input = text
-    interpreter.reset_input()
+    interpreter.reset()
     result = interpreter.interpret()
     print(repr(result))
