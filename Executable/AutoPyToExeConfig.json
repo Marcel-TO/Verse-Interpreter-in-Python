@@ -7,7 +7,7 @@
   },
   {
    "optionDest": "filenames",
-   "value": "/Users/marcel/Desktop/Studium/4.Semester/Logik Programmierung/Teamprojekt/GIT/verse_console.py"
+   "value": "/Users/marcel/Desktop/Studium/4.Semester/Logik Programmierung/Teamprojekt/GIT/modules/verse_console.py"
   },
   {
    "optionDest": "onefile",
@@ -16,6 +16,10 @@
   {
    "optionDest": "console",
    "value": true
+  },
+  {
+   "optionDest": "icon_file",
+   "value": "/Users/marcel/Desktop/Studium/4.Semester/Logik Programmierung/Teamprojekt/GIT/Executable/letter-v.ico"
   },
   {
    "optionDest": "ascii",

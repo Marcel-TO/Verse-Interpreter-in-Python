@@ -26,7 +26,7 @@ print("                                         ")
 print("=========================================")
 print(" ")
 print("To quit the interpreter console, just enter QUIT or EXIT")
-print("To reset variables, just enter reset")
+# print("To reset variables, just enter reset")
 print(" ")
 text = " "
 lexer = lexicon(text)
