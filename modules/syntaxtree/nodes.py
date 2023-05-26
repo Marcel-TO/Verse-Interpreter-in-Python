@@ -205,9 +205,6 @@ class NumberNode(BaseNode):
         childNodes = [self]
         return childNodes 
     
-    def getType(self, symboltable:SymbolTable):
-        return self.type.value
-    
 
 '''
 Node representing a string.
@@ -223,9 +220,6 @@ class StringNode(BaseNode):
         
     def visit(self, symboltable: SymbolTable):
         return StringNode(self.token)
-
-    def getType(self, symboltable:SymbolTable):
-        return self.type.value
 
 
 '''
@@ -487,12 +481,6 @@ class IdentifierNode(BaseNode):
         if(self.token.value == identifierFrom):
             self.token.value = identifierTo
 
-    def getType(self,symboltable:SymbolTable):
-        valtype = symboltable.get_type(self.token.value)
-        if(valtype[0]):
-            return valtype.getType(symboltable)
-        return ValueTypes.ANY
-
 '''
 Node for scoped identifiers.
 ''' 
@@ -548,9 +536,6 @@ class TypeNode(BaseNode):
         childNodes = [self]
         return childNodes
     
-    def getType(self, symboltable:SymbolTable):
-        return self.type.value
-    
 
 '''
 Node for sequence types (tuple).
@@ -578,35 +563,9 @@ class SequenceTypeNode(TypeNode):
         for t in self.types:
             childNodes.extend(t.getChildNodes())
         return childNodes
-    
-    def getType(self,symboltable:SymbolTable):
-        return []
-    "tuple(" + ",".join([t.getType(symboltable) for t in self.types]) + ")"
+
     
 # --HIER GEÄNDERT Typen und ober Klasse für Typen
-class VerseType():
-    def __init__(self, valueType = ValueTypes.ANY):
-        self.valueType = valueType
-
-class DataType(VerseType):
-    def __init__(self, valueType = ValueTypes.DATA_TYPE):
-        self.valueType = valueType
-
-class StringType(VerseType):
-    def __init__(self):
-        super().__init__(ValueTypes.STRING_TYPE)
-
-class IntegerType(VerseType):
-    def __init__(self):
-        super().__init__(ValueTypes.INT_TYPE)
-
-class FailureType(VerseType):
-    def __init__(self):
-        super().__init__(ValueTypes.FAIL_TYPE)
-    
-class SequenceType(VerseType):
-    def __init__(self):
-        super().__init__(ValueTypes.SEQUENCE_TYPE)
 
 
 '''
@@ -846,14 +805,8 @@ class ForNode(BaseNode):
         for result in results:
             if(result.token.type != TokenTypes.FAIL and result.token.type != TokenTypes.IDENTIFIER):
                doContext = Contexts([copy.deepcopy(self.do)])
-               res = doContext.visit(result.usedSymbolTable)
-               
-              
+               res = doContext.visit(result.usedSymbolTable)             
                doResults.append(res)
-
-
-        
-
         if len(doResults) == 1:
             if doResults[0].token.type == TokenTypes.CHOICE:
                 resultSeq.nodes = doResults[0].nodes
@@ -1175,9 +1128,6 @@ class SequenceNode(BaseNode):
                 return contextValues
             index +=1
         return ContextValues(contexts,False,False)
-
-    def getType(self, symboltable:SymbolTable):
-        return "tuple(" + ",".join([t.getType(symboltable) for t in self.nodes]) + ")"
 '''
 Node for indexing.
 ''' 

@@ -48,8 +48,6 @@ class SymbolTable:
         while i < maxIterations:
             sym = self.symboltable[i]
             if sym.symbol == symbol:
-                if sym.symbolType.getType(self) != value.getType(self):
-                    sym.isUnified = False
                 if sym.symbolType != None and sym.value == None and value != None and sym.value != sym.symbol:
                     occurs = self.U_Occurs(symbol,value)
                     if occurs:

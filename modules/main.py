@@ -24,7 +24,7 @@ FOR
 # text = "for(x:=10|20) do (x | x+1)" # ((10|20)|(11|21))
 # text = "for(x:=2|3|5; x > 2)do(x+(1|2))" # (4|5|6|7)
 # text = "t:=(1,1,1); for(i:int;x:=t[i]) do (x+i)" # !!!!!!!! indexing for still work in progress
-# text = "t:=(1,2,3); for(i:int;x:=t[1]) do (x)"
+text = "t:=(1,2,3); for(i:int;x:=t[1]) do (x)"
 
 
 """
@@ -41,12 +41,12 @@ IF
 #text = "x,y,p,q:int; if(x=0) then { p = r; r=10; r:int; q=4} else {p=333;q=444}; x=0; (p,q)" # (10,4)
 # text = "if(i:=(15|2|3)) then i else 30"
 # text = "i:=(1|2|3); r:=(4|5|6); t:=0; if(t=0) then (i + r) else (r - i)"
-text = "if(i:=1|2|3; r:= 4|5|6) then i + r else r - i"
+#text = "if(i:=1|2|3; r:= 4|5|6) then i + r else r - i"
 
 
-text = "z:=(if(x=0) then 120|2 else 30); x:= 0|1; z"
-text = "(1|2); (3|4)"
-text = "x:int; x = 2; x=2; x"
+#text = "z:=(if(x=0) then 120|2 else 30); x:= 0|1; z"
+#text = "(1|2); (3|4)"
+#text = "x:int; x = 2; x=2; x"
 """
 FUNCTION
 """
@@ -59,7 +59,7 @@ FUNCTION
 #text = "f:= ((x:int =>(x=2; 1 + x)) | (x:int => (x=22; 3 + x))); f(y:int); y"
 #text = "f(x:int):int := x+1; f(3)" #4
 #text = "f(x:int):int := x+1|2; f(3)" #4|2
-text = "f:=(x:int=> d(x) + 1 ); d(p:int):= (p*2); f(3)" # 7
+#text = "f:=(x:int=> d(x) + 1 ); d(p:int):= (p*2); f(3)" # 7
 
 """
 CHOICE
@@ -78,13 +78,13 @@ CHOICE
 """
 UNIFICATION
 """
-text = "x:int; x=23; x = 23;  x" # 23
-text = "x,y,p,q:int; if(x=0) then { p = r; r=10; p=11; r:int; q=4} else {p=333;q=444}; x=0; (p,q)" # FALSE
-text = "x:int; x = (z:int,2); x = (3,y:int,r:int); x" # FALSE
-text = "x:int; x = (z:int,2); x = (3,y:int); x" # (3,2)
-text = "x:int; x=23; x = 2;  x" # FALSE
-text = "z:=x+y; x,y:int; x=7; y = 3;z" # 10
-text = "x:=1; y:=2; z:int; z = x; z = y; z" # false?
+#text = "x:int; x=23; x = 23;  x" # 23
+#text = "x,y,p,q:int; if(x=0) then { p = r; r=10; p=11; r:int; q=4} else {p=333;q=444}; x=0; (p,q)" # FALSE
+#text = "x:int; x = (z:int,2); x = (3,y:int,r:int); x" # FALSE
+#text = "x:int; x = (z:int,2); x = (3,y:int); x" # (3,2)
+#text = "x:int; x=23; x = 2;  x" # FALSE
+#text = "z:=x+y; x,y:int; x=7; y = 3;z" # 10
+#text = "x:=1; y:=2; z:int; z = x; z = y; z" # false?
 #text = "x:int; x=\"Hello \";x" # false?
 #text = "y:string; y= \"Welt\"; y"
 #text = "y:tuple(int,tuple(int,int)); y= (2,(2,3,4)); y" # false?
