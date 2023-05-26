@@ -4,7 +4,7 @@ import string
 class TokenTypes(Enum):
     # Data
     INTEGER = int
-    String = "\"" # --HIER GEÄNDERT String Token
+    STRING = "\""
     IDENTIFIER = string #Names/Variables
     STRING_TYPE = "string"
     INT_TYPE = "int"
@@ -22,6 +22,7 @@ class TokenTypes(Enum):
     LOWEREQ = "<="
     CHOICE = "|"
     # Mehtods
+    DATA = "data"
     FOR = "for"
     DO = "do"
     IF = "if"
@@ -42,4 +43,6 @@ class TokenTypes(Enum):
     EQUAL = "="
     SCOPE = ":"
     DOTDOT = ".."
+    DOT = "."
+    SPACE = " "
     LAMBDA = "=>"

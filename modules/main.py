@@ -53,12 +53,14 @@ FUNCTION
 # text = "x:int; z:int; f(p:int,q:int):int :=  (p = 1; q = 23; y:int; y = 100; (p+q)*100); f(x,z); x + z" # 
 # text = "x:int; f(p:int):int :=  (p = 1; y:int; y = 100; (p)*100); f(x); x" #  
 # text = "f:=(x:int=> d(x) + 1 ); d(p:int):= (p*2); f(3)" # 7
-#text = "f:= ((x:int =>(x=2; 1 + x)) | (x:int => (x=22; 3 + x))); f()"
+#text = "f:= ((x:int =>(x=2; 1 + x)) | (x:int => (x=22; 3 + x))); f()" # (3|25)
 #text = "z:int; f:= ((x:int =>(x=2; 1 + x)) | (x:int => (x=22; 3 + x))); f(2)" #(3|false?)
 #text = "y:int; f:= ((x:int =>(x=2; 1 + x)) | (x:int => (x=22; 3 + x))); f(y); y"
 #text = "f:= ((x:int =>(x=2; 1 + x)) | (x:int => (x=22; 3 + x))); f(y:int); y"
 #text = "f(x:int):int := x+1; f(3)" #4
 #text = "f(x:int):int := x+1|2; f(3)" #4|2
+text = "f:=(x:int=> d(x) + 1 ); d(p:int):= (p*2); f(3)" # 7
+
 """
 CHOICE
 """
@@ -76,14 +78,16 @@ CHOICE
 """
 UNIFICATION
 """
-# text = "x:int; x=23; x = 23;  x" # 23
-# text = "x,y,p,q:int; if(x=0) then { p = r; r=10; p=11; r:int; q=4} else {p=333;q=444}; x=0; (p,q)" # FALSE
-# text = "x:int; x = (z:int,2); x = (3,y:int,r:int); x" # FALSE
-# text = "x:int; x = (z:int,2); x = (3,y:int); x" # (3,2)
-# text = "x:int; x=23; x = 2;  x" # FALSE
-# text = "z:=x+y; x,y:int; x=7; y = 3;z" # 10
-
-
+text = "x:int; x=23; x = 23;  x" # 23
+text = "x,y,p,q:int; if(x=0) then { p = r; r=10; p=11; r:int; q=4} else {p=333;q=444}; x=0; (p,q)" # FALSE
+text = "x:int; x = (z:int,2); x = (3,y:int,r:int); x" # FALSE
+text = "x:int; x = (z:int,2); x = (3,y:int); x" # (3,2)
+text = "x:int; x=23; x = 2;  x" # FALSE
+text = "z:=x+y; x,y:int; x=7; y = 3;z" # 10
+text = "x:=1; y:=2; z:int; z = x; z = y; z" # false?
+#text = "x:int; x=\"Hello \";x" # false?
+#text = "y:string; y= \"Welt\"; y"
+#text = "y:tuple(int,tuple(int,int)); y= (2,(2,3,4)); y" # false?
 
 """
 FALSE
@@ -124,6 +128,29 @@ FALSE
 # x:int; x = 2; (x,2) C6 -> C7
 # x:int; x = 2; (x,1) C6 -> C8
 
+# text = "x:int;a:int; x=2; (x:int => (x:int => (x:int => x + 2) (x)) (x)) (x)"
+# text = "y=3; (x:int => 2 + x) (y:int)"
+# text = "f(x:int):int := x+1; f(3)"
+
+"""
+STRING
+"""
+# text = "x:=\"Hello \"; y:=\"World\"; x + y" # Hello World
+# text = "x:=\"World\"; y:=\"World\"; if(x=y)then 1 else 0" # 1
+# text = "x:=\"df\"; y:=\"World\"; x<y" # df
+# text = "x:=\"OMGODF\"; y:=\"World\"; x>=y" # OMGODF
+# text = "x:=\"df\"; y:=\"World\"; x>=y" # false?
+# text = "x:=(\"Hallo\" | \"Welt\" ); x" # (Hallo|Welt)
+# text = "x:=(\"Hallo\" | \"Welt\" ); y:=(\"New\" | \"Old\" ); x + y" # (HalloNew|HalloOld|WeltNew|WeltOld)
+
+"""
+DATA TYPES
+"""
+# text = "data Rectangle(width:int,height:int); rec := Rectangle(7,3); rec.width | rec.height"
+# # text = "z:int; z=7; y:=(31|5); x:=(7|22); data TupleCombiner(tuples:int); result := TupleCombiner((z,x,y)); result.tuples"
+# text = "data Structure(property:int); s := Structure(x); x=5; x:int; s.property"
+
+start_text
 lexer = lexicon(text)
 parser = Parser(lexer)
 interpreter = Interpreter(parser)

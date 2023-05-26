@@ -14,12 +14,12 @@ class Parser:
         self.current_token = self.lexer.get_token(self.lexer.current_char)
        
 
-    def parse(self) -> ParsedNode:     
+    def parse(self) -> BaseNode:     
         node = self.program()
         if node.hasSyntaxError or self.current_token.type != TokenTypes.EOF:
             self.logger.__log_error__("it appears there was a problem", ErrorType.SyntaxError)
-            return ParsedNode(None, True)
-        return ParsedNode(node.node, False)
+            return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+        return node.node
        
 
     #####################################
@@ -78,6 +78,10 @@ class Parser:
         if(node.hasSyntaxError == True):
             self.set_to_token(index,token)
             node = self.func_decl()
+        
+        if(node.hasSyntaxError == True):
+            self.set_to_token(index, token)
+            node = self.data_decl()
 
         # checks if current node is not a function declaration.
         if(node.hasSyntaxError == True):
@@ -252,6 +256,71 @@ class Parser:
                 nodes.append(node.node)
             return ParsedNode(nodes, False)
         return ParsedNode(None, True)
+    
+    def data_call(self) -> ParsedNode:
+        node = self.identifier()
+        if(node.hasSyntaxError):
+            return ParsedNode(None, True)
+        
+        if self.current_token.type != TokenTypes.DOT:
+            return ParsedNode(None, True)
+        self.forward()
+
+        param = self.identifier()
+        if param.hasSyntaxError:
+            return ParsedNode(None, True)
+        return ParsedNode(DataCallNode(node.node, param.node), False)
+
+    # def data_decl(self) -> ParsedNode:
+    #     if self.current_token.type != TokenTypes.DATA:
+    #         return ParsedNode(None, True)
+    #     self.forward()
+
+    #     identifier = self.identifier()
+    #     if identifier.hasSyntaxError:
+    #             return ParsedNode(None, True)
+        
+    #     if self.current_token.type == TokenTypes.LBRACKET:
+    #             self.forward()
+
+    #             params = self.func_decl_param()
+
+    #             if self.current_token.type == TokenTypes.RBRACKET:
+    #                 self.forward()
+    #                 type = None
+    #                 if(self.current_token.type == TokenTypes.COLON):
+    #                     self.forward()
+    #                     type = self.type()
+    #                     if(type.hasSyntaxError):
+    #                         return ParsedNode(None,True)
+
+    #                 if self.current_token.type == TokenTypes.BINDING:
+    #                     self.forward()
+    #                     block = self.expr()
+    #                     if(block.hasSyntaxError == False):
+    #                         return ParsedNode(DataDeclNode(identifier.node, params.node, type.node, block.node), False)
+    #             return ParsedNode(None,True)
+
+    #     return ParsedNode(None,True)
+        
+    def data_decl(self) -> ParsedNode:
+        if self.current_token.type != TokenTypes.DATA:
+            return ParsedNode(None, True)
+        self.forward()
+
+        identifier = self.identifier()
+        if identifier.hasSyntaxError or self.current_token.type != TokenTypes.LBRACKET:
+                return ParsedNode(None, True)
+
+        self.forward()
+        params = self.func_decl_param()
+        if params.hasSyntaxError:
+            return ParsedNode(None, True)
+        
+        if self.current_token.type != TokenTypes.RBRACKET:
+            return ParsedNode(None, True)
+        self.forward()
+        return ParsedNode(DataDeclNode(identifier.node, params.node, TypeNode(Token(TokenTypes.DATA, TokenTypes.DATA.value))), False)
 
 
     """
@@ -357,7 +426,7 @@ class Parser:
         if node.hasSyntaxError and self.current_token.type != TokenTypes.CBR:
             return ParsedNode(None, True)
         self.forward()
-        return ParsedNode(ForNode(Token(TokenTypes.FOR,TokenTypes.FOR.value), node=node.node, do=None), False)
+        return ParsedNode(ForNode(TokenTypes.FOR, node=node.node, do=None), False)
     
     def for_loop_bracket(self) -> ParsedNode:
         node = self.block()
@@ -382,7 +451,7 @@ class Parser:
         if do.hasSyntaxError:
             return ParsedNode(None, True)
         
-        return ParsedNode(ForNode(Token(TokenTypes.FOR,TokenTypes.FOR.value), node=node.node, do=do.node), False)
+        return ParsedNode(ForNode(TokenTypes.FOR, node=node.node, do=do.node), False)
 
 
     """
@@ -421,6 +490,25 @@ class Parser:
             return ParsedNode(None, True)
 
         return ParsedNode(ScopeNode(token, scope_nodes, type.node), False)
+    
+    def string_statement(self) -> ParsedNode:
+        token = self.current_token
+        index = self.lexer.index
+
+        if token.type != TokenTypes.STRING:
+            return ParsedNode(None, True)
+        self.forward()
+        result = ""
+        
+        while self.current_token.type != TokenTypes.STRING:
+            # checks if end of file is reached.
+            if self.current_token.type == TokenTypes.EOF:
+                return ParsedNode(None, True)
+            
+            result += str(self.current_token.value)
+            self.forward_incl_space()
+        self.forward()
+        return ParsedNode(StringNode(Token(TokenTypes.STRING, result)), False)
         
         
     #####################################
@@ -548,11 +636,11 @@ class Parser:
         #Integer check
         if(token.type == TokenTypes.INTEGER):
             self.forward()
-            return ParsedNode(IntegerNode(token.value), False)
+            return ParsedNode(NumberNode(token), False)
         
         if(token.type == TokenTypes.FAIL):
             self.forward()
-            return ParsedNode(FailureNode(), False)
+            return ParsedNode(FailNode(token), False)
         
         #Unary operation check
         if(self.check_type(self.current_token.type, [TokenTypes.PLUS, TokenTypes.MINUS])):
@@ -567,11 +655,6 @@ class Parser:
         if(node.hasSyntaxError):
             self.set_to_token(index, token)
             node = self.brackets()
-
-        # --HIER GEÄNDERT string Funktion gebaut, damit er string erkennt im Verse Program
-        if(node.hasSyntaxError):
-            self.set_to_token(index, token)
-            node = self.string()
 
         #if node has failed check for loop
         if(node.hasSyntaxError):
@@ -593,6 +676,10 @@ class Parser:
             self.set_to_token(index,token)
             node = self.func_call()
         
+        if(node.hasSyntaxError):
+            self.set_to_token(index,token)
+            node = self.data_call()
+        
         #if node has failed check for loop
         if(node.hasSyntaxError):
             self.set_to_token(index,token)
@@ -602,6 +689,10 @@ class Parser:
         if(node.hasSyntaxError):
             self.set_to_token(index,token)
             node = self.if_statement()
+        
+        if(node.hasSyntaxError):
+            self.set_to_token(index, token)
+            node = self.string_statement()
         
         #if node has failed check sequence
         if(node.hasSyntaxError):
@@ -614,19 +705,7 @@ class Parser:
             node = self.identifier()
         return node
     
-    def string(self):
-        # --HIER GEÄNDERT Hier alles, er holt sich zurzeit, Identifier Token mit dem String Wert. Identifier Token sollte lieber unbennant werden
-        token = self.current_token
-        if(token.type == TokenTypes.String):
-            self.forward()
-            val = ""
-            while(self.current_token.type == TokenTypes.IDENTIFIER):
-                val += self.current_token.value
-                self.forward()
-            if(token.type == TokenTypes.String):
-                self.forward()
-                return ParsedNode(StringNode(val), False)
-        return ParsedNode(None, True) 
+
     """
     Checks for brackets (highest priority)
     RULE --> brackets: LB expr RB
@@ -721,12 +800,11 @@ class Parser:
         token = self.current_token
         if(token.type == TokenTypes.INT_TYPE):
             self.forward()
-            return ParsedNode(TypeNode(token),False)
+            return ParsedNode(TypeNode(token,ValueTypes.INT_TYPE),False)
         
-        # --HIER GEÄNDERT damit er string typen akzeptiert
         if(token.type == TokenTypes.STRING_TYPE):
             self.forward()
-            return ParsedNode(TypeNode(token),False)
+            return ParsedNode(TypeNode(token,ValueTypes.STRING_TYPE),False)
         
         if(token.type == TokenTypes.TUPLE_TYPE):
           
@@ -822,6 +900,15 @@ class Parser:
     Moves forward in the tokens list
     """
     def forward(self) -> None:
+        # print(self.current_token.__info__())
+        self.lexer.forward()
+        self.current_token = self.lexer.get_token(self.lexer.current_char)
+        if self.current_token.type == TokenTypes.SPACE:
+            self.forward()
+        if self.current_token.type == TokenTypes.EOF:
+            self.end = True
+
+    def forward_incl_space(self) -> None:
         # print(self.current_token.__info__())
         self.lexer.forward()
         self.current_token = self.lexer.get_token(self.lexer.current_char)

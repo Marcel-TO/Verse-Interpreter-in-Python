@@ -47,24 +47,27 @@ class SymbolTable:
         maxIterations = len(self.symboltable)
         while i < maxIterations:
             sym = self.symboltable[i]
-            if sym.symbol == symbol and sym.symbolType != None and sym.value == None and value != None and sym.value != sym.symbol:
-                occurs = self.U_Occurs(symbol,value)
-                if occurs:
+            if sym.symbol == symbol:
+                if sym.symbolType.getType(self) != value.getType(self):
                     sym.isUnified = False
-                else: sym.value = value
-                self.logger.__log__("Added the value: {} to the existing symbol: {} in the symboltable: {}".format(value, sym.symbol, self))
-                isAdded = True
-                # return True
-            elif sym.symbol == symbol and sym.symbolType != None and sym.value != None and value != None and sym.value != sym.symbol:
-                occurs = self.U_Occurs(symbol,value)
-                if occurs:
-                    sym.isUnified = False
-                else: 
-                    isUnified = self.tryUnify(sym.value, value)
-                    if isUnified == False:
-                        sym.isUnified = isUnified
-                    sym.value = value
+                if sym.symbolType != None and sym.value == None and value != None and sym.value != sym.symbol:
+                    occurs = self.U_Occurs(symbol,value)
+                    if occurs:
+                        sym.isUnified = False
+                    else: sym.value = value
+                    self.logger.__log__("Added the value: {} to the existing symbol: {} in the symboltable: {}".format(value, sym.symbol, self))
                     isAdded = True
+                    # return True
+                elif sym.symbolType != None and sym.value != None and value != None and sym.value != sym.symbol:
+                    occurs = self.U_Occurs(symbol,value)
+                    if occurs:
+                        sym.isUnified = False
+                    else: 
+                        isUnified = self.tryUnify(sym.value, value)
+                        if isUnified == False:
+                            sym.isUnified = isUnified
+                        sym.value = value
+                        isAdded = True
             i += 1  
         return isAdded
 
@@ -109,6 +112,14 @@ class SymbolTable:
         if self.parentTable != None:
             return self.parentTable.get_value(symbol)
         return False, None
+    
+    def get_type(self, symbol: string):
+        for sym in self.symboltable:
+            if sym.symbol == symbol:
+                return True, sym.symbolType
+        if self.parentTable != None:
+            return self.parentTable.get_type(symbol)
+        return False, None
         
     
     
@@ -142,7 +153,17 @@ class SymbolTable:
                         nodeR = u[1].visit(self)
                         if nodeR.token.type != TokenTypes.FAIL:
                             self.addValue(u[0].token.value, nodeR)
-                    elif u[1].token.type != TokenTypes.IDENTIFIER: self.addValue(u[0].token.value, u[1])
+
+                    # Unification fix for different identifiers
+                    elif u[0].token.type == TokenTypes.IDENTIFIER and u[1].token.type == TokenTypes.IDENTIFIER:
+                        val0 = u[0].visit(self)
+                        val1 = u[1].visit(self)
+
+                        if(val0.token.value != val1.token.value) and (val0.token.type != TokenTypes.FAIL and val1.token.type != TokenTypes.FAIL):
+                            return False
+
+                    elif u[1].token.type != TokenTypes.IDENTIFIER: 
+                        self.addValue(u[0].token.value, u[1])
             return True
         except:
             
@@ -155,17 +176,14 @@ class SymbolTable:
      
     def unify(self,l, r) -> tuple[bool,list]:
       unify_success = (False,"")
-      if l.token.type == TokenTypes.INT_TYPE and r.token.type == TokenTypes.INT_TYPE:
+      if l.token.type == TokenTypes.INTEGER and r.token.type == TokenTypes.INTEGER:
         unify_success = self.U_LIT(l,r)
 
       # --HIER GEÄNDERT unifikation für string
-      elif l.token.type == TokenTypes.STRING_TYPE and r.token.type == TokenTypes.STRING_TYPE:
+      elif l.token.type == TokenTypes.STRING and r.token.type == TokenTypes.STRING:
         unify_success = self.U_String(l,r)
       elif (l.token.type == TokenTypes.TUPLE_TYPE and r.token.type == TokenTypes.TUPLE_TYPE) or (l.token.type == TokenTypes.CHOICE and r.token.type == TokenTypes.CHOICE):
         unify_success =  self.U_TUP(l,r)
-        
-      elif r.token.type == TokenTypes.IDENTIFIER:
-        unify_success = self.Hnf_Swap(l,r)
       elif l.token.type == TokenTypes.SCOPE or r.token.type == TokenTypes.SCOPE: 
           if l.token.type == TokenTypes.SCOPE: 
               l = l.nodes[0]
@@ -173,14 +191,19 @@ class SymbolTable:
               r = r.nodes[0]
           unify_success = self.unify(l,r)  
       else: 
-           if l.token.type == TokenTypes.IDENTIFIER and r.token.type == TokenTypes.IDENTIFIER:
-                unify_success = self.Var_Swap(l,r)
-           else: 
-                l = l.visit(self)
-                r = r.visit(self)
-                if l.token.type != TokenTypes.FAIL and r.token.type != TokenTypes.FAIL:   
-                    unify_success = self.unify(l,r)
-                else: unify_success = (True, [])
+            if l.token.type == TokenTypes.IDENTIFIER or r.token.type == TokenTypes.IDENTIFIER:
+                if l.token.type == TokenTypes.IDENTIFIER and r.token.type == TokenTypes.IDENTIFIER:
+                    unify_success = self.Var_Swap(l,r)
+                elif r.token.type == TokenTypes.IDENTIFIER:
+                    unify_success = self.Hnf_Swap(l,r)
+                else: 
+                    l = l.visit(self)
+                    r = r.visit(self)
+                    if l.token.type != TokenTypes.FAIL and r.token.type != TokenTypes.FAIL:   
+                        unify_success = self.unify(l,r)
+                    else: unify_success = (True, [])
+            else: (False, [])
+               
       return unify_success
 
         
