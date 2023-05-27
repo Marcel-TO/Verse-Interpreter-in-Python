@@ -25,6 +25,6 @@ class Interpreter:
             result = contexts.visit(self.symboltable)
 
             self.symboltable.remove_all_except_self()
-            result =  contexts.visit(self.symboltable)
+            result =  contexts.visit(self.symboltable).visit(self.symboltable)
 
         return result

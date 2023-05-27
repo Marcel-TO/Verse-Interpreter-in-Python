@@ -15,23 +15,24 @@ text = "x=(y|2); y=(1|3|z:int); x,y:int; t:int; t = (z = 10; 2); (x,y)" # ((1,1)
 """
 FOR
 """
-# text = "for{1..10}" # (1,2,3,4,5,6,7,8,9,10)
-# text = "for{3|4}" # (3,4)
+text = "for{1..10}" # (1,2,3,4,5,6,7,8,9,10)
+text = "for{3|4}" # (3,4)
+text = "i:int; s:=(1,2); b:=(3,4); s[i]"
+text = "s:=(1,2); for{i:int; s[i]}"
 # text = "for{false?}" # ()
-# text = "for(x:=10|20; x>10; y:=1|2|3; y<3)do(x+y)" # (21|22) <- filtering variables
-# text = "for(x:=10|20; y:=1|2|3)do(x+y)" # (11|12|13|21|22|23)
-# text = "for(x:=2|3|5)do(x+1)" # (3|4|6)
-# text = "for(x:=10|20) do (x | x+1)" # ((10|20)|(11|21))
-# text = "for(x:=2|3|5; x > 2)do(x+(1|2))" # (4|5|6|7)
+# text = "for(x:=10|20; x>10; y:=1|2|3; y<3)do(x+y)" # (21,22) <- filtering variables
+# text = "for(x:=10|20; y:=1|2|3)do(x+y)" # (11,12,13,21,22,23)
+# text = "for(x:=2|3|5)do(x+1)" # (3,4,6)
+# text = "for(x:=10|20) do (x | x+1)" # ((10,20)|(10,21)|(11,20)|(11,21))
+# text = "for(x:=2|3|5; x > 2)do(x+(1|2))" # ((4,6)|(4,7)|(5,6)|(5,7))
 # text = "t:=(1,1,1); for(i:int;x:=t[i]) do (x+i)" # !!!!!!!! indexing for still work in progress
-text = "t:=(1,2,3); for(i:int;x:=t[1]) do (x)"
-
+text = "t:=(1,2,3); for(i:int;x:=t[1]) do (x)" # Error
 
 """
 IF
 """
 # text = "x:int; x=10; if(x=r:int) then 70 else 30" #!!!!!!! # 30
-#text = "x,y:int; if(x<20) then y=70 else y=10; x=7; y" # 70
+# text = "x,y:int; if(x<20) then y=70 else y=10; x=7; y" # 70
 # text = "x,y:int; y = (if (x = 0) then 3 else 4); x = 7; y" # 4
 #text = "x; x = 10; r=11; if(x = r:int) then (x:int; 1) else 3" # !!!!!!! SOLL NICHT FUNKTIONIEREN, WEIL ER ERST SCOPED IM THEN ODER ELSE, ALSO SOLLTE ES GLAUB ICH PASSEN
 #text = "x:int; x=10; y:=(if(x=r:int) then 70 else 30); r=10; y" # 70
@@ -66,7 +67,10 @@ CHOICE
 """
 # text = "1..10" # (1|2|3|4|5|6|7|8|9|10)
 #text = "z:int; z=7; y:=(31|5); x:=(7|22); (z,x,y)" # ((7,7,31)|(7,7,5)|(7,22,31)|(7,22,5))
-# text = "x=(y|2); y=(1|3|z:int); x,y:int; t:int; t = (z = 10; 2); (x,y)" # (((1,1)|(3,3)|(2,1)|(2,3))
+
+# text = "x=(y|2); y=(1|3|z:int); x,y:int; t:int; t = (z = 10; 2); (x,y)" # --> The wrong way, due to choice context
+# text = "z:int; x=(y|2); y=(1|3|z); x,y:int; t:int; t = (z = 10; 2); (x,y)" --> The right way, due to choice context
+
 # text = "t:=(10,27,32); x:=(1 | 0 | 1); t[x]" # (27,10,27)
 # text = "x:=10|20|15; x<20" # (10|15)
 # text = "x,y:int; y = 31|5; x = 7|22; (x,y)" # ((7,31)|(7,5)|(22,31)|(22,5))
@@ -74,6 +78,7 @@ CHOICE
 # text = "x:int; t:=(1,(1|(2;3;x)));x = 10; t" # ((1,1)|(1,10))
 #text = "x:=((7|8)|2); y:=(7|8); (x,y)"
 #text = "x:int; z:= (x=1|x=2); x"
+
 
 """
 UNIFICATION
@@ -147,8 +152,14 @@ STRING
 DATA TYPES
 """
 # text = "data Rectangle(width:int,height:int); rec := Rectangle(7,3); rec.width | rec.height"
-# # text = "z:int; z=7; y:=(31|5); x:=(7|22); data TupleCombiner(tuples:int); result := TupleCombiner((z,x,y)); result.tuples"
+# text = "z:int; z=7; y:=(31|5); x:=(7|22); data TupleCombiner(tuples:int); result := TupleCombiner((z,x,y)); result.tuples"
 # text = "data Structure(property:int); s := Structure(x); x=5; x:int; s.property"
+# text ="f:= (x:int => x + 2); f(23) * 2"
+# text = "ys:= (12,22,23); xs:= (1,2,3,4); for{((i:int;ys[i])|(s:int; xs[s]))}" # append --> (12,22,23,1,2,3,4)
+#text = "xs:= (1,2,3,4); for{i:int; i > 0; xs[i]}" # tail
+#text = "t:=for{1|2}; t[0]" # head
+text = "ys:= (1,2); xs:= (3,4); for{i:int; (xs[i]| ys[i])}"
+# text ="a=2; f:= (a:int => a + 2);  f(2) * 2; a:int"
 
 start_text
 lexer = lexicon(text)

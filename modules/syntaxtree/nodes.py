@@ -129,7 +129,8 @@ Top Node in tree.
 class ProgramNode(BaseNode):
     def __init__(self, node:BlockNode) -> None:
         self.node = node
-    
+        self.usedSymbolTable = SymbolTable(None)
+
     def visit(self, symboltable: SymbolTable):
         self.usedSymbolTable = symboltable
         return self.node.visit(symboltable) 
@@ -397,7 +398,7 @@ class OperatorNode(BaseNode):
                 contexts = []
                 for val in contextValues.nodes:
 
-                        self.leftNode = val
+                        self.rightNode = val
                         context = Contexts([copy.deepcopy(currentContext)])
                         contexts.append(context)
                 return ContextValues(contexts,True, True)
@@ -504,7 +505,11 @@ class ScopeNode(BaseNode):
             if isValid == False and self.isVisitted == False:
                 return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value)) 
             else: self.isVisitted = True
-                   
+        
+        id = self.nodes[0]
+        val = id.visit(symboltable)
+        if(val.token.type != TokenTypes.FAIL):
+            return val
         return self.nodes[0]
     
     def getChildNodes(self):
@@ -591,7 +596,11 @@ class FuncCallNode:
             
             func_dec:FuncDeclNode = result
             index = 0
-            params = func_dec.params
+            try:
+                params = func_dec.params
+            except:
+                return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value))
+                
             for param in params:
                 id = param.nodes[0].token.value
                 table.addScope(id,param.type)
@@ -794,7 +803,7 @@ class ForNode(BaseNode):
         resultSeq = SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),[])
         self.usedSymbolTable = symboltable
         if self.do == None:
-            return self.visit_curly(self.node.visit(symboltable))
+            return self.visit_curly(self.node.visit(symboltable),symboltable)
         
         doResults = []
         nodeContexts = Contexts([copy.deepcopy(self.node)])
@@ -865,8 +874,36 @@ class ForNode(BaseNode):
         childNodes.extend(self.do.getChildNodes())
         return childNodes
     
-    def visit_curly(self, result: BaseNode):
+    def visit_curly(self, result: BaseNode, symboltable):
         # returns converted choice into tuple
+
+
+        resultSeq = SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),[])
+        self.usedSymbolTable = symboltable
+               
+        finalResults = []
+        nodeContexts = Contexts([copy.deepcopy(self.node)])
+        results = nodeContexts.visit(symboltable)
+        if(results.token.type == TokenTypes.CHOICE):
+            results = results.nodes
+        else: results = [results]
+        for result in results:
+            if(result.token.type != TokenTypes.FAIL and result.token.type != TokenTypes.IDENTIFIER):           
+               finalResults.append(result)
+        if len(finalResults) == 1:
+            if finalResults[0].token.type == TokenTypes.CHOICE:
+                resultSeq.nodes = finalResults[0].nodes
+            elif finalResults[0].token.type == TokenTypes.TUPLE_TYPE:
+                resultSeq = finalResults[0].nodes
+            else: resultSeq.nodes = finalResults[0]
+        else:
+            resultSeq.nodes = finalResults
+        resContext = Contexts([resultSeq])
+        results = resContext.visit(symboltable)
+        return results
+    
+
+        """
         if self.check_type(result.token.type, [TokenTypes.COMMA, TokenTypes.CHOICE]):
             return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), result.nodes)
 
@@ -877,6 +914,7 @@ class ForNode(BaseNode):
         # returns empty tuple
         if self.check_type(result.token.type, [TokenTypes.FAIL]):
             return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), [])
+        """
     
     def for_indexing_binding(self, symboltable: SymbolTable, indexingNode: BaseNode):
         # checks if the value contains already a value
@@ -1141,6 +1179,14 @@ class IndexingNode(BaseNode):
         self.usedSymbolTable = symboltable
         (isValid, result) = symboltable.get_value(self.identifier.token.value)
         if isValid and result != None:
+            try:
+               return result.visit(symboltable).nodes[self.index.visit(symboltable)]
+            except:
+                return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+        """
+        self.usedSymbolTable = symboltable
+        (isValid, result) = symboltable.get_value(self.identifier.token.value)
+        if isValid and result != None:
             value = result.visit(symboltable)
             index = self.index.visit(symboltable)
             try:
@@ -1162,8 +1208,33 @@ class IndexingNode(BaseNode):
                         result.append(value.nodes[i.value])
                     return SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),result)
                 except:
-                    return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value)) 
+                    return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value))
+            """
         return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value)) 
+    
+    def getContexts(self, currentContext):   
+        self.usedSymbolTable = currentContext.usedSymbolTable
+        (isValid, result) = self.usedSymbolTable.get_value(self.identifier.token.value)
+        if isValid and result != None:
+            try:
+                result = result.visit(currentContext.usedSymbolTable)
+                freshId = IdentifierNode(Token(TokenTypes.IDENTIFIER,"rs"))
+                freshScope = ScopeNode(Token(TokenTypes.SCOPE, TokenTypes.SCOPE),[freshId],
+                                           TypeNode(Token(TokenTypes.INT_TYPE,TokenTypes.INT_TYPE.value),ValueTypes.INT_TYPE))
+                flexWithIndex = FlexibleEqNode(Token(TokenTypes.EQUAL,TokenTypes.EQUAL.value),freshId,self.index)
+                nodeIndex = 0
+                possibleNodes = []
+                for node in result.nodes:
+                    IndexingNode = NumberNode(Token(TokenTypes.INTEGER,nodeIndex))
+                    flexWithNode = FlexibleEqNode(Token(TokenTypes.EQUAL,TokenTypes.EQUAL.value),freshId,IndexingNode)
+                    block = BlockNode([freshScope,flexWithIndex,flexWithNode, node])
+                    possibleNodes.append(block)
+                    nodeIndex += 1
+                choices = ChoiceSequenceNode(Token(TokenTypes.CHOICE, TokenTypes.CHOICE.value),possibleNodes)
+                return choices.getContexts(currentContext)
+            except:
+                return ContextValues([],False, False)
+        return ContextValues([],False, False)
                     
     def getChildNodes(self):
         childNodes = []
@@ -1458,28 +1529,37 @@ class Contexts(BaseNode):
 
     def visit(self, symboltable):
         self.usedSymbolTable = symboltable
-        index = 0
+        newContexts = []
         checkContext = True
-        
         while checkContext:
             newContexts = []
-            for c in self.contexts:
-                context = c.getContexts(c)
+            while checkContext:
                 
+                for c in self.contexts:
+                    context = c.getContexts(c)
+                    
+                    if context.alreadyInContext or (context.needContext and context.alreadyInContext == False):
+                        newContexts.extend(context.nodes)
+                    else: newContexts.append(c)
+                    checkContext = context.alreadyInContext
+                self.contexts = copy.deepcopy(newContexts)
+                results = []
+                newContexts = []
+            
+            for c in self.contexts:
+                copiedTable = copy.deepcopy(symboltable)
+                res = c.visit(copiedTable)
+                context  =  c.getContexts(c)
                 if context.alreadyInContext or (context.needContext and context.alreadyInContext == False):
-                    newContexts.extend(context.nodes)
+                        newContexts.extend(context.nodes)
                 else: newContexts.append(c)
-                index +=1
                 checkContext = context.alreadyInContext
-            self.contexts = newContexts
-            results = []
-        for c in self.contexts:
-            res = c.visit(copy.deepcopy(symboltable))
-            try:
-                results.extend(res)
-            except:
-                results.append(res)   
-        result = None   
+                try:
+                    results.extend(res)
+                except:
+                    results.append(res) 
+            self.contexts = copy.deepcopy(newContexts)  
+            result = None   
         if len(results)>1:
             result = ChoiceSequenceNode(Token(TokenTypes.CHOICE,TokenTypes.CHOICE.value),results)
         else: result = results[0]
