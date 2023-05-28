@@ -8,7 +8,6 @@ start_text
 print("=========================================")
 print(" ")
 print("To quit the interpreter console, just enter QUIT or EXIT")
-print("To reset variables, just enter reset")
 print(" ")
 text = " "
 lexer = lexicon(text)
@@ -19,10 +18,7 @@ while True:
     text = input(">>> ")
     if text.lower() == "quit" or text.lower() == "exit":
         break
-    elif text.lower() == "reset":
-        interpreter.reset()
-        continue
     lexer.input = text
-    interpreter.reset_input()
+    interpreter.reset()
     result = interpreter.interpret()
     print(repr(result))

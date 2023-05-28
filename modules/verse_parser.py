@@ -320,7 +320,7 @@ class Parser:
         if self.current_token.type != TokenTypes.RBRACKET:
             return ParsedNode(None, True)
         self.forward()
-        return ParsedNode(DataDeclNode(identifier.node, params.node, TypeNode(Token(TokenTypes.DATA, TokenTypes.DATA.value))), False)
+        return ParsedNode(DataDeclNode(identifier.node, params.node, TypeNode(Token(TokenTypes.DATA, TokenTypes.DATA.value), ValueTypes.DATA_TYPE)), False)
 
 
     """
