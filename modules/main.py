@@ -160,10 +160,12 @@ DATA TYPES
 #text = "t:=for{1|2}; t[0]" # head
 # text = "ys:= (1,2); xs:= (3,4); for{a=2; i:int; (xs[i], ys[i], a:int)}"
 # text ="a=2; f:= (a:int => a + 2);  f(2) * 2; a:int"
-text ="for{1..10}" #(1,2,3,4,5,6,7,8,9,10)
-text ="for{i=2;z=20;(i:int)..(z:int)}" #(2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20)
-text = "x:=(1,23,13); x[0..4] + (2|3|4)" # (1|23|13)
-
+#text ="for{1..10}" #(1,2,3,4,5,6,7,8,9,10)
+#text ="for{i=2;z=20;(i:int)..(z:int)}" #(2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20)
+#text = "x:=(1,23,13); x[0..4]" # (1|23|13)
+#text = "x:=(1,23,13); x[0..4] + (2|3|4)" # (3|4|5|25|26|27|15|16|17)
+text = "adding:=(xs:int, y:int => 6 + xs + y); adding(1|2,33|44) + (23 | 22)"
+text = "adding:=(xs:int, y:int => 6 + xs + y); adding(1|2,33|44) + 23 | 22" # Sees tail(1|2,33|44) + 23 as an own choice branch, thus diff result
 start_text
 lexer = lexicon(text)
 parser = Parser(lexer)

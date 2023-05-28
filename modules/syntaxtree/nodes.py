@@ -613,7 +613,9 @@ class FuncCallNode:
 
                 try:
                     if(self.args[index].token.type == TokenTypes.IDENTIFIER):
-                        arg = None
+                        arg = self.args[index].visit(symboltable)
+                        if(arg.token.type == TokenTypes.FAIL):
+                            arg = None
                     else: 
                         arg = self.args[index].visit(symboltable)
                         if(arg.token.type == TokenTypes.IDENTIFIER):
@@ -670,15 +672,17 @@ class FuncCallNode:
             arg.App_Beta(identifierFrom, identifierTo)
 
     def getContexts(self, currentContext):
+        index = 0
         for n in self.args:
             contextValues = n.getContexts(currentContext)
             if(contextValues.alreadyInContext == False and contextValues.needContext):
                 contexts = []
                 for val in contextValues.nodes:
-                    n = val
+                    self.args[index] = val
                     context = Contexts([copy.deepcopy(currentContext)])
                     contexts.append(context)
                 return ContextValues(contexts,True, True)
+            index +=1
         return ContextValues([currentContext],False, False)
 
 '''
@@ -1182,7 +1186,7 @@ class IndexingNode(BaseNode):
         (isValid, result) = symboltable.get_value(self.identifier.token.value)
         if isValid and result != None:
             try:
-               return result.visit(symboltable).nodes[self.index.visit(symboltable)]
+               return result.visit(symboltable).nodes[self.index.visit(symboltable).token.value]
             except:
                 return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
         """
@@ -1567,6 +1571,8 @@ class LambdaNode(BaseNode):
         for param in self.params:
             param.App_Beta(identifierFrom, identifierTo)
         self.body.App_Beta(identifierFrom, identifierTo)
+
+    
 
 
 class Contexts(BaseNode):
