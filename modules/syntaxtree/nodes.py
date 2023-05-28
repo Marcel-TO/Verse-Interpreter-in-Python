@@ -383,7 +383,7 @@ class OperatorNode(BaseNode):
 
 
     def getContexts(self, currentContext):
-        copiedContext = copy.deepcopy(currentContext)
+        copiedContext = currentContext
         contextValues = self.leftNode.getContexts(copiedContext)
         
         if contextValues.alreadyInContext == False and contextValues.needContext:    
@@ -394,7 +394,7 @@ class OperatorNode(BaseNode):
                         context = Contexts([copy.deepcopy(currentContext)])
                         contexts.append(context)
                 return ContextValues(contexts,True, True)
-        else:
+        elif contextValues.alreadyInContext == False and contextValues.needContext == False:
             contextValues = self.rightNode.getContexts(copiedContext)
             if contextValues.alreadyInContext == False and contextValues.needContext:
                 contexts = []
@@ -1214,7 +1214,18 @@ class IndexingNode(BaseNode):
             """
         return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value)) 
     
-    def getContexts(self, currentContext):   
+    def getContexts(self, currentContext): 
+        contextValues = self.index.getContexts(currentContext)
+        contexts=[]
+        if(contextValues.alreadyInContext == False and contextValues.needContext):
+                for val in contextValues.nodes:
+                    self.index = val
+                    #0x00000215D24C6A90
+                    context = Contexts([copy.deepcopy(currentContext)])
+                    contexts.append(context)
+                return ContextValues(contexts,True, True)
+        
+
         self.usedSymbolTable = currentContext.usedSymbolTable
         (isValid, result) = self.usedSymbolTable.get_value(self.identifier.token.value)
         if isValid and result != None:
