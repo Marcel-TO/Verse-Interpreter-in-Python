@@ -141,7 +141,7 @@ FALSE
 STRING
 """
 # text = "x:=\"Hello \"; y:=\"World\"; x + y" # Hello World
-# text = "x:=\"World\"; y:=\"World\"; if(x=y)then 1 else 0" # 1
+text = "x:=\"World\"; y:=\"World\"; if(x=y)then 1 else 0" # 1
 # text = "x:=\"df\"; y:=\"World\"; x<y" # df
 # text = "x:=\"OMGODF\"; y:=\"World\"; x>=y" # OMGODF
 # text = "x:=\"df\"; y:=\"World\"; x>=y" # false?
@@ -154,10 +154,11 @@ DATA TYPES
 # text = "data Rectangle(width:int,height:int); rec := Rectangle(7,3); rec.width | rec.height"
 # text = "z:int; z=7; y:=(31|5); x:=(7|22); data TupleCombiner(tuples:int); result := TupleCombiner((z,x,y)); result.tuples"
 # text = "data Structure(property:int); s := Structure(x); x=5; x:int; s.property"
+
 # text ="f:= (x:int => x + 2); f(23) * 2"
 # text = "ys:= (12,22,23); xs:= (1,2,3,4); for{((i:int;ys[i])|(s:int; xs[s]))}" # append --> (12,22,23,1,2,3,4)
-#text = "xs:= (1,2,3,4); for{i:int; i > 0; xs[i]}" # tail
-#text = "t:=for{1|2}; t[0]" # head
+# text = "xs:= (1,2,3,4); for{i:int; i > 0; xs[i]}" # tail
+# text = "t:=for{1|2}; t[0]" # head
 # text = "ys:= (1,2); xs:= (3,4); for{a=2; i:int; (xs[i], ys[i], a:int)}"
 # text ="a=2; f:= (a:int => a + 2);  f(2) * 2; a:int"
 #text ="for{1..10}" #(1,2,3,4,5,6,7,8,9,10)

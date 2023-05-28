@@ -8,4 +8,4 @@ class ValueTypes(Enum):
     INT_TYPE = "int"
     SEQUENCE_TYPE = "tuple/array"
     FAIL_TYPE = "false?"
-    DATA_TYPE = str
+    DATA_TYPE = "data"

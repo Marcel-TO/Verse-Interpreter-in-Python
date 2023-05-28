@@ -35,7 +35,7 @@ class SymbolTable:
         # checks if the name already exists in the current symbol. Otherwise add to table.
         if self.check_if_exists(symbol) == False:
             self.symboltable.append(Symbol(symbol, None, symbolType))
-            self.logger.__log__("Added the Symbol: {} to the symboltable: {}".format(symbol, self))
+            # self.logger.__log__("Added the Symbol: {} to the symboltable: {}".format(symbol, self))
             return True
         return False
 
@@ -53,7 +53,7 @@ class SymbolTable:
                     if occurs:
                         sym.isUnified = False
                     else: sym.value = value
-                    self.logger.__log__("Added the value: {} to the existing symbol: {} in the symboltable: {}".format(value, sym.symbol, self))
+                    # self.logger.__log__("Added the value: {} to the existing symbol: {} in the symboltable: {}".format(value, sym.symbol, self))
                     isAdded = True
                     # return True
                 elif sym.symbolType != None and sym.value != None and value != None and sym.value != sym.symbol:
@@ -73,11 +73,11 @@ class SymbolTable:
         # checks if the name already exists in the current symbol. Otherwise add to table.
         if self.check_if_exists(symbol) == False:
             self.symboltable.append(Symbol(symbol, value, symbolType))
-            self.logger.__log__("Added the Symbol: {} to the symboltable: {}".format(symbol, self))
+            # self.logger.__log__("Added the Symbol: {} to the symboltable: {}".format(symbol, self))
     
     def addSymbolTable(self, symboltable) -> None:
             self.childTables.append(symboltable)
-            self.logger.__log__("Added the Symboltable: {} to the symboltable: {}".format(symboltable, symboltable))
+            # self.logger.__log__("Added the Symboltable: {} to the symboltable: {}".format(symboltable, symboltable))
     
     def createChildTable(self):
         newTable = SymbolTable(self)
@@ -95,7 +95,7 @@ class SymbolTable:
             if sym.symbol == symbol.symbol:
                 if sym.insideTable == self:
                     self.symboltable.remove(symbol) 
-                    self.logger.__log__("Removed the Symbol: {} to the scopetable".format(symbol.symbol))
+                    # self.logger.__log__("Removed the Symbol: {} to the scopetable".format(symbol.symbol))
                     return True
         return False
     
