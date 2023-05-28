@@ -1043,7 +1043,7 @@ class RigidEqNode(BaseNode):
         res_left = self.left_node.visit(symboltable).visit(symboltable)
         res_right = self.right_node.visit(symboltable).visit(symboltable) # x = r:int
         if res_left.token.type != TokenTypes.IDENTIFIER and res_right.token.type != TokenTypes.IDENTIFIER:
-            if res_left.value == res_right.value:
+            if res_left.token.value == res_right.token.value:
                 return res_left
         return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value)) 
     
@@ -1445,6 +1445,38 @@ class DotDotNode(BaseNode):
         childNodes.extend(self.start.getChildNodes()) 
         childNodes.extend(self.end.getChildNodes()) 
         return childNodes
+    
+    def getContexts(self, currentContext):
+        self.usedSymbolTable = currentContext.usedSymbolTable
+        startNode = self.start.visit(self.usedSymbolTable)
+        if startNode.token.type != TokenTypes.INTEGER:
+            return ContextValues([],False,False)  
+        
+        endNode = self.end.visit(self.usedSymbolTable)
+        if endNode.token.type != TokenTypes.INTEGER:
+            return ContextValues([],False,False)  
+        
+        fac = 1
+        if startNode.value > endNode.value:
+            fac = -1
+
+        nodes = []
+        nodes.append(startNode)
+
+        currentInt = startNode.value
+        endGen = False
+
+        while endGen == False:
+            if currentInt == endNode.value:
+                endGen = True
+            else:
+                currentInt += fac
+                res = NumberNode(Token(TokenTypes.INTEGER, currentInt))
+                res.usedSymbolTable = self.usedSymbolTable
+                nodes.append(res)
+        choices = ChoiceSequenceNode(Token(TokenTypes.CHOICE,TokenTypes.CHOICE.value), nodes)
+        return choices.getContexts(currentContext)
+         
 
 '''
 Fail node indicating false? in Verse.

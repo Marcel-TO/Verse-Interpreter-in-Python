@@ -65,7 +65,7 @@ FUNCTION
 """
 CHOICE
 """
-# text = "1..10" # (1|2|3|4|5|6|7|8|9|10)
+#text = "1..10" # (1|2|3|4|5|6|7|8|9|10)
 #text = "z:int; z=7; y:=(31|5); x:=(7|22); (z,x,y)" # ((7,7,31)|(7,7,5)|(7,22,31)|(7,22,5))
 
 # text = "x=(y|2); y=(1|3|z:int); x,y:int; t:int; t = (z = 10; 2); (x,y)" # --> The wrong way, due to choice context
@@ -146,7 +146,7 @@ STRING
 # text = "x:=\"OMGODF\"; y:=\"World\"; x>=y" # OMGODF
 # text = "x:=\"df\"; y:=\"World\"; x>=y" # false?
 # text = "x:=(\"Hallo\" | \"Welt\" ); x" # (Hallo|Welt)
-text = "x:=(\"Hallo\" | \"Welt\" ); y:=(\"New\" | \"Old\" ); x + y" # (HalloNew|HalloOld|WeltNew|WeltOld)
+#text = "x:=(\"Hallo\" | \"Welt\" ); y:=(\"New\" | \"Old\" ); x + y" # (HalloNew|HalloOld|WeltNew|WeltOld)
 
 """
 DATA TYPES
@@ -160,6 +160,9 @@ DATA TYPES
 #text = "t:=for{1|2}; t[0]" # head
 # text = "ys:= (1,2); xs:= (3,4); for{a=2; i:int; (xs[i], ys[i], a:int)}"
 # text ="a=2; f:= (a:int => a + 2);  f(2) * 2; a:int"
+text ="for{1..10}" #(1,2,3,4,5,6,7,8,9,10)
+text ="for{i=2;z=20;(i:int)..(z:int)}" #(2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20)
+text = "x:=(1,23,13); x[0..4]" # (1|23|13)
 
 start_text
 lexer = lexicon(text)
