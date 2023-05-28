@@ -15,7 +15,7 @@ parser = Parser(lexer)
 interpreter = Interpreter(parser)
 
 while True:
-    text = input(">>> ")
+    text = input("[verse]>>> ")
     if text.lower() == "quit" or text.lower() == "exit":
         break
     lexer.input = text
