@@ -171,7 +171,8 @@ text ="ys:= (1,2); xs:= (3,4); for{a=2; i:int; (xs[i], ys[i], a:int)}"
 text ="(1|2); (3|4)"
 text = "t:=(1,2,3); for(i:int;x:=t[1]) do (x)"
 text ="t:=(1,1,1); for(i:int;x:=t[i]) do (x+i)"
-text = "x:int; t:=(1,(1|(2;3;x)));x = 10; t"
+text = "for(x:=2|3|5)do(x+1)"
+#text ="t:=(1,2,3); for(i:int;x:=t[1]) do (x)"
 start_text
 lexer = lexicon(text)
 parser = Parser(lexer)

@@ -167,7 +167,9 @@ class BindingNode(BaseNode):
         self.usedSymbolTable = symboltable
         symboltable.addBinding(self.leftNode.token.value, self.rightNode, None)
         self.rightNode.usedSymbolTable = symboltable
-        return self.rightNode.visit(symboltable)
+        res = self.rightNode.visit(symboltable)
+        res.usedSymbolTable = symboltable
+        return res
     
     def getChildNodes(self):
         childNodes = []
@@ -205,7 +207,7 @@ class NumberNode(BaseNode):
     
     def visit(self, symboltable: SymbolTable):
         self.usedSymbolTable = symboltable
-        return NumberNode(self.token)
+        return self
 
     def getChildNodes(self):
         childNodes = [self]
@@ -225,7 +227,8 @@ class StringNode(BaseNode):
         return self.token.value
         
     def visit(self, symboltable: SymbolTable):
-        return StringNode(self.token)
+        self.usedSymbolTable = symboltable
+        return self
 
 
 '''
