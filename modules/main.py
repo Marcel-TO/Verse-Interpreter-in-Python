@@ -166,6 +166,11 @@ DATA TYPES
 #text = "x:=(1,23,13); x[0..4] + (2|3|4)" # (3|4|5|25|26|27|15|16|17)
 text = "adding:=(xs:int, y:int => 6 + xs + y); adding(1|2,33|44) + (23 | 22)"
 text = "adding:=(xs:int, y:int => 6 + xs + y); adding(1|2,33|44) + 23 | 22" # Sees tail(1|2,33|44) + 23 as an own choice branch, thus diff result
+text ="ys:= (1,2); xs:= (3,4); for{a=2; i:int; (xs[i], ys[i], a:int)}"
+text ="(1|2); (3|4)"
+text = "t:=(1,2,3); for(i:int;x:=t[1]) do (x)"
+text ="t:=(1,1,1); for(i:int;x:=t[i]) do (x+i)"
+text = "x:int; t:=(1,(1|(2;3;x)));x = 10; t"
 start_text
 lexer = lexicon(text)
 parser = Parser(lexer)

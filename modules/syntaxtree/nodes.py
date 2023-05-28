@@ -49,6 +49,7 @@ class BlockNode(BaseNode):
     def __init__(self, nodes:list[BaseNode]) -> None:
         self.nodes:list[BaseNode] = nodes
         self.seperator = ";"
+        self.usedSymbolTable = SymbolTable(None)
 
     def __repr__(self) -> str:    
         return self.seperator.join([repr(n) for n in self.nodes])
@@ -95,7 +96,9 @@ class BlockNode(BaseNode):
 
         if hasFailed:
             return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value)) 
-        return results[len(results)-1] 
+        finalResult = results[len(results)-1]
+        finalResult.usedSymbolTable = symboltable
+        return finalResult 
 
     def getChildNodes(self):
         childNodes = []
@@ -164,7 +167,7 @@ class BindingNode(BaseNode):
         self.usedSymbolTable = symboltable
         symboltable.addBinding(self.leftNode.token.value, self.rightNode, None)
         self.rightNode.usedSymbolTable = symboltable
-        return self.rightNode
+        return self.rightNode.visit(symboltable)
     
     def getChildNodes(self):
         childNodes = []
@@ -180,7 +183,7 @@ class BindingNode(BaseNode):
         
         contextValues = self.rightNode.getContexts(currentContext)
         contexts = []
-        if contextValues.needContext:
+        if contextValues.needContext and contextValues.alreadyInContext == False:
             for val in contextValues.nodes:
                 self.rightNode = val
                 context = Contexts([copy.deepcopy(currentContext)])
@@ -827,7 +830,7 @@ class ForNode(BaseNode):
                 resultSeq.nodes = doResults[0].nodes
             elif doResults[0].token.type == TokenTypes.TUPLE_TYPE:
                 resultSeq = doResults[0].nodes
-            else: resultSeq.nodes = doResults[0]
+            else: resultSeq.nodes = doResults
         else:
             resultSeq.nodes = doResults
         resContext = Contexts([resultSeq])
