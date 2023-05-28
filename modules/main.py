@@ -146,7 +146,7 @@ STRING
 # text = "x:=\"OMGODF\"; y:=\"World\"; x>=y" # OMGODF
 # text = "x:=\"df\"; y:=\"World\"; x>=y" # false?
 # text = "x:=(\"Hallo\" | \"Welt\" ); x" # (Hallo|Welt)
-# text = "x:=(\"Hallo\" | \"Welt\" ); y:=(\"New\" | \"Old\" ); x + y" # (HalloNew|HalloOld|WeltNew|WeltOld)
+text = "x:=(\"Hallo\" | \"Welt\" ); y:=(\"New\" | \"Old\" ); x + y" # (HalloNew|HalloOld|WeltNew|WeltOld)
 
 """
 DATA TYPES
@@ -158,7 +158,7 @@ DATA TYPES
 # text = "ys:= (12,22,23); xs:= (1,2,3,4); for{((i:int;ys[i])|(s:int; xs[s]))}" # append --> (12,22,23,1,2,3,4)
 #text = "xs:= (1,2,3,4); for{i:int; i > 0; xs[i]}" # tail
 #text = "t:=for{1|2}; t[0]" # head
-text = "ys:= (1,2); xs:= (3,4); for{a=2; i:int; (xs[i], ys[i], a:int)}"
+# text = "ys:= (1,2); xs:= (3,4); for{a=2; i:int; (xs[i], ys[i], a:int)}"
 # text ="a=2; f:= (a:int => a + 2);  f(2) * 2; a:int"
 
 start_text

@@ -366,8 +366,8 @@ class OperatorNode(BaseNode):
                     result = val1
                 else: return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value)) 
 
-                res = StringNode(Token(TokenTypes.STRING, result))
-                res.usedSymbolTable = symboltable
+        res = StringNode(Token(TokenTypes.STRING, result))
+        res.usedSymbolTable = symboltable
         
         return res
     
