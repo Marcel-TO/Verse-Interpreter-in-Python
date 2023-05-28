@@ -33,6 +33,7 @@ class BaseNode:
 
     def getContexts(self, currentContext):
         return ContextValues([currentContext],False, False)
+    
 
 #Class that takes a parsed node, containes information if node could have been parsed
 class ParsedNode:
@@ -121,7 +122,7 @@ class BlockNode(BaseNode):
                 return contextValues
             index +=1
         return contextValues
-
+    
 
 '''
 Top Node in tree.
@@ -145,6 +146,7 @@ class ProgramNode(BaseNode):
 
     def getContexts(self,currentContext):
         return self.node.getContexts(currentContext)
+
 
 '''
 Node for binded identifiers.
@@ -1218,9 +1220,10 @@ class IndexingNode(BaseNode):
         if isValid and result != None:
             try:
                 result = result.visit(currentContext.usedSymbolTable)
-                freshId = IdentifierNode(Token(TokenTypes.IDENTIFIER,"rs"))
+                freshId = IdentifierNode(Token(TokenTypes.IDENTIFIER,IdentifierCreator.create(currentContext.usedSymbolTable)))
                 freshScope = ScopeNode(Token(TokenTypes.SCOPE, TokenTypes.SCOPE),[freshId],
                                            TypeNode(Token(TokenTypes.INT_TYPE,TokenTypes.INT_TYPE.value),ValueTypes.INT_TYPE))
+                currentContext.usedSymbolTable.addScope(freshId.token.value,freshScope.type)
                 flexWithIndex = FlexibleEqNode(Token(TokenTypes.EQUAL,TokenTypes.EQUAL.value),freshId,self.index)
                 nodeIndex = 0
                 possibleNodes = []
