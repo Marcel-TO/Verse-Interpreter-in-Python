@@ -1,7 +1,7 @@
-from verse_lexer import lexicon
-from structure.logger import *
-from syntaxtree.nodes import *
-from syntaxtree.parsedNode import *
+from verse_lexer.verse_lexer import lexicon
+from structure.logger.logger import *
+from syntaxtree.nodes.nodes import *
+from syntaxtree.parsedNode.parsedNode import *
 class Parser:
     def __init__(self, lexer: lexicon):
        self.logger: Logger = Console_Logger()

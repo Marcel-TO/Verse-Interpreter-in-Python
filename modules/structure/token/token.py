@@ -1,4 +1,4 @@
-from structure.tokenTypes import TokenTypes
+from structure.tokenTypes.tokenTypes import TokenTypes
 
 class Token:
     def __init__(self, type: TokenTypes, value) -> None:

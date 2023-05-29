@@ -1,10 +1,10 @@
 import copy
-from structure.valueTypes import ValueTypes
-from structure.token import Token
-from structure.tokenTypes import TokenTypes
-from syntaxtree.symboltable import SymbolTable
-from syntaxtree.sequentor import Sequentor
-from syntaxtree.identifier_creator import IdentifierCreator
+from structure.valueTypes.valueTypes import ValueTypes
+from structure.token.token import Token
+from structure.tokenTypes.tokenTypes import TokenTypes
+from syntaxtree.symboltable.symboltable import SymbolTable
+from syntaxtree.sequentor.sequentor import Sequentor
+from syntaxtree.identifier_creator.identifier_creator import IdentifierCreator
 
 
 class ContextValues():

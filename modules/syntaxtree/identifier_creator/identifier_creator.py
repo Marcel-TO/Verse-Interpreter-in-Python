@@ -1,5 +1,5 @@
 from random import randrange
-from syntaxtree.symboltable import SymbolTable
+from syntaxtree.symboltable.symboltable import SymbolTable
 
 
 class IdentifierCreator:

@@ -1,4 +1,4 @@
-from structure.errorClass import ErrorType
+from structure.errorClass.errorClass import ErrorType
 
 
 class Logger:
