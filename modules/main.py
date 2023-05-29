@@ -1,7 +1,7 @@
-from syntaxtree.nodes import *
-from verse_lexer import lexicon
-from verse_parser import Parser
-from verse_interpreter import Interpreter
+from syntaxtree.nodes.nodes import *
+from verse_lexer.verse_lexer import lexicon
+from verse_parser.verse_parser import Parser
+from verse_interpreter.verse_interpreter import Interpreter
 import start_text
 
 """
@@ -142,7 +142,7 @@ STRING
 """
 # text = "x:=\"Hello \"; y:=\"World\"; x + y" # Hello World
 text = "x:=\"World\"; y:=\"World\"; if(x=y)then 1 else 0" # 1
-# text = "x:=\"df\"; y:=\"World\"; x<y" # df
+text = "x:=\"df\"; y:=\"World\"; x<y" # df
 # text = "x:=\"OMGODF\"; y:=\"World\"; x>=y" # OMGODF
 # text = "x:=\"df\"; y:=\"World\"; x>=y" # false?
 # text = "x:=(\"Hallo\" | \"Welt\" ); x" # (Hallo|Welt)
@@ -165,16 +165,16 @@ DATA TYPES
 #text ="for{i=2;z=20;(i:int)..(z:int)}" #(2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20)
 #text = "x:=(1,23,13); x[0..4]" # (1|23|13)
 #text = "x:=(1,23,13); x[0..4] + (2|3|4)" # (3|4|5|25|26|27|15|16|17)
-text = "adding:=(xs:int, y:int => 6 + xs + y); adding(1|2,33|44) + (23 | 22)"
-text = "adding:=(xs:int, y:int => 6 + xs + y); adding(1|2,33|44) + 23 | 22" # Sees tail(1|2,33|44) + 23 as an own choice branch, thus diff result
-text ="ys:= (1,2); xs:= (3,4); for{a=2; i:int; (xs[i], ys[i], a:int)}"
-text ="(1|2); (3|4)"
-text = "t:=(1,2,3); for(i:int;x:=t[1]) do (x)"
-text ="t:=(1,1,1); for(i:int;x:=t[i]) do (x+i)"
-text = "for(x:=2|3|5)do(x+1)"
+# text = "adding:=(xs:int, y:int => 6 + xs + y); adding(1|2,33|44) + (23 | 22)"
+# text = "adding:=(xs:int, y:int => 6 + xs + y); adding(1|2,33|44) + 23 | 22" # Sees tail(1|2,33|44) + 23 as an own choice branch, thus diff result
+# text ="ys:= (1,2); xs:= (3,4); for{a=2; i:int; (xs[i], ys[i], a:int)}"
+# text ="(1|2); (3|4)"
+# text = "t:=(1,2,3); for(i:int;x:=t[1]) do (x)"
+# text ="t:=(1,1,1); for(i:int;x:=t[i]) do (x+i)"
+# text = "for(x:=2|3|5)do(x+1)"
 #text ="t:=(1,2,3); for(i:int;x:=t[1]) do (x)"
 
-text = "data Rectangle(width:int,height:int); rec := Rectangle(7|1,3); recTwo := Rectangle(2|5,8); (rec.width,recTwo.width)"
+# text = "data Rectangle(width:int,height:int); rec := Rectangle(7|1,3); recTwo := Rectangle(2|5,8); (rec.width,recTwo.width)"
 start_text
 lexer = lexicon(text)
 parser = Parser(lexer)
