@@ -16,7 +16,6 @@ class ContextValues():
 '''
 Top class of all nodes.
 '''
-
 class BaseNode:
     def __init__(self, token) -> None:
         self.token = token 
@@ -36,7 +35,9 @@ class BaseNode:
         return ContextValues([currentContext],False, False)
     
 
-#Class that takes a parsed node, containes information if node could have been parsed
+'''
+Takes a parsed node and contains information if node could have been parsed.
+''' 
 class ParsedNode:
     def __init__(self, node: BaseNode, hasSyntaxError:bool ):
         self.node = node
@@ -63,10 +64,6 @@ class BlockNode(BaseNode):
         for n in self.nodes:
             result = n.visit(symboltable)
             if result != None:
-                #if result.token.type == TokenTypes.IDENTIFIER:
-                #    self.nodes[i] = result
-                #if result.token.type == TokenTypes.FAIL:
-                    #return result
                 results.append(result)
             i += 1
 
@@ -88,14 +85,8 @@ class BlockNode(BaseNode):
                         pass
                     results.append(result)
             i += 1
-        
-        '''
-        HIER GEÄNDERT Block Node, darf nur ein Value liefern.
-        Bsp. y:= (31|(z:=9; z)); x:=(7|22); (x,y)
-        wenn er in diesem Block (z:=9; z) die liste übergibt kommt es später zu einem error.
-        Er muss das z zurückgeben, sprich Ein resultat vom Block. 
-        '''
 
+        # Block is only allowed to return one (last) value.
         if hasFailed:
             return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value)) 
         finalResult = results[len(results)-1]
@@ -243,7 +234,7 @@ class StringNode(BaseNode):
 Operators: +, *, -, /, <, >, <=, >=.
 
 Fail condition on using following nodes for any 
-of the above listed operations: FaileNode, SequenceNodes (Except choices).
+of the above listed operations: FailNode, SequenceNodes (Except choices).
 
 Operator node, checks its left and right node by visiting it.
 Then in the sequentor it get combination if there is or are many choices
@@ -293,10 +284,7 @@ class OperatorNode(BaseNode):
             left_val = s[0]
             right_val = s[1]
 
-            '''
-            Checks if left_val or right_val (nodes) are valid for the operation.
-            If node save fail node in nodes
-            '''
+            # Checks if left_val or right_val (nodes) are valid for the operation.
             if (left_val.token.type in fail_conditions) or (right_val.token.type in fail_conditions):
                 nodes.append( FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value)) )
            
@@ -306,15 +294,12 @@ class OperatorNode(BaseNode):
                     nodes.append(self.doOperationStr(left_val.token.value, right_val.token.value, self.token,symboltable))
                     continue
                 nodes.append(self.doOperationInt(left_val.value,right_val.value, self.token,symboltable))
-
         # creates the choice
         choice = ChoiceSequenceNode(Token(TokenTypes.CHOICE,TokenTypes.CHOICE.value), nodes)
 
-        '''
-        Last visit if choice contains for example (false?|false?).
-        in the choice visit method it returns only the values without the false?.
-        If there are no valid nodes/values in the choice sequence, it return FailNode.
-        ''' 
+        #Last visit if choice contains for example (false?|false?).
+        # in the choice visit method it returns only the values without the false?.
+        # If there are no valid nodes/values in the choice sequence, it return FailNode.
         result = choice.visit(symboltable) 
         self.type = result.type
         return result
@@ -418,8 +403,6 @@ class OperatorNode(BaseNode):
         return contextValues
 
 
-        
-
 '''
 If unary node is called, it calls visitor operator in following way:
 creates multiplication operator node containg -1 and its val it has to multiply.
@@ -470,7 +453,6 @@ class UnaryNode(BaseNode):
 '''
 Node for identifiers.
 ''' 
-
 class IdentifierNode(BaseNode):
     def __init__(self, token:Token) -> None: #Change into Variable/IdentifierNode
         super().__init__(token)
@@ -547,8 +529,7 @@ class ScopeNode(BaseNode):
     def App_Beta(self,identifierFrom, identifierTo):
         for n in self.nodes:
             n.App_Beta(identifierFrom, identifierTo)
-
-        
+     
 
 '''
 Top class node for types (int, tuple, etc.).
@@ -710,6 +691,7 @@ class FuncCallNode:
                 return ContextValues(contexts,True, True)
             index +=1
         return ContextValues([currentContext],False, False)
+
 
 '''
 Node for func declarations.
@@ -905,7 +887,7 @@ class ForNode(BaseNode):
                 resultSeq.nodes = finalResults[0].nodes
             elif finalResults[0].token.type == TokenTypes.TUPLE_TYPE:
                 resultSeq = finalResults[0].nodes
-            else: resultSeq.nodes = finalResults[0]
+            else: resultSeq.nodes = finalResults
         else:
             resultSeq.nodes = finalResults
         resContext = Contexts([resultSeq])
@@ -966,7 +948,6 @@ class ForNode(BaseNode):
     def App_Beta(self,identifierFrom, identifierTo):
         self.node.App_Beta(identifierFrom, identifierTo)
         self.do.App_Beta(identifierFrom, identifierTo)
-
     
 
 '''
@@ -1105,7 +1086,6 @@ class FlexibleEqNode(BaseNode):
 '''
 Node for sequences (tuple, array).
 ''' 
-
 class SequenceNode(BaseNode):
     def __init__(self, token:Token, nodes:list[BaseNode]) -> None:
         super().__init__(token)
@@ -1173,6 +1153,7 @@ class SequenceNode(BaseNode):
                 return contextValues
             index +=1
         return ContextValues(contexts,False,False)
+    
 '''
 Node for indexing.
 ''' 
@@ -1188,39 +1169,10 @@ class IndexingNode(BaseNode):
         (isValid, result) = symboltable.get_value(self.identifier.token.value)
         if isValid and result != None:
             try:
-               result = result.visit(symboltable).nodes[self.index.visit(symboltable).token.value]
-               self.type = result.type
-               return result
+               return result.visit(symboltable).nodes[self.index.visit(symboltable).token.value]
             except:
                 return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
-        """
-        self.usedSymbolTable = symboltable
-        (isValid, result) = symboltable.get_value(self.identifier.token.value)
-        if isValid and result != None:
-            value = result.visit(symboltable)
-            index = self.index.visit(symboltable)
-            try:
-                # checks if it is number
-                if index.value >= len(value.nodes):
-                    print("Exception -> Index out of range")
-                    return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value)) 
-
-                return value.nodes[index.value]
-            except:
-                # checks if it is tuple
-                try:
-                    result = []
-                    for iNode in index.nodes:
-                        i = iNode.visit(symboltable)
-                        if i.value >= len(value.nodes):
-                            print("Exception -> Index out of range")
-                            return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value)) 
-                        result.append(value.nodes[i.value])
-                    return SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),result)
-                except:
-                    return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value))
-            """
-        return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value)) 
+        return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
     
     def getContexts(self, currentContext): 
         contextValues = self.index.getContexts(currentContext)
@@ -1612,7 +1564,7 @@ class Contexts(BaseNode):
                 if context.alreadyInContext or (context.needContext and context.alreadyInContext == False):
                         newContexts.extend(context.nodes)
                 else: newContexts.append(c)
-                checkContext = context.alreadyInContext
+                checkContext = context.alreadyInContext or (context.needContext and context.alreadyInContext == False)
                 try:
                     results.extend(res)
                 except:

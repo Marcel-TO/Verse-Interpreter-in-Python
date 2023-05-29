@@ -27,6 +27,7 @@ text = "s:=(1,2); for{i:int; s[i]}"
 # text = "for(x:=2|3|5; x > 2)do(x+(1|2))" # ((4,6)|(4,7)|(5,6)|(5,7))
 # text = "t:=(1,1,1); for(i:int;x:=t[i]) do (x+i)" # !!!!!!!! indexing for still work in progress
 text = "t:=(1,2,3); for(i:int;x:=t[1]) do (x)" # Error
+text = "i:int; x:=1; xs:= (2,3,4); for{x|xs[i]}"
 
 """
 IF
@@ -141,8 +142,8 @@ FALSE
 STRING
 """
 # text = "x:=\"Hello \"; y:=\"World\"; x + y" # Hello World
-text = "x:=\"World\"; y:=\"World\"; if(x=y)then 1 else 0" # 1
-text = "x:=\"df\"; y:=\"World\"; x<y" # df
+# text = "x:=\"World\"; y:=\"World\"; if(x=y)then 1 else 0" # 1
+# text = "x:=\"df\"; y:=\"World\"; x<y" # df
 # text = "x:=\"OMGODF\"; y:=\"World\"; x>=y" # OMGODF
 # text = "x:=\"df\"; y:=\"World\"; x>=y" # false?
 # text = "x:=(\"Hallo\" | \"Welt\" ); x" # (Hallo|Welt)
@@ -174,7 +175,13 @@ DATA TYPES
 # text = "for(x:=2|3|5)do(x+1)"
 #text ="t:=(1,2,3); for(i:int;x:=t[1]) do (x)"
 
-# text = "data Rectangle(width:int,height:int); rec := Rectangle(7|1,3); recTwo := Rectangle(2|5,8); (rec.width,recTwo.width)"
+text = "ys:= (12,22,23); xs:= (1,2,3,4); for{((i:int;ys[i])|(s:int; xs[s]))}" # append --> (12,22,23,1,2,3,4)
+text = "xs:= (1,2,3,4); for{i:int; i > 0; xs[i]}" # tail
+text = "t:=for{1|2}; t[0]" # head
+text = "i:int; x:=1; xs:= (2,3,4); for{x|xs[i]}" # cons
+# text ="xs:=(1,2,3); f:=(x:int => x * 2); for{i:int;f(xs[i])}" # flatMap
+# text = "xs:=(1,2,3); ys:=(4,5,6); for{i:int; (xs[i], ys[i])}" # zipWith
+
 start_text
 lexer = lexicon(text)
 parser = Parser(lexer)

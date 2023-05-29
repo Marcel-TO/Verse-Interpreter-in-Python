@@ -16,11 +16,11 @@ class ContextValues():
 '''
 Top class of all nodes.
 '''
-
 class BaseNode:
     def __init__(self, token) -> None:
         self.token = token 
         self.usedSymbolTable = SymbolTable(None)
+        self.type = ValueTypes.ANY
 
     def visit(self, symboltable: SymbolTable):
         return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value))  
@@ -35,7 +35,9 @@ class BaseNode:
         return ContextValues([currentContext],False, False)
     
 
-#Class that takes a parsed node, containes information if node could have been parsed
+'''
+Takes a parsed node and contains information if node could have been parsed.
+''' 
 class ParsedNode:
     def __init__(self, node: BaseNode, hasSyntaxError:bool ):
         self.node = node
@@ -50,6 +52,7 @@ class BlockNode(BaseNode):
         self.nodes:list[BaseNode] = nodes
         self.seperator = ";"
         self.usedSymbolTable = SymbolTable(None)
+        self.type = ValueTypes.ANY
 
     def __repr__(self) -> str:    
         return self.seperator.join([repr(n) for n in self.nodes])
@@ -61,10 +64,6 @@ class BlockNode(BaseNode):
         for n in self.nodes:
             result = n.visit(symboltable)
             if result != None:
-                #if result.token.type == TokenTypes.IDENTIFIER:
-                #    self.nodes[i] = result
-                #if result.token.type == TokenTypes.FAIL:
-                    #return result
                 results.append(result)
             i += 1
 
@@ -86,18 +85,13 @@ class BlockNode(BaseNode):
                         pass
                     results.append(result)
             i += 1
-        
-        '''
-        HIER GEÄNDERT Block Node, darf nur ein Value liefern.
-        Bsp. y:= (31|(z:=9; z)); x:=(7|22); (x,y)
-        wenn er in diesem Block (z:=9; z) die liste übergibt kommt es später zu einem error.
-        Er muss das z zurückgeben, sprich Ein resultat vom Block. 
-        '''
 
+        # Block is only allowed to return one (last) value.
         if hasFailed:
             return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value)) 
         finalResult = results[len(results)-1]
         finalResult.usedSymbolTable = symboltable
+        self.type = finalResult.type
         return finalResult 
 
     def getChildNodes(self):
@@ -134,10 +128,13 @@ class ProgramNode(BaseNode):
     def __init__(self, node:BlockNode) -> None:
         self.node = node
         self.usedSymbolTable = SymbolTable(None)
+        self.type = ValueTypes.ANY
 
     def visit(self, symboltable: SymbolTable):
         self.usedSymbolTable = symboltable
-        return self.node.visit(symboltable) 
+        result = self.node.visit(symboltable) 
+        self.type = result.type
+        return result
     
     def getChildNodes(self):
         childNodes = []
@@ -159,6 +156,7 @@ class BindingNode(BaseNode):
         super().__init__(token)
         self.leftNode = leftNode
         self.rightNode = rightNode
+        self.type = ValueTypes.ANY
 
     def __repr__(self) -> str:    
         return "{}:={}".format(repr(self.leftNode),repr(self.rightNode))  
@@ -169,6 +167,7 @@ class BindingNode(BaseNode):
         self.rightNode.usedSymbolTable = symboltable
         res = self.rightNode.visit(symboltable)
         res.usedSymbolTable = symboltable
+        self.type = res.type
         return res
     
     def getChildNodes(self):
@@ -235,7 +234,7 @@ class StringNode(BaseNode):
 Operators: +, *, -, /, <, >, <=, >=.
 
 Fail condition on using following nodes for any 
-of the above listed operations: FaileNode, SequenceNodes (Except choices).
+of the above listed operations: FailNode, SequenceNodes (Except choices).
 
 Operator node, checks its left and right node by visiting it.
 Then in the sequentor it get combination if there is or are many choices
@@ -247,6 +246,7 @@ class OperatorNode(BaseNode):
         super().__init__(token)
         self.leftNode = leftNode
         self.rightNode = rightNode
+        self.type = ValueTypes.ANY
 
     def __repr__(self) -> str:    
         return "({}) {} ({})".format(repr(self.leftNode),self.token.value,repr(self.rightNode))  
@@ -261,12 +261,7 @@ class OperatorNode(BaseNode):
        
         node_right = self.rightNode.visit(symboltable).visit(symboltable)
         if node_right.token.type in fail_conditions:
-                return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value)) 
-        
-        # --HIER GEÄNDERT Check für string
-        if(node_right.token.type == TokenTypes.STRING_TYPE or node_left.token.type == TokenTypes.STRING_TYPE):
-           return self.doStringOperation(node_left, node_right, self.token, symboltable)
-           
+                return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value))            
         
         sequentor = Sequentor([node_left,node_right])
         sequences = sequentor.getSequences()
@@ -278,7 +273,9 @@ class OperatorNode(BaseNode):
                     return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
             # checks if the sequences are string or not
             if s[0].token.type == TokenTypes.STRING or s[1].token.type == TokenTypes.STRING:
+                self.type = ValueTypes.STRING_TYPE
                 return self.doOperationStr(sequences[0][0].token.value,sequences[0][1].token.value, self.token,symboltable)
+            self.type = ValueTypes.INT_TYPE
             return self.doOperationInt(sequences[0][0].value,sequences[0][1].value, self.token,symboltable)
         
         # Else left or/and right node of operation had to be a choice.
@@ -287,10 +284,7 @@ class OperatorNode(BaseNode):
             left_val = s[0]
             right_val = s[1]
 
-            '''
-            Checks if left_val or right_val (nodes) are valid for the operation.
-            If node save fail node in nodes
-            '''
+            # Checks if left_val or right_val (nodes) are valid for the operation.
             if (left_val.token.type in fail_conditions) or (right_val.token.type in fail_conditions):
                 nodes.append( FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value)) )
            
@@ -300,16 +294,15 @@ class OperatorNode(BaseNode):
                     nodes.append(self.doOperationStr(left_val.token.value, right_val.token.value, self.token,symboltable))
                     continue
                 nodes.append(self.doOperationInt(left_val.value,right_val.value, self.token,symboltable))
-
         # creates the choice
         choice = ChoiceSequenceNode(Token(TokenTypes.CHOICE,TokenTypes.CHOICE.value), nodes)
 
-        '''
-        Last visit if choice contains for example (false?|false?).
-        in the choice visit method it returns only the values without the false?.
-        If there are no valid nodes/values in the choice sequence, it return FailNode.
-        ''' 
-        return choice.visit(symboltable) 
+        #Last visit if choice contains for example (false?|false?).
+        # in the choice visit method it returns only the values without the false?.
+        # If there are no valid nodes/values in the choice sequence, it return FailNode.
+        result = choice.visit(symboltable) 
+        self.type = result.type
+        return result
     
     '''
     Does any of the following operations in the match case
@@ -354,19 +347,19 @@ class OperatorNode(BaseNode):
             result = val1 + val2
         # APPLICATION: gt⟨k1, k2⟩ −→ k1  &  gt⟨k1, k2⟩ −→ fail
         elif token.type == TokenTypes.GREATER:
-            if val1 > val2:
+            if len(val1) > len(val2):
                 result = val1
             else: return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value)) 
         elif token.type == TokenTypes.GREATEREQ:
-            if val1 >= val2:
+            if len(val1) >= len(val2):
                 result = val1
             else: return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value)) 
         elif token.type == TokenTypes.LOWER:
-                if val1 < val2:
+                if len(val1) < len(val2):
                     result = val1
                 else: return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value)) 
         elif token.type == TokenTypes.LOWEREQ:
-                if val1 <= val2:
+                if len(val1) <= val2:
                     result = val1
                 else: return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value)) 
         res = StringNode(Token(TokenTypes.STRING, result))
@@ -410,8 +403,6 @@ class OperatorNode(BaseNode):
         return contextValues
 
 
-        
-
 '''
 If unary node is called, it calls visitor operator in following way:
 creates multiplication operator node containg -1 and its val it has to multiply.
@@ -420,6 +411,7 @@ class UnaryNode(BaseNode):
     def __init__(self, token:Token, node) -> None:
         super().__init__(token)
         self.node = node
+        self.type = ValueTypes.ANY
 
     def __repr__(self) -> str:    
         return "{}{}".format(self.token.value,repr(self.node)) 
@@ -431,7 +423,9 @@ class UnaryNode(BaseNode):
             mul = -1
         res = OperatorNode(Token(TokenTypes.MULTIPLY, TokenTypes.MULTIPLY.value),
                                                  NumberNode(Token(TokenTypes.INTEGER,mul)),self.node)
-        return res.visit(symboltable)
+        result = res.visit(symboltable)
+        self.type = result.type
+        return result
 
     def getChildNodes(self):
         childNodes = []
@@ -459,10 +453,10 @@ class UnaryNode(BaseNode):
 '''
 Node for identifiers.
 ''' 
-
 class IdentifierNode(BaseNode):
     def __init__(self, token:Token) -> None: #Change into Variable/IdentifierNode
         super().__init__(token)
+        self.type = ValueTypes.ANY
 
     def __repr__(self) -> str:
         return str(self.token.value)
@@ -471,11 +465,23 @@ class IdentifierNode(BaseNode):
         # checks if the identifier already exists in the scopetable.
         (isValid, result) = symboltable.get_value(self.token.value)
         if isValid and result != None:
-            return result.visit(symboltable)
+            res = result.visit(symboltable)
+            (isValid, symboltype) = symboltable.get_type(self.token.value)
+            if symboltype == None:
+                return res
+            elif symboltype.type == res.type or res.type == ValueTypes.ANY:
+                self.type = res.type
+                return res
         if symboltable.parentTable != None:
             (isValid, result) = symboltable.parentTable.get_value(self.token.value)
             if isValid and result != None:
-                return result.visit(symboltable)
+                res = result.visit(symboltable)
+                (isValid, symboltype) = symboltable.get_type(self.token.value)
+                if symboltype == None:
+                    return res
+                elif symboltype.type == res.type or res.type == ValueTypes.ANY:
+                    self.type = res.type
+                    return res
         return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value)) 
     
     def getChildNodes(self):
@@ -523,8 +529,7 @@ class ScopeNode(BaseNode):
     def App_Beta(self,identifierFrom, identifierTo):
         for n in self.nodes:
             n.App_Beta(identifierFrom, identifierTo)
-
-        
+     
 
 '''
 Top class node for types (int, tuple, etc.).
@@ -554,6 +559,7 @@ class SequenceTypeNode(TypeNode):
         super().__init__(token,ValueTypes.SEQUENCE_TYPE)
         self.types = types
         self.seperator = ","
+        self.type = ValueTypes.ANY
 
     def __repr__(self) -> str:
         if(self.token.type == TokenTypes.TUPLE_TYPE):
@@ -581,6 +587,7 @@ class FuncCallNode:
     def __init__(self,identifier:IdentifierNode, args:list) -> None:
         self.identifier = identifier
         self.args = args
+        self.type = ValueTypes.ANY
 
     def visit(self, symboltable: SymbolTable):
         self.usedSymbolTable = symboltable
@@ -657,6 +664,7 @@ class FuncCallNode:
                         if param_val_at_arg_pos[0]:
                             symboltable.addValue(arg, param_val_at_arg_pos[1])      
                     index += 1
+            self.type = val.type
             return val
         return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value)) 
         
@@ -683,6 +691,7 @@ class FuncCallNode:
                 return ContextValues(contexts,True, True)
             index +=1
         return ContextValues([currentContext],False, False)
+
 
 '''
 Node for func declarations.
@@ -727,17 +736,16 @@ class DataCallNode:
     def __init__(self,identifier:IdentifierNode, param:BaseNode) -> None:
         self.identifier = identifier
         self.param = param
+        self.type = ValueTypes.ANY
 
     def visit(self, symboltable: SymbolTable):
         table = symboltable.createChildTable()
-
         (isValid, value) = symboltable.get_value(self.identifier.token.value)
-
         if isValid == False:
             return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
         
         result = value.visit(symboltable)
-        
+        self.type = result.type
         return result.getParam(self.param)
     
     def getChildNodes(self, cur):
@@ -774,14 +782,16 @@ class DataDeclNode:
         self.symboltable_params = SymbolTable(None)
 
     def visit(self, symboltable: SymbolTable):
-        self.symboltable_params = symboltable.createChildTable()
+        nodes = []  
+        if(len(self.symboltable_params.symboltable)==0):
+            self.symboltable_params = symboltable.createChildTable()
         for param in self.params:
-            param.visit(self.symboltable_params)
+           val = param.visit(self.symboltable_params)
+           nodes.append(val)
         symboltable.addBinding(self.identifier.token.value, self, self.type.visit(symboltable))
-        return self
+        return SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),nodes)
     
     def setParam(self, args: list[BaseNode]):
-        nodes = []
         if len(self.params) != len(args):
             return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
         try:
@@ -789,10 +799,9 @@ class DataDeclNode:
                 for node in self.params[i].nodes:
                     self.symboltable_params.addValue(node.token.value, args[i])
                     val = node.visit(self.symboltable_params)
-                    nodes.append(val)
         except:
             return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
-        return SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),nodes)
+        return self
     
     def getParam(self, param: BaseNode):
         (isValid, result) = self.symboltable_params.get_value(param.token.value)
@@ -818,6 +827,7 @@ class ForNode(BaseNode):
         super().__init__(token)
         self.node = node
         self.do = do
+        self.type = ValueTypes.ANY
 
     def visit(self, symboltable: SymbolTable):
         resultSeq = SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),[])
@@ -846,46 +856,8 @@ class ForNode(BaseNode):
             resultSeq.nodes = doResults
         resContext = Contexts([resultSeq])
         results = resContext.visit(symboltable)
+        self.type = results.type
         return results
-
-        """
-        for_table = symboltable.createChildTable()
-        isIndexing = False
-        isBinding = False
-        indexingNode = None
-
-        # check if block or not
-        
-        
-        try: 
-            for n in self.node.nodes:
-                # checks if there are filter options for the block
-                if self.check_type(n.token.type, [TokenTypes.LOWER, TokenTypes.LOWEREQ, TokenTypes.GREATER, TokenTypes.GREATEREQ]):
-                    result = n.visit(for_table)
-                    for_table.change_value(n.leftNode.token.value, result)
-                    continue
-                # checks if there could be an indexing node in a binding/flex_eq
-                if self.check_type(n.token.type, [TokenTypes.BINDING, TokenTypes.EQUAL]):
-                    if self.check_type(n.rightNode.token.type, [TokenTypes.SBL]):
-                        isIndexing = True
-                        indexingNode = n
-                        isBinding = True
-                # checks if there is an indexing node
-                if self.check_type(n.token.type, [TokenTypes.SBL]):
-                    isIndexing = True
-                    indexingNode = n
-                result = n.visit(for_table)
-        except:
-            result = self.node.visit(for_table)
-        
-        # checks if there was an indexing node in the block
-        if isIndexing:
-            if isBinding:
-                return self.for_indexing_binding(for_table, indexingNode)
-            return self.for_indexing(symboltable, indexingNode)
-        result = self.execDo(for_table)
-        return self.convert(result,for_table)
-        """
     
     def getChildNodes(self):
         childNodes = []
@@ -915,26 +887,12 @@ class ForNode(BaseNode):
                 resultSeq.nodes = finalResults[0].nodes
             elif finalResults[0].token.type == TokenTypes.TUPLE_TYPE:
                 resultSeq = finalResults[0].nodes
-            else: resultSeq.nodes = finalResults[0]
+            else: resultSeq.nodes = finalResults
         else:
             resultSeq.nodes = finalResults
         resContext = Contexts([resultSeq])
         results = resContext.visit(symboltable)
         return results
-    
-
-        """
-        if self.check_type(result.token.type, [TokenTypes.COMMA, TokenTypes.CHOICE]):
-            return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), result.nodes)
-
-        # returns single tuple
-        if self.check_type(result.token.type, [TokenTypes.INTEGER]):
-            return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), [result.token.value])
-
-        # returns empty tuple
-        if self.check_type(result.token.type, [TokenTypes.FAIL]):
-            return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), [])
-        """
     
     def for_indexing_binding(self, symboltable: SymbolTable, indexingNode: BaseNode):
         # checks if the value contains already a value
@@ -990,7 +948,6 @@ class ForNode(BaseNode):
     def App_Beta(self,identifierFrom, identifierTo):
         self.node.App_Beta(identifierFrom, identifierTo)
         self.do.App_Beta(identifierFrom, identifierTo)
-
     
 
 '''
@@ -1002,6 +959,7 @@ class IfNode(BaseNode):
         self.if_node = if_node
         self.then_node = then_node
         self.else_node = else_node
+        self.type = ValueTypes.ANY
 
     def __repr__(self) -> str:    
         return "{}({}) then {} else {}".format(self.token.value, repr(self.if_node), repr(self.then_node),  repr(self.else_node))
@@ -1014,7 +972,9 @@ class IfNode(BaseNode):
         if result_if != None and result_if.token.type != TokenTypes.FAIL:
             result_then = self.then_node.visit(symboltable)
             if self.check_type(result_then.token.type, [TokenTypes.TUPLE_TYPE, TokenTypes.CHOICE]):
+                self.type = result_then.nodes[0].type
                 return result_then.nodes[0]
+            self.type = result_then.type
             return result_then
             
             
@@ -1023,7 +983,9 @@ class IfNode(BaseNode):
         for i in range(0, len(if_symboltable.symboltable)):
                result =  self.else_node.visit(if_symboltable)
         if self.check_type(result.token.type, [TokenTypes.TUPLE_TYPE, TokenTypes.CHOICE]):
+            self.type = result.nodes[0].type
             return result.nodes[0]
+        self.type = result.type
         return result 
     
     def getChildNodes(self):
@@ -1052,6 +1014,7 @@ class RigidEqNode(BaseNode):
         super().__init__(token)
         self.left_node = left_node
         self.right_node = right_node
+        self.type = ValueTypes.ANY
 
     def __repr__(self) -> str:
         return "{}{}{}".format(repr(self.left_node),self.token.value, repr(self.right_node)) 
@@ -1062,6 +1025,7 @@ class RigidEqNode(BaseNode):
         res_right = self.right_node.visit(symboltable).visit(symboltable) # x = r:int
         if res_left.token.type != TokenTypes.IDENTIFIER and res_right.token.type != TokenTypes.IDENTIFIER:
             if res_left.token.value == res_right.token.value:
+                self.type = res_left.type
                 return res_left
         return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value)) 
     
@@ -1086,12 +1050,15 @@ class FlexibleEqNode(BaseNode):
         self.left_node = left_node
         self.right_node = right_node
         self.alreadyExists = False
+        self.type = ValueTypes.ANY
 
     def visit(self, symboltable: SymbolTable):
         self.usedSymbolTable = symboltable
         isValid = symboltable.addValue(self.left_node.token.value, self.right_node)
         if isValid:
-            return self.right_node.visit(symboltable)
+            result = self.right_node.visit(symboltable)
+            self.type = result.type
+            return result
         return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value)) 
 
     def getChildNodes(self):
@@ -1119,12 +1086,12 @@ class FlexibleEqNode(BaseNode):
 '''
 Node for sequences (tuple, array).
 ''' 
-
 class SequenceNode(BaseNode):
     def __init__(self, token:Token, nodes:list[BaseNode]) -> None:
         super().__init__(token)
         self.nodes = nodes
         self.seperator = ","
+        self.type = ValueTypes.ANY
         
     def __repr__(self) -> str:    
         return "(" + self.seperator.join([repr(n) for n in self.nodes]) + ")"
@@ -1186,6 +1153,7 @@ class SequenceNode(BaseNode):
                 return contextValues
             index +=1
         return ContextValues(contexts,False,False)
+    
 '''
 Node for indexing.
 ''' 
@@ -1194,6 +1162,7 @@ class IndexingNode(BaseNode):
         super().__init__(token)
         self.identifier = identifier
         self.index = index
+        self.type = ValueTypes.ANY
 
     def visit(self, symboltable: SymbolTable):
         self.usedSymbolTable = symboltable
@@ -1203,34 +1172,7 @@ class IndexingNode(BaseNode):
                return result.visit(symboltable).nodes[self.index.visit(symboltable).token.value]
             except:
                 return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
-        """
-        self.usedSymbolTable = symboltable
-        (isValid, result) = symboltable.get_value(self.identifier.token.value)
-        if isValid and result != None:
-            value = result.visit(symboltable)
-            index = self.index.visit(symboltable)
-            try:
-                # checks if it is number
-                if index.value >= len(value.nodes):
-                    print("Exception -> Index out of range")
-                    return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value)) 
-
-                return value.nodes[index.value]
-            except:
-                # checks if it is tuple
-                try:
-                    result = []
-                    for iNode in index.nodes:
-                        i = iNode.visit(symboltable)
-                        if i.value >= len(value.nodes):
-                            print("Exception -> Index out of range")
-                            return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value)) 
-                        result.append(value.nodes[i.value])
-                    return SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),result)
-                except:
-                    return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value))
-            """
-        return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value)) 
+        return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
     
     def getContexts(self, currentContext): 
         contextValues = self.index.getContexts(currentContext)
@@ -1283,6 +1225,7 @@ class ChoiceSequenceNode(BaseNode):
         super().__init__(token)
         self.nodes = nodes
         self.seperator = "|"
+        self.type = ValueTypes.ANY
         
         # Current choice branch/nodes index.
         self.currentChoice:int = 0 
@@ -1437,6 +1380,7 @@ class DotDotNode(BaseNode):
         super().__init__(token)
         self.start = start
         self.end = end
+        self.type = ValueTypes.ANY
 
     def visit(self, symboltable: SymbolTable):
         self.usedSymbolTable = symboltable
@@ -1513,6 +1457,7 @@ Fail node indicating false? in Verse.
 class FailNode(BaseNode): # Technically not need, since Fail node is 1 to 1 a BaseNode
     def __init__(self, token:Token) -> None:
         super().__init__(token)
+        self.type = ValueTypes.FAIL_TYPE
     
     def __repr__(self) -> str:    
         return self.token.value 
@@ -1619,7 +1564,7 @@ class Contexts(BaseNode):
                 if context.alreadyInContext or (context.needContext and context.alreadyInContext == False):
                         newContexts.extend(context.nodes)
                 else: newContexts.append(c)
-                checkContext = context.alreadyInContext
+                checkContext = context.alreadyInContext or (context.needContext and context.alreadyInContext == False)
                 try:
                     results.extend(res)
                 except:

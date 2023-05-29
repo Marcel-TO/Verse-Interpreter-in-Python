@@ -7,8 +7,6 @@ from verse_lexer.verse_lexer import lexicon
 from verse_parser.verse_parser import Parser
 from verse_interpreter.verse_interpreter import Interpreter
 
-#  @data({'input': 'bla', 'expected': 'res'})
-
 @ddt
 class InterpreterTest(unittest.TestCase):
     '''
@@ -20,6 +18,20 @@ class InterpreterTest(unittest.TestCase):
           {'input': 'x=(y|2); y=(1|3|z:int); x,y:int; t:int; t = (z = 10; 2); (x,y)', 'expected': '((10,10)|(2,10))'})
     @unpack
     def test_tuple(self, input: string, expected: string):
+        self.lexer = lexicon(input)
+        self.parser = Parser(self.lexer)
+        self.interpreter = Interpreter(self.parser)
+        result = self.interpreter.interpret()
+        self.assertTrue(repr(result) == expected)
+    
+    @data({'input': 'ys:= (12,22,23); xs:= (1,2,3,4); for{((i:int;ys[i])|(s:int; xs[s]))}', 'expected': '(12,22,23,1,2,3,4)'}, # append
+    {'input': 'xs:= (1,2,3,4); for{i:int; i > 0; xs[i]}', 'expected': '(2,3,4)'}, # tail
+    {'input': 't:=for{1|2}; t[0]', 'expected': '1'}, # head
+    {'input': 'i:int; x:=1; xs:= (2,3,4); for{x|xs[i]}', 'expected': '(1,2,3,4)'}, # cons
+    {'input': 'xs:=(1,2,3); f:=(x:int => x * 2); for{i:int;f(xs[i])}', 'expected': '(2,4,6)'}, # flatMap
+    {'input': 'xs:=(1,2,3); ys:=(4,5,6); for{i:int; (xs[i], ys[i])}', 'expected': '((1,4),(2,5),(3,6))'},) # zipWith
+    @unpack
+    def test_functions_on_tuples(self, input: string, expected: string):
         self.lexer = lexicon(input)
         self.parser = Parser(self.lexer)
         self.interpreter = Interpreter(self.parser)
@@ -164,22 +176,23 @@ class InterpreterTest(unittest.TestCase):
         result = self.interpreter.interpret()
         self.assertTrue(repr(result) == expected)
     
-    # '''
-    # Test: DATA STRUCTURE
-    # '''    
-    # @data({'input': 'data Rectangle(width:int,height:int); rec := Rectangle(7,3); rec.width | rec.height', 'expected': '(7|3)'},
-    # {'input': 'data Rectangle(width:int,height:int); rec := Rectangle(7|1,3|4); (rec.width,rec.height)', 'expected': '((7,3)|(7,4)|(1,3)|(1,4))'},
-    # {'input': 'data Rectangle(width:int,height:int); rec := Rectangle(7|1,3); recTwo := Rectangle(2|5,8); (rec.width,recTwo.width)', 'expected': '((7,2)|(7,5)|(1,2)|(1,5))'},
-    # {'input': 'z:int; z=7; y:=(31|5); x:=(7|22); data TupleCombiner(tuples:int); result := TupleCombiner((z,x,y)); result.tuples', 'expected': '((7,7,31)|(7,22,31)|(7,7,5)|(7,22,5))'},
-    # {'input': 'data MixedRectangle(width:int,height:int,name:string); rec := MixedRectangle(5,4,"AwesomeRectangle"); rec.name|rec.width|rec.height', 'expected': '(AwesomeRectangle|5|4)'},
-    # {'input': 'data Structure(property:int); s := Structure(x); x=5; x:int; s.property', 'expected': '5'})
-    # @unpack
-    # def test_data(self, input: string, expected: string):
-    #     self.lexer = lexicon(input)
-    #     self.parser = Parser(self.lexer)
-    #     self.interpreter = Interpreter(self.parser)
-    #     result = self.interpreter.interpret()
-    #     self.assertTrue(repr(result) == expected)
+    '''
+    Test: DATA STRUCTURE
+    '''    
+    @data({'input': 'data Rectangle(width:int,height:int); rec := Rectangle(7,3); rec.width | rec.height', 'expected': '(7|3)'},
+    {'input': 'data Rectangle(width:int,height:int); rec := Rectangle(7|1,3|4); (rec.width,rec.height)', 'expected': '((7,3)|(7,4)|(1,3)|(1,4))'},
+    {'input': 'data Rectangle(width:int,height:int); rec := Rectangle(7|1,3); recTwo := Rectangle(2|5,8); (rec.width,recTwo.width)', 'expected': '((7,2)|(7,5)|(1,2)|(1,5))'},
+    {'input': 'z:int; z=7; y:=(31|5); x:=(7|22); data TupleCombiner(tuples:int); result := TupleCombiner((z,x,y)); result.tuples', 'expected': '((7,7,31)|(7,22,31)|(7,7,5)|(7,22,5))'},
+    {'input': 'data MixedRectangle(width:int,height:int,name:string); rec := MixedRectangle(5,4,"AwesomeRectangle"); rec.name|rec.width|rec.height', 'expected': '(AwesomeRectangle|5|4)'},
+    {'input': 'data Structure(property:int); s := Structure(x); x=5; x:int; s.property', 'expected': '5'},
+    {'input': 'data Rectangle(width:int,height:int); rec := Rectangle(7,3); rec', 'expected': '(7,3)'})
+    @unpack
+    def test_data(self, input: string, expected: string):
+        self.lexer = lexicon(input)
+        self.parser = Parser(self.lexer)
+        self.interpreter = Interpreter(self.parser)
+        result = self.interpreter.interpret()
+        self.assertTrue(repr(result) == expected)
 
 if __name__ == '__main__':
     unittest.main(argv=['first-arg-is-ignored'], exit=False)       
