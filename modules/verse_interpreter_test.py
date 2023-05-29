@@ -171,7 +171,8 @@ class InterpreterTest(unittest.TestCase):
     '''    
     @data({'input': 'data Rectangle(width:int,height:int); rec := Rectangle(7,3); rec.width | rec.height', 'expected': '(7|3)'},
     {'input': 'z:int; z=7; y:=(31|5); x:=(7|22); data TupleCombiner(tuples:int); result := TupleCombiner((z,x,y)); result.tuples', 'expected': '((7,7,31)|(7,22,31)|(7,7,5)|(7,22,5))'},
-    {'input': 'data Structure(property:int); s := Structure(x); x=5; x:int; s.property', 'expected': '5'})
+    {'input': 'data Structure(property:int); s := Structure(x); x=5; x:int; s.property', 'expected': '5'},
+    {'input': 'data Rectangle(width:int,height:int); rec := Rectangle(7,3); rec', 'expected': '(7,3)'})
     @unpack
     def test_data(self, input: string, expected: string):
         self.lexer = lexicon(input)

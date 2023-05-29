@@ -173,7 +173,10 @@ text = "data Rectangle(width:int,height:int); rec := Rectangle(7,3); rec.width |
 #text ="t:=(1,1,1); for(i:int;x:=t[i]) do (x+i)"
 #text = "t:=(1,2,3); for(i:int;x:=t[1]) do (x)"
 #text ="t:=(1,2,3); for(i:int;x:=t[1]) do (x)"
-text ="data Rectangle(width:int,height:int); rec := Rectangle(7,3); rec"
+#text ="data Rectangle(width:int,height:int); rec := Rectangle(7,3); rec.width | rec.height; rec"
+#text ="z:int; z=7; y:=(31|5); x:=(7|22); data TupleCombiner(tuples:int); result := TupleCombiner((z,x,y)); result.tuples"
+text ="data Structure(property:int); s := Structure(x); x=5; x=5; x:int; s.property"
+#text ="data Rectangle(width:int,height:int); rec := Rectangle(7,3); rec"
 start_text
 lexer = lexicon(text)
 parser = Parser(lexer)

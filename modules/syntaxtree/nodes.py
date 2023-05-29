@@ -167,7 +167,7 @@ class BindingNode(BaseNode):
         self.usedSymbolTable = symboltable
         symboltable.addBinding(self.leftNode.token.value, self.rightNode, None)
         self.rightNode.usedSymbolTable = symboltable
-        res = self.rightNode.visit(symboltable)
+        res = self.rightNode.visit(symboltable) #.visit(symboltable)
         res.usedSymbolTable = symboltable
         return res
     
@@ -767,15 +767,20 @@ class DataDeclNode:
         self.params = params
         self.type = type
         self.symboltable_params = SymbolTable(None)
-
+     
     def visit(self, symboltable: SymbolTable):
-        self.symboltable_params = symboltable.createChildTable()
+        nodes = []  
+        if(len(self.symboltable_params.symboltable)==0):
+            self.symboltable_params = symboltable.createChildTable()
         for param in self.params:
-            param.visit(self.symboltable_params)
+           val = param.visit(self.symboltable_params)
+           nodes.append(val)
         symboltable.addBinding(self.identifier.token.value, self, self.type.visit(symboltable))
+            
+        return SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),nodes)
     
     def setParam(self, args: list[BaseNode]):
-        nodes = []
+        
         if len(self.params) != len(args):
             return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
         try:
@@ -783,12 +788,10 @@ class DataDeclNode:
                 for node in self.params[i].nodes:
                     self.symboltable_params.addValue(node.token.value, args[i])
                     val = node.visit(self.symboltable_params)
-                    nodes.append(val)
         except:
             return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
         
-        
-        return SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),nodes)
+        return self
     
     def getParam(self, param: BaseNode):
         (isValid, result) = self.symboltable_params.get_value(param.token.value)
