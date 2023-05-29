@@ -1,9 +1,9 @@
 import string
 import unittest
 from ddt import ddt, data, file_data, idata, unpack
-from verse_lexer import lexicon
-from structure.token import Token
-from structure.tokenTypes import TokenTypes
+from verse_lexer.verse_lexer import lexicon
+from structure.token.token import Token
+from structure.tokenTypes.tokenTypes import TokenTypes
 
 @ddt
 class LexerTest(unittest.TestCase):
@@ -25,7 +25,7 @@ class LexerTest(unittest.TestCase):
           {'input': "then", 'expected': Token(TokenTypes.THEN,TokenTypes.THEN.value)},
           {'input': "do", 'expected': Token(TokenTypes.DO,TokenTypes.DO.value)},
           {'input': "for", 'expected': Token(TokenTypes.FOR,TokenTypes.FOR.value)},
-        # #   {'input': "=>", 'expected': Token(TokenTypes.LAMBDA,TokenTypes.LAMBDA.value)},
+          {'input': "=>", 'expected': Token(TokenTypes.LAMBDA,TokenTypes.LAMBDA.value)},
           {'input': "|", 'expected': Token(TokenTypes.CHOICE,TokenTypes.CHOICE.value)},
           {'input': ">", 'expected': Token(TokenTypes.GREATER,TokenTypes.GREATER.value)},
           {'input': "<", 'expected': Token(TokenTypes.LOWER,TokenTypes.LOWER.value)},
