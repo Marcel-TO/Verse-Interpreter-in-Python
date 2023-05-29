@@ -775,15 +775,20 @@ class DataDeclNode:
         symboltable.addBinding(self.identifier.token.value, self, self.type.visit(symboltable))
     
     def setParam(self, args: list[BaseNode]):
+        nodes = []
         if len(self.params) != len(args):
             return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
         try:
             for i in range(0, len(self.params)):
                 for node in self.params[i].nodes:
                     self.symboltable_params.addValue(node.token.value, args[i])
+                    val = node.visit(self.symboltable_params)
+                    nodes.append(val)
         except:
             return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
-        return self
+        
+        
+        return SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),nodes)
     
     def getParam(self, param: BaseNode):
         (isValid, result) = self.symboltable_params.get_value(param.token.value)

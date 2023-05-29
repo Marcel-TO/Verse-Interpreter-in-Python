@@ -25,6 +25,9 @@ class Interpreter:
             result = contexts.visit(self.symboltable)
 
             self.symboltable.remove_all_except_self()
-            result =  contexts.visit(self.symboltable).visit(self.symboltable)
+            result =  contexts.visit(self.symboltable)
+            result = result.visit(self.symboltable)
 
+        if(result == None):
+            result = FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
         return result
