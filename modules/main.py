@@ -173,7 +173,7 @@ text = "data Rectangle(width:int,height:int); rec := Rectangle(7,3); rec.width |
 #text ="t:=(1,1,1); for(i:int;x:=t[i]) do (x+i)"
 #text = "t:=(1,2,3); for(i:int;x:=t[1]) do (x)"
 #text ="t:=(1,2,3); for(i:int;x:=t[1]) do (x)"
-text ="data Rectangle(width:int,height:int); rec := Rectangle(7,3); rec"
+text ="x:int; x=\"Hello\"; x"
 start_text
 lexer = lexicon(text)
 parser = Parser(lexer)

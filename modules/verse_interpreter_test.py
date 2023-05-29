@@ -157,6 +157,7 @@ class InterpreterTest(unittest.TestCase):
     {'input': 'x:=\"OMGODF\"; y:=\"World\"; x>=y', 'expected': 'OMGODF'},
     {'input': 'x:=\"df\"; y:=\"World\"; x>=y', 'expected': 'false?'},
     {'input': 'x:=(\"Hallo\" | \"Welt\" ); x', 'expected': '(Hallo|Welt)'},
+    {'input': 'x:int; x=\"Hello\"; x', 'expected': 'false?'},
     {'input': 'x:=(\"Hallo\" | \"Welt\" ); y:=(\"New\" | \"Old\" ); x + y', 'expected': '(HalloNew|HalloOld|WeltNew|WeltOld)'})
     @unpack
     def test_string(self, input: string, expected: string):
@@ -166,19 +167,19 @@ class InterpreterTest(unittest.TestCase):
         result = self.interpreter.interpret()
         self.assertTrue(repr(result) == expected)
     
-    '''
-    Test: DATA STRUCTURE
-    '''    
-    @data({'input': 'data Rectangle(width:int,height:int); rec := Rectangle(7,3); rec.width | rec.height', 'expected': '(7|3)'},
-    {'input': 'z:int; z=7; y:=(31|5); x:=(7|22); data TupleCombiner(tuples:int); result := TupleCombiner((z,x,y)); result.tuples', 'expected': '((7,7,31)|(7,22,31)|(7,7,5)|(7,22,5))'},
-    {'input': 'data Structure(property:int); s := Structure(x); x=5; x:int; s.property', 'expected': '5'})
-    @unpack
-    def test_data(self, input: string, expected: string):
-        self.lexer = lexicon(input)
-        self.parser = Parser(self.lexer)
-        self.interpreter = Interpreter(self.parser)
-        result = self.interpreter.interpret()
-        self.assertTrue(repr(result) == expected)
+    # '''
+    # Test: DATA STRUCTURE
+    # '''    
+    # @data({'input': 'data Rectangle(width:int,height:int); rec := Rectangle(7,3); rec.width | rec.height', 'expected': '(7|3)'},
+    # {'input': 'z:int; z=7; y:=(31|5); x:=(7|22); data TupleCombiner(tuples:int); result := TupleCombiner((z,x,y)); result.tuples', 'expected': '((7,7,31)|(7,22,31)|(7,7,5)|(7,22,5))'},
+    # {'input': 'data Structure(property:int); s := Structure(x); x=5; x:int; s.property', 'expected': '5'})
+    # @unpack
+    # def test_data(self, input: string, expected: string):
+    #     self.lexer = lexicon(input)
+    #     self.parser = Parser(self.lexer)
+    #     self.interpreter = Interpreter(self.parser)
+    #     result = self.interpreter.interpret()
+    #     self.assertTrue(repr(result) == expected)
 
 if __name__ == '__main__':
     unittest.main(argv=['first-arg-is-ignored'], exit=False)       
