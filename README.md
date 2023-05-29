@@ -143,12 +143,14 @@ The parser is exclusively responsible for syntax analysis and follows the predef
 Now the interpreter can visit through the abstract syntax tree and validates for semantic correctness. Afterwards it returns the value.
 
 ## Execution
-There are 2 files for executing verse code.
+There are 2 files for executing verse code or the corresponding executables.
 - First the [main.py](./modules/main.py) script file: this file allows the user to manipulate the variable `text` and change its string content to the desired verse code:
 ![main.py script](./pictures/main.py.png)
 
-- Second, using the [Verse Console](./modules/verse_console.py): Here you can enter verse code like command tool:
+- Second, using the [Verse Console](./modules/verse_console.py): Here you can enter verse code like a command tool:
 ![console script](./pictures/console.png)
+
+- Inside the Executable Directory you find 2 executables for either Windows and MacOS. Running them opens up a command console with the running script. The usability of the .EXE is the same as the Verse Console file.
 
 ## Test Cases
 The File [Verse Interpreter Test](./modules/verse_interpreter_test.py) contains many test cases regarding the different features.
