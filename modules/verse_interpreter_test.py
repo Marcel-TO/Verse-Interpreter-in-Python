@@ -39,7 +39,7 @@ class InterpreterTest(unittest.TestCase):
     {'input': 'for(x:=10|20; y:=1|2|3)do(x+y)', 'expected': '(11,12,13,21,22,23)'},
     {'input': 'for(x:=2|3|5)do(x+1)', 'expected': '(3,4,6)'},
     {'input': 't:=(1,1,1); for(i:int;x:=t[i]) do (x+i)', 'expected': '(1,2,3)'}, # <- indexing still work in progress
-    # {'input': 't:=(1,2,3); for(i:int;x:=t[1]) do (x)', 'expected': '(2,2,2)'},
+    {'input': 't:=(1,2,3); for(i:int;x:=t[1]) do (x)', 'expected': '(2)'},
     {'input': 'ys:= (12,22,23); xs:= (1,2,3,4); for{((i:int;ys[i])|(s:int; xs[s]))}', 'expected': '(12,22,23,1,2,3,4)'}, # append
     {'input': 'xs:= (1,2,3,4); for{i:int; i > 0; xs[i]}', 'expected': '(2,3,4)'}, # tail
     {'input': 't:=for{1|2}; t[0]', 'expected': '1'}, # head
@@ -170,7 +170,10 @@ class InterpreterTest(unittest.TestCase):
     Test: DATA STRUCTURE
     '''    
     @data({'input': 'data Rectangle(width:int,height:int); rec := Rectangle(7,3); rec.width | rec.height', 'expected': '(7|3)'},
+    {'input': 'data Rectangle(width:int,height:int); rec := Rectangle(7|1,3|4); (rec.width,rec.height)', 'expected': '((7,3)|(7,4)|(1,3)|(1,4))'},
+    {'input': 'data Rectangle(width:int,height:int); rec := Rectangle(7|1,3); recTwo := Rectangle(2|5,8); (rec.width,recTwo.width)', 'expected': '((7,2)|(7,5)|(1,2)|(1,5))'},
     {'input': 'z:int; z=7; y:=(31|5); x:=(7|22); data TupleCombiner(tuples:int); result := TupleCombiner((z,x,y)); result.tuples', 'expected': '((7,7,31)|(7,22,31)|(7,7,5)|(7,22,5))'},
+    {'input': 'data MixedRectangle(width:int,height:int,name:string); rec := MixedRectangle(5,4,"AwesomeRectangle"); rec.name|rec.width|rec.height', 'expected': '(AwesomeRectangle|5|4)'},
     {'input': 'data Structure(property:int); s := Structure(x); x=5; x:int; s.property', 'expected': '5'})
     @unpack
     def test_data(self, input: string, expected: string):

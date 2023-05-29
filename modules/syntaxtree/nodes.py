@@ -577,9 +577,6 @@ class SequenceTypeNode(TypeNode):
             childNodes.extend(t.getChildNodes())
         return childNodes
 
-    
-# --HIER GEÄNDERT Typen und ober Klasse für Typen
-
 
 '''
 Node for scoped func calls.
@@ -737,7 +734,7 @@ class DataCallNode:
 
     def visit(self, symboltable: SymbolTable):
         table = symboltable.createChildTable()
-        # Change that DataDecl is returned"
+
         (isValid, value) = symboltable.get_value(self.identifier.token.value)
 
         if isValid == False:
@@ -747,21 +744,33 @@ class DataCallNode:
         
         return result.getParam(self.param)
     
+    def getChildNodes(self, cur):
+        childNodes = []
+        for arg in self.args:
+            childNodes.extend(arg.getChildNodes())
+        return childNodes
+    
+    def App_Beta(self,identifierFrom, identifierTo):
+        for arg in self.args:
+            arg.App_Beta(identifierFrom, identifierTo)
+
     def getContexts(self, currentContext):
+        index = 0
+        contextValues = self.param.getContexts(currentContext)
+        if(contextValues.alreadyInContext == False and contextValues.needContext):
+            contexts = []
+            for val in contextValues.nodes:
+                self.param[index] = val
+                context = Contexts([copy.deepcopy(currentContext)])
+                contexts.append(context)
+            return ContextValues(contexts,True, True)
         return ContextValues([currentContext],False, False)
 
 
 '''
 Node for data declarations.
 ''' 
-class DataDeclNode:
-    def __init__(self,identifier:IdentifierNode, params:list[ScopeNode], type:BaseNode, block: BlockNode) -> None:
-        self.identifier = identifier
-        self.params = params
-        self.type = type
-        self.block = block
-        self.symboltable_params = SymbolTable(None)
-    
+class DataDeclNode:    
     def __init__(self,identifier:IdentifierNode, params:list[ScopeNode], type:BaseNode) -> None:
         self.identifier = identifier
         self.params = params
@@ -773,6 +782,7 @@ class DataDeclNode:
         for param in self.params:
             param.visit(self.symboltable_params)
         symboltable.addBinding(self.identifier.token.value, self, self.type.visit(symboltable))
+        return self
     
     def setParam(self, args: list[BaseNode]):
         if len(self.params) != len(args):
@@ -795,11 +805,10 @@ class DataDeclNode:
         childNodes = []
         for param in self.params:
             childNodes.extend(param.getChildNodes()) 
-        childNodes.extend(self.block.getChildNodes())
         return childNodes
-    
+
     def getContexts(self, currentContext):
-        return ContextValues([currentContext],False, False)
+        return ContextValues([currentContext],False, False) 
 
 
 '''

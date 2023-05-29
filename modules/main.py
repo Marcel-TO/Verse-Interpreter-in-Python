@@ -173,6 +173,8 @@ text = "t:=(1,2,3); for(i:int;x:=t[1]) do (x)"
 text ="t:=(1,1,1); for(i:int;x:=t[i]) do (x+i)"
 text = "for(x:=2|3|5)do(x+1)"
 #text ="t:=(1,2,3); for(i:int;x:=t[1]) do (x)"
+
+text = "data Rectangle(width:int,height:int); rec := Rectangle(7|1,3); recTwo := Rectangle(2|5,8); (rec.width,recTwo.width)"
 start_text
 lexer = lexicon(text)
 parser = Parser(lexer)
