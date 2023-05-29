@@ -177,6 +177,13 @@ text = "data Rectangle(width:int,height:int); rec := Rectangle(7,3); rec.width |
 #text ="z:int; z=7; y:=(31|5); x:=(7|22); data TupleCombiner(tuples:int); result := TupleCombiner((z,x,y)); result.tuples"
 text ="data Structure(property:int); s := Structure(x); x=5; x=5; x:int; s.property"
 #text ="data Rectangle(width:int,height:int); rec := Rectangle(7,3); rec"
+text = "ys:= (12,22,23); xs:= (1,2,3,4); for{((i:int;ys[i])|(s:int; xs[s]))}" # append --> (12,22,23,1,2,3,4)
+text = "xs:= (1,2,3,4); for{i:int; i > 0; xs[i]}" # tail
+text = "t:=for{1|2}; t[0]" # head
+text = "i:int; x:=1; xs:= (2,3,4); for{x|xs[i]}" # cons
+#text ="xs:=(1,2,3); f:=(x:int => x * 2); for{i:int;f(xs[i])}" # flatMap
+#text = "xs:=(1,2,3); ys:=(4,5,6); for{i:int; (xs[i], ys[i])}" # zipWith
+
 start_text
 lexer = lexicon(text)
 parser = Parser(lexer)

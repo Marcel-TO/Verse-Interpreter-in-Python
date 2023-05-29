@@ -915,7 +915,7 @@ class ForNode(BaseNode):
                 resultSeq.nodes = finalResults[0].nodes
             elif finalResults[0].token.type == TokenTypes.TUPLE_TYPE:
                 resultSeq = finalResults[0].nodes
-            else: resultSeq.nodes = finalResults[0]
+            else: resultSeq.nodes = finalResults
         else:
             resultSeq.nodes = finalResults
         resContext = Contexts([resultSeq])
@@ -1619,7 +1619,7 @@ class Contexts(BaseNode):
                 if context.alreadyInContext or (context.needContext and context.alreadyInContext == False):
                         newContexts.extend(context.nodes)
                 else: newContexts.append(c)
-                checkContext = context.alreadyInContext
+                checkContext = context.alreadyInContext or (context.needContext and context.alreadyInContext == False)
                 try:
                     results.extend(res)
                 except:

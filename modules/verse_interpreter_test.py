@@ -181,5 +181,18 @@ class InterpreterTest(unittest.TestCase):
         result = self.interpreter.interpret()
         self.assertTrue(repr(result) == expected)
 
+
+    '''
+    Test: Functions on tuples
+    '''    
+    @data({'input': 'data Rectangle(width:int,height:int); rec := Rectangle(7,3); rec.width | rec.height', 'expected': '(7|3)'})
+    @unpack
+    def test_data(self, input: string, expected: string):
+        self.lexer = lexicon(input)
+        self.parser = Parser(self.lexer)
+        self.interpreter = Interpreter(self.parser)
+        result = self.interpreter.interpret()
+        self.assertTrue(repr(result) == expected)
+
 if __name__ == '__main__':
     unittest.main(argv=['first-arg-is-ignored'], exit=False)       
