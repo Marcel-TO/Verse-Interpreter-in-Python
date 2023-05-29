@@ -38,8 +38,8 @@ class InterpreterTest(unittest.TestCase):
     {'input': 'for(x:=10|20; x>10; y:=1|2|3; y<3)do(x+y)', 'expected': '(21,22)'}, # <- filtering variables
     {'input': 'for(x:=10|20; y:=1|2|3)do(x+y)', 'expected': '(11,12,13,21,22,23)'},
     {'input': 'for(x:=2|3|5)do(x+1)', 'expected': '(3,4,6)'},
-    # {'input': 't:=(1,1,1); for(i:int;x:=t[i]) do (x+i)', 'expected': '(1,2,3)'}, # <- indexing still work in progress
-    # # {'input': 't:=(1,2,3); for(i:int;x:=t[1]) do (x)', 'expected': '(2,2,2)'},
+    {'input': 't:=(1,1,1); for(i:int;x:=t[i]) do (x+i)', 'expected': '(1,2,3)'}, # <- indexing still work in progress
+    # {'input': 't:=(1,2,3); for(i:int;x:=t[1]) do (x)', 'expected': '(2,2,2)'},
     {'input': 'ys:= (12,22,23); xs:= (1,2,3,4); for{((i:int;ys[i])|(s:int; xs[s]))}', 'expected': '(12,22,23,1,2,3,4)'}, # append
     {'input': 'xs:= (1,2,3,4); for{i:int; i > 0; xs[i]}', 'expected': '(2,3,4)'}, # tail
     {'input': 't:=for{1|2}; t[0]', 'expected': '1'}, # head
@@ -106,7 +106,7 @@ class InterpreterTest(unittest.TestCase):
     {'input': 't:=(10,27,32); x:=(1 | 0 | 1); t[x]', 'expected': '(27|10|27)'},
     {'input': 'x,y:int; y = 31|5; x = 7|22; (x,y)', 'expected': '((7,31)|(22,31)|(7,5)|(22,5))'},
     {'input': 'x,y:int; x = 7|22; y = 31|5; (x,y)', 'expected': '((7,31)|(7,5)|(22,31)|(22,5))'},
-    # {'input': 'x:int; t:=(1,(1|(2;3;x)));x = 10; t', 'expected': '((1,1)|(1,10))'},
+    {'input': 'x:int; t:=(1,(1|(2;3;x)));x = 10; t', 'expected': '((1,1)|(1,10))'},
     {'input': 'x:=10|20|15; x<20', 'expected': '(10|15)'})
     @unpack
     def test_choice(self, input: string, expected: string):
