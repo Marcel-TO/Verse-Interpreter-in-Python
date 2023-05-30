@@ -668,7 +668,7 @@ class FuncCallNode:
             return val
         return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value)) 
         
-    def getChildNodes(self, cur):
+    def getChildNodes(self):
         childNodes = []
         for arg in self.args:
             childNodes.extend(arg.getChildNodes())
@@ -748,10 +748,9 @@ class DataCallNode:
         self.type = result.type
         return result.getParam(self.param)
     
-    def getChildNodes(self, cur):
+    def getChildNodes(self):
         childNodes = []
-        for arg in self.args:
-            childNodes.extend(arg.getChildNodes())
+        childNodes.extend(self.param.getChildNodes())
         return childNodes
     
     def App_Beta(self,identifierFrom, identifierTo):
