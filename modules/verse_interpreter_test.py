@@ -80,7 +80,7 @@ class InterpreterTest(unittest.TestCase):
     '''
     Test: FUNCTION
     '''    
-    @data({'input': 'x:=1; f(x:int):int := (x + 1)', 'expected': '1'},
+    @data({'input': 'x:=1; f(x:int):int := (x + 1)', 'expected': 'false?'},
     {'input': 'x:int; f(p:int):int :=  (p = 1; y:int; y = 100; (p)*100); f(x); x', 'expected': '1'},
     {'input': 'f:=(x:int=> d(x) + 1 ); d(p:int):= (p*2); f(3)', 'expected': '7'},
     {'input': 'f:=(x:int=> d(x) + 1 ); d(p:int):= (p*2); f(3|2)', 'expected': '(7|5)'},
@@ -124,7 +124,8 @@ class InterpreterTest(unittest.TestCase):
     {'input': 'x:int; x = (z:int,2); x = (3,y:int,r:int); x', 'expected': 'false?'},
     {'input': 'x:int; x = (z:int,2); x = (3,y:int); x', 'expected': '(3,2)'},
     {'input': 'x:int; x=23; x = 2;  x', 'expected': 'false?'},
-    {'input': 'z:=x+y; x,y:int; x=7; y = 3;z', 'expected': '10'})
+    {'input': 'z:=x+y; x,y:int; x=7; y = 3;z', 'expected': '10'},
+    {'input': 'x:=1; x=1; 2', 'expected': '2'})
     @unpack
     def test_unification(self, input: string, expected: string):
         self.lexer = lexicon(input)

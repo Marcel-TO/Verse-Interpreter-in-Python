@@ -667,7 +667,7 @@ class FuncCallNode:
             return val
         return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value)) 
         
-    def getChildNodes(self, cur):
+    def getChildNodes(self):
         childNodes = []
         for arg in self.args:
             childNodes.extend(arg.getChildNodes())
@@ -706,7 +706,8 @@ class FuncDeclNode(BaseNode):
         self.usedSymbolTable = symboltable
         symbol = self.identifier.token.value
         symboltable.addBinding(symbol, self, self.type)
-
+        return self.identifier
+    
     def getChildNodes(self):
         childNodes = []
         for param in self.params:
@@ -1089,7 +1090,7 @@ class FlexibleEqNode(BaseNode):
 
     def visit(self, symboltable: SymbolTable):
         self.usedSymbolTable = symboltable
-        isValid = symboltable.addValue(self.left_node.token.value, self.right_node)
+        isValid = symboltable.tryUnify(self.left_node, self.right_node)
         if isValid:
             return self.right_node.visit(symboltable)
         return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value)) 

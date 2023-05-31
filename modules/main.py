@@ -182,7 +182,17 @@ text = "xs:= (1,2,3,4); for{i:int; i > 0; xs[i]}" # tail
 text = "t:=for{1|2}; t[0]" # head
 text = "i:int; x:=1; xs:= (2,3,4); for{x|xs[i]}" # cons
 #text ="xs:=(1,2,3); f:=(x:int => x * 2); for{i:int;f(xs[i])}" # flatMap
-#text = "xs:=(1,2,3); ys:=(4,5,6); for{i:int; (xs[i], ys[i])}" # zipWith
+text = "xs:=(1,2,3); ys:=(4,5,6); for{i:int; (xs[i], ys[i])}" # zipWith
+text ="x:=1; x=1; 2"
+
+
+text = "f(a:int, b:int):= (a + b); f(1,2)" # fixed
+#text ="x:string; x=1"
+#text ="x:int; x=\"Hallo\""
+#text = "x,y:int; if(x>20) then y=70 else y=10; x=7; y" 
+#text = "x,y:int; if(x<20) then y=70 else y=10; x=7; y"
+#text = "data Rectangle(width:int,height:int); rec := Rectangle(7,3);rec = rec"
+text = "x,y:int; y = (if (x = 0) then 3 else 4); x = 7; y"
 
 start_text
 lexer = lexicon(text)

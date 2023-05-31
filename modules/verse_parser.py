@@ -101,7 +101,7 @@ class Parser:
     Rule -> (Identifier EQUAL expr)
     """
     def flexible_eq(self)-> ParsedNode:
-        left_node = self.identifier()
+        left_node = self.expr()
         if(left_node.hasSyntaxError == False):
             if(self.current_token.type == TokenTypes.EQUAL):
                 token = self.current_token
@@ -329,10 +329,10 @@ class Parser:
           | IF LB expr RB THEN expr ELSE expr  
     """
     def if_statement(self) -> ParsedNode:
-        token = self.current_token
+        iftoken = self.current_token
         index = self.lexer.index
 
-        if token.type != TokenTypes.IF:
+        if iftoken.type != TokenTypes.IF:
             return ParsedNode(None, True)
         
         self.forward()
@@ -393,7 +393,7 @@ class Parser:
             if(else_node.hasSyntaxError):
                 return ParsedNode(None,True)
             
-        return ParsedNode(IfNode(token, if_node.node, then_node.node, else_node.node),False)
+        return ParsedNode(IfNode(iftoken, if_node.node, then_node.node, else_node.node),False)
        
 
     """
