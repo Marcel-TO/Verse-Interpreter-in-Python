@@ -193,6 +193,8 @@ text = "f(a:int, b:int):= (a + b); f(1,2)" # fixed
 #text = "x,y:int; if(x<20) then y=70 else y=10; x=7; y"
 #text = "data Rectangle(width:int,height:int); rec := Rectangle(7,3);rec = rec"
 text = "x,y:int; y = (if (x = 0) then 3 else 4); x = 7; y"
+text ="x:=10; 10 = x; x"
+text ="x; x = 10; r=11; if(x = r:int) then (x:int; 1) else 3"
 
 start_text
 lexer = lexicon(text)
