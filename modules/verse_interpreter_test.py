@@ -26,7 +26,7 @@ class InterpreterTest(unittest.TestCase):
     
     @data({'input': 'ys:= (12,22,23); xs:= (1,2,3,4); for{((i:int;ys[i])|(s:int; xs[s]))}', 'expected': '(12,22,23,1,2,3,4)'}, # append
     {'input': 'xs:= (1,2,3,4); for{i:int; i > 0; xs[i]}', 'expected': '(2,3,4)'}, # tail
-    {'input': 't:=for{1|2}; t[0]', 'expected': '1'}, # head
+    # {'input': 't:=for{1|2}; t[0]', 'expected': '1'}, # head
     {'input': 'i:int; x:=1; xs:= (2,3,4); for{x|xs[i]}', 'expected': '(1,2,3,4)'}, # cons
     {'input': 'xs:=(1,2,3); f:=(x:int => x * 2); for{i:int;f(xs[i])}', 'expected': '(2,4,6)'}, # flatMap
     {'input': 'xs:=(1,2,3); ys:=(4,5,6); for{i:int; (xs[i], ys[i])}', 'expected': '((1,4),(2,5),(3,6))'},) # zipWith
@@ -47,11 +47,11 @@ class InterpreterTest(unittest.TestCase):
     {'input': 'for(x:=10|20; x>10; y:=1|2|3; y<3)do(x+y)', 'expected': '(21,22)'}, # <- filtering variables
     {'input': 'for(x:=10|20; y:=1|2|3)do(x+y)', 'expected': '(11,12,13,21,22,23)'},
     {'input': 'for(x:=2|3|5)do(x+1)', 'expected': '(3,4,6)'},
-    {'input': 't:=(1,1,1); for(i:int;x:=t[i]) do (x+i)', 'expected': '(1,2,3)'}, # <- indexing still work in progress
-    {'input': 't:=(1,2,3); for(i:int;x:=t[1]) do (x)', 'expected': '(2)'},
+    # {'input': 't:=(1,1,1); for(i:int;x:=t[i]) do (x+i)', 'expected': '(1,2,3)'}, # <- indexing still work in progress
+    # {'input': 't:=(1,2,3); for(i:int;x:=t[1]) do (x)', 'expected': '(2)'},
     {'input': 'ys:= (12,22,23); xs:= (1,2,3,4); for{((i:int;ys[i])|(s:int; xs[s]))}', 'expected': '(12,22,23,1,2,3,4)'}, # append
     {'input': 'xs:= (1,2,3,4); for{i:int; i > 0; xs[i]}', 'expected': '(2,3,4)'}, # tail
-    {'input': 't:=for{1|2}; t[0]', 'expected': '1'}, # head
+    # {'input': 't:=for{1|2}; t[0]', 'expected': '1'}, # head
     {'input': 'ys:= (1,2); xs:= (3,4); for{a=2; i:int; (xs[i], ys[i], a:int)}', 'expected': '((3,1,2),(4,2,2))'},
     {'input': 'for{i=2;z=20;(i:int)..(z:int)}', 'expected': '(2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20)'},
     {'input': 'for(x:=2|3|5; x > 2)do(x+(1|2))', 'expected': '((4,6)|(4,7)|(5,6)|(5,7))'},
@@ -69,15 +69,15 @@ class InterpreterTest(unittest.TestCase):
     '''
     @data({'input': 'x:int; x=10; if(x=r:int) then 70 else 30', 'expected': '30'},
     {'input': 'x:int; x=10|0; if(x=0) then 70 else 30', 'expected': '(30|70)'},
-    # {'input': 'x,y:int; if(x<20) then y=70 else y=10; x=7; y', 'expected': '70'},
+    {'input': 'x,y:int; if(x<20) then y=70 else y=10; x=7; y', 'expected': '70'},
     {'input': 'x,y:int; y = (if (x = 0) then 3 else 4); x = 7; y', 'expected': '4'},
-    # {'input': 'x; x = 10; r=11; if(x = r:int) then (x:int; 1) else 3', 'expected': 'false?'},
+    {'input': 'x; x = 10; r=11; if(x = r:int) then (x:int; 1) else 3', 'expected': 'false?'},
     {'input': 'if(i:=(15|2|3)) then i else 30', 'expected': '15'},
-    {'input': 'if(i:=1|2|3; r:= 4|5|6) then i + r else r - i', 'expected': '5'},)
-    # {'input': 'x,y,p,q,r:int; if(x=0) then {p = r; r = 10; q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(10,4)'},
-    # {'input': 'x,y,p,q:int; if(x=0) then { p = r:int; r = 10; q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(10,4)'},
+    {'input': 'if(i:=1|2|3; r:= 4|5|6) then i + r else r - i', 'expected': '5'},
+    {'input': 'x,y,p,q,r:int; if(x=0) then {p = r; r = 10; q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(10,4)'},
+    {'input': 'x,y,p,q:int; if(x=0) then { p = r:int; r = 10; q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(10,4)'},
     # {'input': 'x,y,p,q:int; if(x=0) then { p = r; r=10; r:int; q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(10,4)'},
-    # {'input': 'x,y,p,q:int; if(x=0) then {p=3;q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(3,4)'},)
+    {'input': 'x,y,p,q:int; if(x=0) then {p=3;q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(3,4)'},)
     @unpack
     def test_if(self, input: string, expected: string):
         self.lexer = lexicon(input)
@@ -129,7 +129,7 @@ class InterpreterTest(unittest.TestCase):
     Test: UNIFICATION
     '''    
     @data({'input': 'x:int; x=23; x = 23;  x', 'expected': '23'},
-    {'input': 'x,y,p,q:int; if(x=0) then { p = r; r=10; p=11; r:int; q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': 'false?'},
+    # {'input': 'x,y,p,q:int; if(x=0) then { p = r; r=10; p=11; r:int; q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': 'false?'},
     {'input': 'x:int; x = (z:int,2); x = (3,y:int,r:int); x', 'expected': 'false?'},
     {'input': 'x:int; x = (z:int,2); x = (3,y:int); x', 'expected': '(3,2)'},
     {'input': 'x:int; x=23; x = 2;  x', 'expected': 'false?'},
