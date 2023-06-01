@@ -1,6 +1,7 @@
 import string
 
 from structure.tokenTypes.tokenTypes import TokenTypes
+from structure.valueTypes.valueTypes import ValueTypes
 from structure.logger.logger import Console_Logger
 
 class Symbol:
@@ -84,9 +85,16 @@ class SymbolTable:
                     occurs = self.U_Occurs(symbol,value)
                     if occurs:
                         sym.isUnified = False
-                    else: sym.value = value
-                    # self.logger.__log__("Added the value: {} to the existing symbol: {} in the symboltable: {}".format(value, sym.symbol, self))
-                    isAdded = True
+                    else: 
+                        if sym.symbolType != None:
+                            if sym.symbolType.type == value.type or value.type == ValueTypes.ANY:
+                                sym.value = value
+                                isAdded = True
+                            else:
+                                isAdded = False
+                        else:
+                            sym.value = value
+                            isAdded = True
                     # return True
                 elif sym.value != None and value != None and sym.value != sym.symbol:
                     occurs = self.U_Occurs(symbol,value)
@@ -167,10 +175,6 @@ class SymbolTable:
             if sym.isUnified == False:
                 return False
         return True
-
-
-
-
 
 
     def tryUnify(self, l, r) -> bool:

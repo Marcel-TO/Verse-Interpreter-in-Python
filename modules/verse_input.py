@@ -87,7 +87,7 @@ UNIFICATION
 #text = "x:int; x=23; x = 23;  x" # 23
 #text = "x,y,p,q:int; if(x=0) then { p = r; r=10; p=11; r:int; q=4} else {p=333;q=444}; x=0; (p,q)" # FALSE
 #text = "x:int; x = (z:int,2); x = (3,y:int,r:int); x" # FALSE
-#text = "x:int; x = (z:int,2); x = (3,y:int); x" # (3,2)
+text = "x:int; x = (z:int,2); x = (3,y:int); x" # (3,2)
 #text = "x:int; x=23; x = 2;  x" # FALSE
 #text = "z:=x+y; x,y:int; x=7; y = 3;z" # 10
 #text = "x:=1; y:=2; z:int; z = x; z = y; z" # false?
@@ -181,6 +181,9 @@ DATA TYPES
 # text = "i:int; x:=1; xs:= (2,3,4); for{x|xs[i]}" # cons
 # # text ="xs:=(1,2,3); f:=(x:int => x * 2); for{i:int;f(xs[i])}" # flatMap
 # text = "xs:=(1,2,3); ys:=(4,5,6); for{i:int; (xs[i], ys[i])}" # zipWith
+
+# text = "data Rectangle(width:int,height:int); rec := Rectangle(7,3);rec = rec"
+# text = "f(a:int, b:int):= a + b; f(1,2)"
 
 start_text
 lexer = lexicon(text)

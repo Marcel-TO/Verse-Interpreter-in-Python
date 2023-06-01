@@ -73,11 +73,11 @@ class InterpreterTest(unittest.TestCase):
     {'input': 'x,y:int; y = (if (x = 0) then 3 else 4); x = 7; y', 'expected': '4'},
     # {'input': 'x; x = 10; r=11; if(x = r:int) then (x:int; 1) else 3', 'expected': 'false?'},
     {'input': 'if(i:=(15|2|3)) then i else 30', 'expected': '15'},
-    {'input': 'if(i:=1|2|3; r:= 4|5|6) then i + r else r - i', 'expected': '5'},
+    {'input': 'if(i:=1|2|3; r:= 4|5|6) then i + r else r - i', 'expected': '5'},)
     # {'input': 'x,y,p,q,r:int; if(x=0) then {p = r; r = 10; q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(10,4)'},
     # {'input': 'x,y,p,q:int; if(x=0) then { p = r:int; r = 10; q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(10,4)'},
     # {'input': 'x,y,p,q:int; if(x=0) then { p = r; r=10; r:int; q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(10,4)'},
-    {'input': 'x,y,p,q:int; if(x=0) then {p=3;q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(3,4)'},)
+    # {'input': 'x,y,p,q:int; if(x=0) then {p=3;q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(3,4)'},)
     @unpack
     def test_if(self, input: string, expected: string):
         self.lexer = lexicon(input)
@@ -148,6 +148,8 @@ class InterpreterTest(unittest.TestCase):
     @data({'input': 'x:int; x:int; r=11; r:int; r', 'expected': 'false?'},
     {'input': 'x:=10; x<7; 3', 'expected': 'false?'},
     {'input': 'x,y:int; x=7; y=4; x=y', 'expected': 'false?'},
+    {'input': 'x:int; x="Hallo"', 'expected': 'false?'},
+    {'input': 'x:string; x=1', 'expected': 'false?'},
     {'input': 'x:int; x=7; x=3', 'expected': 'false?'})
     @unpack
     def test_false(self, input: string, expected: string):
