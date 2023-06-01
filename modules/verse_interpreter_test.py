@@ -182,6 +182,7 @@ class InterpreterTest(unittest.TestCase):
     Test: DATA STRUCTURE
     '''    
     @data({'input': 'data Rectangle(width:int,height:int); rec := Rectangle(7,3); rec.width | rec.height', 'expected': '(7|3)'},
+    # {'input': 'data Rectangle(width:int,height:int); rec := Rectangle(7,3); rec = rec', 'expected': '(7|3)'},
     {'input': 'data Rectangle(width:int,height:int); rec := Rectangle(7|1,3|4); (rec.width,rec.height)', 'expected': '((7,3)|(7,4)|(1,3)|(1,4))'},
     {'input': 'data Rectangle(width:int,height:int); rec := Rectangle(7|1,3); recTwo := Rectangle(2|5,8); (rec.width,recTwo.width)', 'expected': '((7,2)|(7,5)|(1,2)|(1,5))'},
     {'input': 'z:int; z=7; y:=(31|5); x:=(7|22); data TupleCombiner(tuples:int); result := TupleCombiner((z,x,y)); result.tuples', 'expected': '((7,7,31)|(7,22,31)|(7,7,5)|(7,22,5))'},

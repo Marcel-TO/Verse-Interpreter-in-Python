@@ -855,8 +855,46 @@ class ForNode(BaseNode):
             resultSeq.nodes = doResults
         resContext = Contexts([resultSeq])
         results = resContext.visit(symboltable)
-        self.type = results.type
         return results
+
+        """
+        for_table = symboltable.createChildTable()
+        isIndexing = False
+        isBinding = False
+        indexingNode = None
+
+        # check if block or not
+        
+        
+        try: 
+            for n in self.node.nodes:
+                # checks if there are filter options for the block
+                if self.check_type(n.token.type, [TokenTypes.LOWER, TokenTypes.LOWEREQ, TokenTypes.GREATER, TokenTypes.GREATEREQ]):
+                    result = n.visit(for_table)
+                    for_table.change_value(n.leftNode.token.value, result)
+                    continue
+                # checks if there could be an indexing node in a binding/flex_eq
+                if self.check_type(n.token.type, [TokenTypes.BINDING, TokenTypes.EQUAL]):
+                    if self.check_type(n.rightNode.token.type, [TokenTypes.SBL]):
+                        isIndexing = True
+                        indexingNode = n
+                        isBinding = True
+                # checks if there is an indexing node
+                if self.check_type(n.token.type, [TokenTypes.SBL]):
+                    isIndexing = True
+                    indexingNode = n
+                result = n.visit(for_table)
+        except:
+            result = self.node.visit(for_table)
+        
+        # checks if there was an indexing node in the block
+        if isIndexing:
+            if isBinding:
+                return self.for_indexing_binding(for_table, indexingNode)
+            return self.for_indexing(symboltable, indexingNode)
+        result = self.execDo(for_table)
+        return self.convert(result,for_table)
+        """
     
     def getChildNodes(self):
         childNodes = []
@@ -892,6 +930,20 @@ class ForNode(BaseNode):
         resContext = Contexts([resultSeq])
         results = resContext.visit(symboltable)
         return results
+    
+
+        """
+        if self.check_type(result.token.type, [TokenTypes.COMMA, TokenTypes.CHOICE]):
+            return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), result.nodes)
+
+        # returns single tuple
+        if self.check_type(result.token.type, [TokenTypes.INTEGER]):
+            return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), [result.token.value])
+
+        # returns empty tuple
+        if self.check_type(result.token.type, [TokenTypes.FAIL]):
+            return SequenceNode(Token(TokenTypes.TUPLE_TYPE, TokenTypes.TUPLE_TYPE.value), [])
+        """
     
     def for_indexing_binding(self, symboltable: SymbolTable, indexingNode: BaseNode):
         # checks if the value contains already a value

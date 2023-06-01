@@ -37,10 +37,11 @@ text = "x,y:int; if(x>20) then y=70 else y=10; x=7; y" # 70
 # text = "x,y:int; y = (if (x = 0) then 3 else 4); x = 7; y" # 4
 #text = "x; x = 10; r=11; if(x = r:int) then (x:int; 1) else 3" # !!!!!!! SOLL NICHT FUNKTIONIEREN, WEIL ER ERST SCOPED IM THEN ODER ELSE, ALSO SOLLTE ES GLAUB ICH PASSEN
 #text = "x:int; x=10; y:=(if(x=r:int) then 70 else 30); r=10; y" # 70
-text = "x,y,p,q:int; if(x=0) then {p=3;q=4} else {p=333;q=444}; x=0; (p,q)" # (3,4)
+# text = "x,y,p,q:int; if(x=0) then {p=3;q=4} else {p=333;q=444}; x=0; (p,q)" # (3,4)
 #text = "x,y,p,q,r:int; if(x=0) then {p = r; r = 10; q=4} else {p=333;q=444}; x=0; (p,q)" # (10,4)
 #text = "x,y,p,q:int; if(x=0) then { p = r:int; r = 10; q=4} else {p=333;q=444}; x=0; (p,q)" # (10,4)
-#text = "x,y,p,q:int; if(x=0) then { p = r; r=10; r:int; q=4} else {p=333;q=444}; x=0; (p,q)" # (10,4)
+text = "x,y,p,q:int; if(x=0) then { p = r; r=10; r:int; q=4} else {p=333;q=444}; x=0; (p,q)" # (10,4)
+text = "x,y,p,q:int; if(x=0) then { p = r; r=10; p=11; r:int; q=4} else {p=333;q=444}; x=0; (p,q)" # false?
 # text = "if(i:=(15|2|3)) then i else 30"
 # text = "i:=(1|2|3); r:=(4|5|6); t:=0; if(t=0) then (i + r) else (r - i)"
 # text = "if(i:=1|2|3; r:= 4|5|6) then i + r else r - i"
@@ -177,7 +178,7 @@ DATA TYPES
 
 # text = "ys:= (12,22,23); xs:= (1,2,3,4); for{((i:int;ys[i])|(s:int; xs[s]))}" # append --> (12,22,23,1,2,3,4)
 # text = "xs:= (1,2,3,4); for{i:int; i > 0; xs[i]}" # tail
-# text = "t:=for{1|2}; t[0]" # head
+text = "t:=for{1|2}; t[0]" # head
 # text = "i:int; x:=1; xs:= (2,3,4); for{x|xs[i]}" # cons
 # # text ="xs:=(1,2,3); f:=(x:int => x * 2); for{i:int;f(xs[i])}" # flatMap
 # text = "xs:=(1,2,3); ys:=(4,5,6); for{i:int; (xs[i], ys[i])}" # zipWith
