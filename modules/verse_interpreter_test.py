@@ -47,11 +47,11 @@ class InterpreterTest(unittest.TestCase):
     {'input': 'for(x:=10|20; x>10; y:=1|2|3; y<3)do(x+y)', 'expected': '(21,22)'}, # <- filtering variables
     {'input': 'for(x:=10|20; y:=1|2|3)do(x+y)', 'expected': '(11,12,13,21,22,23)'},
     {'input': 'for(x:=2|3|5)do(x+1)', 'expected': '(3,4,6)'},
-    # {'input': 't:=(1,1,1); for(i:int;x:=t[i]) do (x+i)', 'expected': '(1,2,3)'}, # <- indexing still work in progress
-    # {'input': 't:=(1,2,3); for(i:int;x:=t[1]) do (x)', 'expected': '(2)'},
+    {'input': 't:=(1,1,1); for(i:int;x:=t[i]) do (x+i)', 'expected': '(1,2,3)'}, # <- indexing still work in progress
+    {'input': 't:=(1,2,3); for(i:int;x:=t[1]) do (x)', 'expected': '(2)'},
     {'input': 'ys:= (12,22,23); xs:= (1,2,3,4); for{((i:int;ys[i])|(s:int; xs[s]))}', 'expected': '(12,22,23,1,2,3,4)'}, # append
     {'input': 'xs:= (1,2,3,4); for{i:int; i > 0; xs[i]}', 'expected': '(2,3,4)'}, # tail
-    # {'input': 't:=for{1|2}; t[0]', 'expected': '1'}, # head
+    {'input': 't:=for{1|2}; t[0]', 'expected': '1'}, # head
     {'input': 'ys:= (1,2); xs:= (3,4); for{a=2; i:int; (xs[i], ys[i], a:int)}', 'expected': '((3,1,2),(4,2,2))'},
     {'input': 'for{i=2;z=20;(i:int)..(z:int)}', 'expected': '(2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20)'},
     {'input': 'for(x:=2|3|5; x > 2)do(x+(1|2))', 'expected': '((4,6)|(4,7)|(5,6)|(5,7))'},
@@ -76,7 +76,7 @@ class InterpreterTest(unittest.TestCase):
     {'input': 'if(i:=1|2|3; r:= 4|5|6) then i + r else r - i', 'expected': '5'},
     {'input': 'x,y,p,q,r:int; if(x=0) then {p = r; r = 10; q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(10,4)'},
     {'input': 'x,y,p,q:int; if(x=0) then { p = r:int; r = 10; q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(10,4)'},
-    # {'input': 'x,y,p,q:int; if(x=0) then { p = r; r=10; r:int; q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(10,4)'},
+    {'input': 'x,y,p,q:int; if(x=0) then { p = r; r=10; r:int; q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(10,4)'},
     {'input': 'x,y,p,q:int; if(x=0) then {p=3;q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(3,4)'},)
     @unpack
     def test_if(self, input: string, expected: string):

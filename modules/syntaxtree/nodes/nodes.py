@@ -69,7 +69,7 @@ class BlockNode(BaseNode):
 
         i = 0
         hasFailed = False
-        for i in range(len(symboltable.symboltable)):
+        for i in range(len(symboltable.symboltable) + 1):
             hasFailed = False
             results = []
             if symboltable.checkAllUnificationValid() == False:
@@ -824,7 +824,7 @@ Node for loops.
 class ForNode(BaseNode):
     def __init__(self, token:Token, node: BaseNode, do: BaseNode) -> None:
         super().__init__(token)
-        self.node = node
+        self.node = Contexts([node])
         self.do = do
         self.type = ValueTypes.ANY
 
@@ -832,11 +832,12 @@ class ForNode(BaseNode):
         resultSeq = SequenceNode(Token(TokenTypes.TUPLE_TYPE,TokenTypes.TUPLE_TYPE.value),[])
         self.usedSymbolTable = symboltable
         if self.do == None:
-            return self.visit_curly(self.node.visit(symboltable),symboltable)
+            return self.visit_curly(self.node.contexts[0].visit(symboltable),symboltable)
         
         doResults = []
-        nodeContexts = Contexts([copy.deepcopy(self.node)])
-        results = nodeContexts.visit(symboltable)
+        # nodeContexts = Contexts([copy.deepcopy(self.node)])
+        # results = nodeContexts.visit(symboltable)
+        results = self.node.visit(symboltable)
         if(results.token.type == TokenTypes.CHOICE):
             results = results.nodes
         else: results = [results]
@@ -1317,7 +1318,7 @@ class IndexingNode(BaseNode):
                 freshId = IdentifierNode(Token(TokenTypes.IDENTIFIER,IdentifierCreator.create(currentContext.usedSymbolTable)))
                 freshScope = ScopeNode(Token(TokenTypes.SCOPE, TokenTypes.SCOPE),[freshId],
                                            TypeNode(Token(TokenTypes.INT_TYPE,TokenTypes.INT_TYPE.value),ValueTypes.INT_TYPE))
-                currentContext.usedSymbolTable.addScope(freshId.token.value,freshScope.type)
+                currentContext.visit(currentContext.usedSymbolTable)
                 flexWithIndex = FlexibleEqNode(Token(TokenTypes.EQUAL,TokenTypes.EQUAL.value),freshId,self.index)
                 nodeIndex = 0
                 possibleNodes = []
