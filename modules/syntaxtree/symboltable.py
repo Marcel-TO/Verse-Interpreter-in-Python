@@ -75,7 +75,7 @@ class SymbolTable:
         i = 0
         isAdded = False
         maxIterations = len(self.symboltable)
-        while i < maxIterations:
+        while i < maxIterations and isAdded == False:
             sym = self.symboltable[i]
             if sym.symbol == symbol:
                 if sym.value == None and value != None and sym.value != sym.symbol:
@@ -97,6 +97,8 @@ class SymbolTable:
                         sym.value = value
                         isAdded = True
             i += 1  
+        if isAdded == False and self.parentTable != None:
+            isAdded = self.parentTable.addValue(symbol,value)
         return isAdded
 
     def addBinding(self, symbol: string, value, symbolType: TokenTypes) -> None:
@@ -248,7 +250,7 @@ class SymbolTable:
                 if l.token.type != TokenTypes.FAIL and r.token.type != TokenTypes.FAIL:   
                     unify_success = self.unify(l,r)
                 else: unify_success = (True, [])
-                
+
             else: (False, [])
                
       return unify_success

@@ -70,7 +70,7 @@ class BlockNode(BaseNode):
 
         i = 0
         hasFailed = False
-        for i in range(len(symboltable.symboltable)):
+        for i in range(len(symboltable.symboltable) + 1) :
             hasFailed = False
             results = []
             if symboltable.checkAllUnificationValid() == False:
@@ -1010,22 +1010,34 @@ class IfNode(BaseNode):
     def visit(self, symboltable: SymbolTable):
         self.usedSymbolTable = symboltable
         # x = 10; r=11; if(x = r:int) then (x:int; 1) else (x:int; 3)
+        finalResult = FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value)) 
+        #if_context = Contexts([copy.deepcopy(self.if_node)])
+        results = self.if_node.visit(symboltable)
+        if(results.token.type == TokenTypes.CHOICE):
+            results = results.nodes
+        else: results = [results]
+        if_result = results[0]
+       
+        childTable = symboltable.createChildTable()
+        if(if_result.token.type != TokenTypes.FAIL and if_result.token.type != TokenTypes.IDENTIFIER):
+               then_context = Contexts([copy.deepcopy(self.then_node)])
+               finalResult = then_context.visit(childTable)             
+               
+        else: 
+            childTable = symboltable.createChildTable()
+            else_context = Contexts([copy.deepcopy(self.else_node)])
+            finalResult = else_context.visit(childTable)  
+            
+            
+        
+            if finalResult.token.type == TokenTypes.CHOICE:
+                finalResult = finalResult.nodes[0]
+        
+        
+        fr_context = Contexts([finalResult])
+        finalResult = fr_context.visit(symboltable)
 
-        result_if = self.if_node.visit(symboltable)
-        if result_if != None and result_if.token.type != TokenTypes.FAIL:
-            result_then = self.then_node.visit(symboltable)
-            if self.check_type(result_then.token.type, [TokenTypes.TUPLE_TYPE, TokenTypes.CHOICE]):
-                return result_then.nodes[0]
-            return result_then
-            
-            
-        if_symboltable = symboltable.createChildTable()
-        result = self.else_node.visit(if_symboltable)
-        for i in range(0, len(if_symboltable.symboltable)):
-               result =  self.else_node.visit(if_symboltable)
-        if self.check_type(result.token.type, [TokenTypes.TUPLE_TYPE, TokenTypes.CHOICE]):
-            return result.nodes[0]
-        return result 
+        return finalResult 
     
     def getChildNodes(self):
         childNodes = []
@@ -1043,6 +1055,69 @@ class IfNode(BaseNode):
         self.if_node.App_Beta(identifierFrom, identifierTo)
         self.then_node.App_Beta(identifierFrom, identifierTo)
         self.else_node.App_Beta(identifierFrom, identifierTo)
+
+    def getContexts(self, currentContext):
+        needsContext = False
+        if_contexts = self.if_node.getContexts(currentContext)
+
+        contexts = []
+        if if_contexts.needContext and if_contexts.alreadyInContext == False:
+            self.if_node = if_contexts.nodes[0]
+            needsContext = True
+        elif if_contexts.needContext != False and if_contexts.alreadyInContext != False: 
+            return ContextValues([if_contexts.nodes[0]],if_contexts.needContext, if_contexts.alreadyInContext)
+
+        then_contexts = self.then_node.getContexts(currentContext)
+
+        if then_contexts.needContext and then_contexts.alreadyInContext == False:
+            self.then_node = then_contexts.nodes[0]
+
+        en = self.else_node
+
+        # then (1;1) else (2;2)
+        try:
+            if self.then_node.token.type != TokenTypes.FAIL:
+                if self.else_node.token.type != TokenTypes.FAIL:
+                    needsContext = True
+                    self.else_node = FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+                else: return ContextValues(contexts,needsContext,False)
+        except:
+                try:
+                    if self.else_node.token.type != TokenTypes.FAIL:
+                        needsContext = True
+                        self.else_node = FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+                except: 
+                    needsContext = True
+                    self.else_node = FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+
+        contexts.append(copy.deepcopy(self))
+
+
+        else_contexts = en.getContexts(currentContext)
+
+        if else_contexts.needContext and else_contexts.alreadyInContext == False:
+            needsContext = True
+            self.else_node = else_contexts.nodes[0]
+        else: self.else_node = en
+        
+        try:
+            if self.else_node.token.type != TokenTypes.FAIL:
+                if self.then_node.token.type != TokenTypes.FAIL:
+                    needsContext = True
+                    self.then_node = FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+                else: return ContextValues(contexts,needsContext,False)
+        except:
+                try:
+                    if self.then_node.token.type != TokenTypes.FAIL:
+                        needsContext = True
+                        self.then_node = FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+                except: 
+                    needsContext = True
+                    self.then_node = FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+        
+        contexts.append(copy.deepcopy(self))
+
+        return ContextValues(contexts,needsContext,False)
 
 
 '''
@@ -1614,8 +1689,10 @@ class Contexts(BaseNode):
                 newContexts = []
             
             for c in self.contexts:
-                copiedTable = copy.deepcopy(symboltable)
-                res = c.visit(copiedTable)
+                usingTable = symboltable
+                if len(self.contexts) > 1:
+                    usingTable = copy.deepcopy(usingTable)
+                res = c.visit(usingTable)
                 context  =  c.getContexts(c)
                 if context.alreadyInContext or (context.needContext and context.alreadyInContext == False):
                         newContexts.extend(context.nodes)

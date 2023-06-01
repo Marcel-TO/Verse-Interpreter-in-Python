@@ -194,7 +194,8 @@ text = "f(a:int, b:int):= (a + b); f(1,2)" # fixed
 #text = "data Rectangle(width:int,height:int); rec := Rectangle(7,3);rec = rec"
 text = "x,y:int; y = (if (x = 0) then 3 else 4); x = 7; y"
 text ="x:=10; 10 = x; x"
-text ="x; x = 10; r=11; if(x = r:int) then (x:int; 1) else 3"
+text ="x; x = 11; x:int; if(x < 10) then (0; x = 10) else 1"
+text ="x:=1; f(x:int):int := (x + 1)"
 
 start_text
 lexer = lexicon(text)
