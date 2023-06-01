@@ -964,12 +964,10 @@ class IfNode(BaseNode):
         return "{}({}) then {} else {}".format(self.token.value, repr(self.if_node), repr(self.then_node),  repr(self.else_node))
 
     def visit(self, symboltable: SymbolTable):
-        self.usedSymbolTable = symboltable
-        # x = 10; r=11; if(x = r:int) then (x:int; 1) else (x:int; 3)
-
-        result_if = self.if_node.visit(symboltable)
+        self.usedSymbolTable = symboltable.createChildTable()
+        result_if = self.if_node.visit(self.usedSymbolTable)
         if result_if != None and result_if.token.type != TokenTypes.FAIL:
-            result_then = self.then_node.visit(symboltable)
+            result_then = self.then_node.visit(self.usedSymbolTable)
             if self.check_type(result_then.token.type, [TokenTypes.TUPLE_TYPE, TokenTypes.CHOICE]):
                 self.type = result_then.nodes[0].type
                 return result_then.nodes[0]
@@ -977,10 +975,9 @@ class IfNode(BaseNode):
             return result_then
             
             
-        if_symboltable = symboltable.createChildTable()
-        result = self.else_node.visit(if_symboltable)
-        for i in range(0, len(if_symboltable.symboltable)):
-               result =  self.else_node.visit(if_symboltable)
+        result = self.else_node.visit(self.usedSymbolTable)
+        for i in range(0, len(self.usedSymbolTable.symboltable)):
+               result =  self.else_node.visit(self.usedSymbolTable)
         if self.check_type(result.token.type, [TokenTypes.TUPLE_TYPE, TokenTypes.CHOICE]):
             self.type = result.nodes[0].type
             return result.nodes[0]
@@ -1053,7 +1050,8 @@ class FlexibleEqNode(BaseNode):
 
     def visit(self, symboltable: SymbolTable):
         self.usedSymbolTable = symboltable
-        isValid = symboltable.addValue(self.left_node.token.value, self.right_node)
+        # isValid = symboltable.addValue(self.left_node.token.value, self.right_node)
+        isValid = symboltable.tryUnify(self.left_node, self.right_node)
         if isValid:
             result = self.right_node.visit(symboltable)
             self.type = result.type

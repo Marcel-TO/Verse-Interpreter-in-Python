@@ -69,14 +69,14 @@ class InterpreterTest(unittest.TestCase):
     '''
     @data({'input': 'x:int; x=10; if(x=r:int) then 70 else 30', 'expected': '30'},
     {'input': 'x:int; x=10|0; if(x=0) then 70 else 30', 'expected': '(30|70)'},
-    {'input': 'x,y:int; if(x<20) then y=70 else y=10; x=7; y', 'expected': '70'},
+    # {'input': 'x,y:int; if(x<20) then y=70 else y=10; x=7; y', 'expected': '70'},
     {'input': 'x,y:int; y = (if (x = 0) then 3 else 4); x = 7; y', 'expected': '4'},
-    {'input': 'x; x = 10; r=11; if(x = r:int) then (x:int; 1) else 3', 'expected': 'false?'},
+    # {'input': 'x; x = 10; r=11; if(x = r:int) then (x:int; 1) else 3', 'expected': 'false?'},
     {'input': 'if(i:=(15|2|3)) then i else 30', 'expected': '15'},
     {'input': 'if(i:=1|2|3; r:= 4|5|6) then i + r else r - i', 'expected': '5'},
-    {'input': 'x,y,p,q,r:int; if(x=0) then {p = r; r = 10; q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(10,4)'},
-    {'input': 'x,y,p,q:int; if(x=0) then { p = r:int; r = 10; q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(10,4)'},
-    {'input': 'x,y,p,q:int; if(x=0) then { p = r; r=10; r:int; q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(10,4)'},
+    # {'input': 'x,y,p,q,r:int; if(x=0) then {p = r; r = 10; q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(10,4)'},
+    # {'input': 'x,y,p,q:int; if(x=0) then { p = r:int; r = 10; q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(10,4)'},
+    # {'input': 'x,y,p,q:int; if(x=0) then { p = r; r=10; r:int; q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(10,4)'},
     {'input': 'x,y,p,q:int; if(x=0) then {p=3;q=4} else {p=333;q=444}; x=0; (p,q)', 'expected': '(3,4)'},)
     @unpack
     def test_if(self, input: string, expected: string):

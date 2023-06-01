@@ -40,15 +40,47 @@ class SymbolTable:
         return False
 
     
+    # def addValue(self, symbol: string, value) -> bool:
+    #     # Had to set a max iteration count, due to the infinite adding of new symbols during iteration of symbol table while unification especially for the IfNode
+    #     i = 0
+    #     isAdded = False
+    #     maxIterations = len(self.symboltable)
+    #     while i < maxIterations:
+    #         sym = self.symboltable[i]
+    #         if sym.symbol == symbol:
+    #             if sym.value == None and value != None and sym.value != sym.symbol:
+    #                 occurs = self.U_Occurs(symbol,value)
+    #                 if occurs:
+    #                     sym.isUnified = False
+    #                 else: sym.value = value
+    #                 # self.logger.__log__("Added the value: {} to the existing symbol: {} in the symboltable: {}".format(value, sym.symbol, self))
+    #                 isAdded = True
+    #                 # return True
+    #             elif sym.value != None and value != None and sym.value != sym.symbol:
+    #                 occurs = self.U_Occurs(symbol,value)
+    #                 if occurs:
+    #                     sym.isUnified = False
+    #                 else: 
+    #                     isUnified = self.tryUnify(sym.value, value)
+    #                     if isUnified == False:
+    #                         sym.isUnified = isUnified
+    #                     sym.value = value
+    #                     isAdded = True
+    #         i += 1  
+        
+    #     if isAdded == False and self.parentTable != None:
+    #         return self.parentTable.addValue(symbol, value)
+    #     return isAdded
+    
     def addValue(self, symbol: string, value) -> bool:
-        # Had to set a max iteration count, due to the infinite adding of new symbols during iteration of symbol table while unification especially for the IfNode
+        # Had to set a max iteration count, due to the infinite adding of new symbols during iteration of symbol table while unification especially for the IfNode   
         i = 0
         isAdded = False
         maxIterations = len(self.symboltable)
         while i < maxIterations:
             sym = self.symboltable[i]
             if sym.symbol == symbol:
-                if sym.symbolType != None and sym.value == None and value != None and sym.value != sym.symbol:
+                if sym.value == None and value != None and sym.value != sym.symbol:
                     occurs = self.U_Occurs(symbol,value)
                     if occurs:
                         sym.isUnified = False
@@ -56,7 +88,7 @@ class SymbolTable:
                     # self.logger.__log__("Added the value: {} to the existing symbol: {} in the symboltable: {}".format(value, sym.symbol, self))
                     isAdded = True
                     # return True
-                elif sym.symbolType != None and sym.value != None and value != None and sym.value != sym.symbol:
+                elif sym.value != None and value != None and sym.value != sym.symbol:
                     occurs = self.U_Occurs(symbol,value)
                     if occurs:
                         sym.isUnified = False
@@ -67,6 +99,8 @@ class SymbolTable:
                         sym.value = value
                         isAdded = True
             i += 1  
+        if isAdded == False and self.parentTable != None:
+            return self.parentTable.addValue(symbol, value)
         return isAdded
 
     def addBinding(self, symbol: string, value, symbolType: TokenTypes) -> None:
@@ -154,22 +188,32 @@ class SymbolTable:
 
                     # Unification fix for different identifiers
                     elif u[0].token.type == TokenTypes.IDENTIFIER and u[1].token.type == TokenTypes.IDENTIFIER:
-                        val0 = u[0].visit(self)
+                        
+
                         val1 = u[1].visit(self)
 
-                        if(val0.token.value != val1.token.value) and (val0.token.type != TokenTypes.FAIL and val1.token.type != TokenTypes.FAIL):
-                            return False
+                        if(val1.token.type != TokenTypes.FAIL):
+                            self.addValue(u[0].token.value, val1)
 
                     elif u[1].token.type != TokenTypes.IDENTIFIER: 
                         self.addValue(u[0].token.value, u[1])
             return True
         except:
-            
-            lNew = l.visit(self)
             rNew = r.visit(self)
-            if lNew.token.type != TokenTypes.FAIL and rNew.token.type != TokenTypes.FAIL:
-                unifiedResult = self.unify(lNew,rNew)
-                return unifiedResult[0]
+            try:
+                if l.token.type == TokenTypes.IDENTIFIER:
+                    return self.tryUnify(l, rNew)
+            except:
+                try:
+                    if r.token.type == TokenTypes.IDENTIFIER:
+                        lNew = l.visit(self)
+                        return self.tryUnify(r, lNew)
+                except:
+                    rNew = r.visit(self)
+                    lNew = l.visit(self)
+                    if lNew.token.type != TokenTypes.FAIL and rNew.token.type != TokenTypes.FAIL:
+                        unifiedResult = self.unify(lNew,rNew)
+                        return unifiedResult[0] 
             return False
      
     def unify(self,l, r) -> tuple[bool,list]:
@@ -189,17 +233,26 @@ class SymbolTable:
               r = r.nodes[0]
           unify_success = self.unify(l,r)  
       else: 
+            noIdentfiers = True
             if l.token.type == TokenTypes.IDENTIFIER or r.token.type == TokenTypes.IDENTIFIER:
-                if l.token.type == TokenTypes.IDENTIFIER and r.token.type == TokenTypes.IDENTIFIER:
-                    unify_success = self.Var_Swap(l,r)
+                if l.token.type == TokenTypes.IDENTIFIER:
+                    if(r.token.type == TokenTypes.IDENTIFIER):
+                        unify_success = self.Var_Swap(l,r)
+                    else: 
+                        add_res = self.addValue(l.token.value,r)
+                        unify_success = [add_res,[]]
+                    noIdentfiers = False
                 elif r.token.type == TokenTypes.IDENTIFIER:
                     unify_success = self.Hnf_Swap(l,r)
-                else: 
-                    l = l.visit(self)
-                    r = r.visit(self)
-                    if l.token.type != TokenTypes.FAIL and r.token.type != TokenTypes.FAIL:   
-                        unify_success = self.unify(l,r)
-                    else: unify_success = (True, [])
+                    noIdentfiers = False
+            
+            if noIdentfiers:
+                l = l.visit(self)
+                r = r.visit(self)
+                if l.token.type != TokenTypes.FAIL and r.token.type != TokenTypes.FAIL:   
+                    unify_success = self.unify(l,r)
+                else: unify_success = (True, [])
+                
             else: (False, [])
                
       return unify_success
