@@ -602,7 +602,7 @@ class FuncCallNode:
             except: 
                 pass
             
-            func_dec:FuncDeclNode = result
+            func_dec:FuncDeclNode = copy.deepcopy(result)
             index = 0
             try:
                 params = func_dec.params
@@ -611,7 +611,11 @@ class FuncCallNode:
                 
             for param in params:
                 id = param.nodes[0].token.value
-                table.addScope(id,param.type)
+                if table.addScope(id,param.type) == False:
+                    newId = IdentifierCreator.create(symboltable)
+                    param.App_Beta(id, newId)
+                    func_dec.body.App_Beta(id, newId)
+                    table.addScope(newId,param.type)
 
             while(index < len(params) and index < len(self.args)):
                 param = params[index]
