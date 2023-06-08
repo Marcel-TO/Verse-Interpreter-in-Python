@@ -1,9 +1,9 @@
 import string
 import unittest
 from ddt import ddt, data, file_data, idata, unpack
-from verse_lexer.verse_lexer import lexicon
-from structure.token.token import Token
-from structure.tokenTypes.tokenTypes import TokenTypes
+from verse_lexer import lexicon
+from tokens import Token
+from tokenTypes import TokenTypes
 
 @ddt
 class LexerTest(unittest.TestCase):

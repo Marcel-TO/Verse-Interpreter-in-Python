@@ -2,10 +2,10 @@ import string
 import unittest
 
 from ddt import ddt, data, unpack
-from syntaxtree.nodes.nodes import *
-from verse_lexer.verse_lexer import lexicon
-from verse_parser.verse_parser import Parser
-from verse_interpreter.verse_interpreter import Interpreter
+from nodes import *
+from verse_lexer import lexicon
+from verse_parser import Parser
+from verse_interpreter import Interpreter
 
 @ddt
 class InterpreterTest(unittest.TestCase):

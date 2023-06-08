@@ -1,7 +1,7 @@
-from syntaxtree.nodes.nodes import *
-from verse_lexer.verse_lexer import lexicon
-from verse_parser.verse_parser import Parser
-from verse_interpreter.verse_interpreter import Interpreter
+from nodes import *
+from verse_lexer import lexicon
+from verse_parser import Parser
+from verse_interpreter import Interpreter
 import start_text
 
 """
@@ -187,6 +187,7 @@ text = "t:=for{1|2}; t[0]" # head
 # text = "f(a:int, b:int):= a + b; f(1,2)"
 text = "hanoi(n:int, start:string, middle:string, end:string):string :=  (if(n = 0) then \"World\" else (hanoi(n - 1, start, end, middle); \"s\"; hanoi(n - 1, end, middle, start)); hanoi(1,\"start\",\"middle\",\"end\")"
 text = "hanoi(n:int,start:string, middle:string, end:string):string := (if(n = 0) then 0 else hanoi(n - 1, start, end, middle)); hanoi(1,\"start\",\"middle\",\"end\")"
+text ="i:int; 1 = i; i"
 start_text
 lexer = lexicon(text)
 parser = Parser(lexer)

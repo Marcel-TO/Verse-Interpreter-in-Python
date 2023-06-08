@@ -7,11 +7,11 @@
   },
   {
    "optionDest": "filenames",
-   "value": "/Users/marcel/Desktop/Studium/4.Semester/Logik Programmierung/Teamprojekt/GIT/modules/verse_console.py"
+   "value": "C:/Users/chris/Desktop/Fh/4.Semester/Logikprogrammierung/Projekt/Backup/V9/Verse_Interpreter/modules/verse_console.py"
   },
   {
    "optionDest": "onefile",
-   "value": false
+   "value": true
   },
   {
    "optionDest": "console",
@@ -39,7 +39,7 @@
   },
   {
    "optionDest": "embed_manifest",
-   "value": false
+   "value": true
   },
   {
    "optionDest": "uac_admin",
@@ -67,23 +67,63 @@
   },
   {
    "optionDest": "datas",
-   "value": "/Users/marcel/Desktop/Studium/4.Semester/Logik Programmierung/Teamprojekt/GIT/modules/syntaxtree:syntaxtree/"
+   "value": "C:/Users/chris/Desktop/Fh/4.Semester/Logikprogrammierung/Projekt/Backup/V9/Verse_Interpreter/modules/errorClass.py;."
   },
   {
    "optionDest": "datas",
-   "value": "/Users/marcel/Desktop/Studium/4.Semester/Logik Programmierung/Teamprojekt/GIT/modules/structure:structure/"
+   "value": "C:/Users/chris/Desktop/Fh/4.Semester/Logikprogrammierung/Projekt/Backup/V9/Verse_Interpreter/modules/identifier_creator.py;."
   },
   {
    "optionDest": "datas",
-   "value": "/Users/marcel/Desktop/Studium/4.Semester/Logik Programmierung/Teamprojekt/GIT/modules/verse_lexer:verse_lexer/"
+   "value": "C:/Users/chris/Desktop/Fh/4.Semester/Logikprogrammierung/Projekt/Backup/V9/Verse_Interpreter/modules/logger.py;."
   },
   {
    "optionDest": "datas",
-   "value": "/Users/marcel/Desktop/Studium/4.Semester/Logik Programmierung/Teamprojekt/GIT/modules/verse_parser:verse_parser/"
+   "value": "C:/Users/chris/Desktop/Fh/4.Semester/Logikprogrammierung/Projekt/Backup/V9/Verse_Interpreter/modules/nodes.py;."
   },
   {
    "optionDest": "datas",
-   "value": "/Users/marcel/Desktop/Studium/4.Semester/Logik Programmierung/Teamprojekt/GIT/modules/verse_interpreter:verse_interpreter/"
+   "value": "C:/Users/chris/Desktop/Fh/4.Semester/Logikprogrammierung/Projekt/Backup/V9/Verse_Interpreter/modules/parsedNode.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/chris/Desktop/Fh/4.Semester/Logikprogrammierung/Projekt/Backup/V9/Verse_Interpreter/modules/sequentor.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/chris/Desktop/Fh/4.Semester/Logikprogrammierung/Projekt/Backup/V9/Verse_Interpreter/modules/start_text.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/chris/Desktop/Fh/4.Semester/Logikprogrammierung/Projekt/Backup/V9/Verse_Interpreter/modules/symboltable.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/chris/Desktop/Fh/4.Semester/Logikprogrammierung/Projekt/Backup/V9/Verse_Interpreter/modules/tokens.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/chris/Desktop/Fh/4.Semester/Logikprogrammierung/Projekt/Backup/V9/Verse_Interpreter/modules/tokenTypes.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/chris/Desktop/Fh/4.Semester/Logikprogrammierung/Projekt/Backup/V9/Verse_Interpreter/modules/valueTypes.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/chris/Desktop/Fh/4.Semester/Logikprogrammierung/Projekt/Backup/V9/Verse_Interpreter/modules/verse_input.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/chris/Desktop/Fh/4.Semester/Logikprogrammierung/Projekt/Backup/V9/Verse_Interpreter/modules/verse_interpreter.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/chris/Desktop/Fh/4.Semester/Logikprogrammierung/Projekt/Backup/V9/Verse_Interpreter/modules/verse_lexer.py;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/chris/Desktop/Fh/4.Semester/Logikprogrammierung/Projekt/Backup/V9/Verse_Interpreter/modules/verse_parser.py;."
   }
  ],
  "nonPyinstallerOptions": {
