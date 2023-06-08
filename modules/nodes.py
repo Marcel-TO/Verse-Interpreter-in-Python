@@ -721,6 +721,7 @@ class FuncDeclNode(BaseNode):
         return childNodes
     
     def getContexts(self, currentContext):   
+        """
         contextValues = self.body.getContexts(currentContext)
         if(contextValues.alreadyInContext == False and contextValues.needContext):
             contexts = []
@@ -729,6 +730,7 @@ class FuncDeclNode(BaseNode):
                 context = Contexts([copy.deepcopy(currentContext)])
                 contexts.append(context)
             return ContextValues(contexts,True, True)
+        """
         return ContextValues([currentContext],False, False)
     
 

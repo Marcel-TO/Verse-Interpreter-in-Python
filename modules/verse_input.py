@@ -187,7 +187,9 @@ text = "t:=for{1|2}; t[0]" # head
 # text = "f(a:int, b:int):= a + b; f(1,2)"
 text = "hanoi(n:int, start:string, middle:string, end:string):string :=  (if(n = 0) then \"World\" else (hanoi(n - 1, start, end, middle); \"s\"; hanoi(n - 1, end, middle, start)); hanoi(1,\"start\",\"middle\",\"end\")"
 text = "hanoi(n:int,start:string, middle:string, end:string):string := (if(n = 0) then 0 else hanoi(n - 1, start, end, middle)); hanoi(1,\"start\",\"middle\",\"end\")"
-text ="i:int; 1 = i; i"
+text ="i:int; 1= i; i"
+text = "q(a:int):int := if(a = 0) then 5 + q(a - 1) else 1; q(0)"
+text = "f(x:int):= x|10; f(23) * 2"
 start_text
 lexer = lexicon(text)
 parser = Parser(lexer)
