@@ -1,9 +1,11 @@
+import sys
 from nodes import *
 from verse_lexer import lexicon
 from verse_parser import Parser
 from verse_interpreter import Interpreter
 import start_text
 
+sys.setrecursionlimit(1000000)
 """
 TUPLE
 """
@@ -190,6 +192,12 @@ text = "hanoi(n:int,start:string, middle:string, end:string):string := (if(n = 0
 text ="i:int; 1= i; i"
 text = "q(a:int):int := if(a = 0) then 5 + q(a - 1) else 1; q(0)"
 text = "f(x:int):= x|10; f(23) * 2"
+text = "print(\"Welt\")"
+text = "hanoi(n:int,start:string, middle:string, end:string):string := (if(n = 0) then 0 else (hanoi(n - 1, start, end, middle); print(\"Move disk \" + n + \"from rod \" + start + \"to rod \" + middle); hanoi(n - 1, end, middle, start))); hanoi(3,\"start\",\"middle\",\"end\")"
+#text="hanoi(n:int,start:string, middle:string, end:string):string := \"S\""
+#text ="x:int; z:int; f(p:int,q:int):int :=  (p = 1; q = 23; y:int; y = 100; (p+q)*100); f(x,z); x + z"
+
+# hanoi(n:int,start:string, middle:string, end:string):string := (if(n = 0) then 0 else (hanoi(n - 1, start, end, middle); print("Move disk " + n + " from rod " + start + " to rod " + middle); hanoi(n - 1, end, middle, start))); hanoi(2,"A","C","B")
 start_text
 lexer = lexicon(text)
 parser = Parser(lexer)

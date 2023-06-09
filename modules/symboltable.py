@@ -10,6 +10,9 @@ class Symbol:
         self.value = value
         self.symbolType: TokenTypes | None = symbolType
         self.isUnified = True
+
+    def getValue(self):
+        return self.value
     
 
 class SymbolTable:    
@@ -18,6 +21,7 @@ class SymbolTable:
         self.childTables: list[SymbolTable] = []
         self.parentTable: SymbolTable = parent
         self.logger = Console_Logger()
+        self.printable = False
         
 
     def __info__(self) -> None:
@@ -148,7 +152,7 @@ class SymbolTable:
     def get_value(self, symbol: string):
         for sym in self.symboltable:
             if sym.symbol == symbol:
-                return True, sym.value
+                return True, sym.getValue()
         if self.parentTable != None:
             return self.parentTable.get_value(symbol)
         return False, None

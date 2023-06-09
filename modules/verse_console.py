@@ -2,6 +2,9 @@ from nodes import *
 from verse_lexer import lexicon
 from verse_parser import Parser
 from verse_interpreter import Interpreter
+import sys
+
+sys.setrecursionlimit(1000000)
 
 print("=========================================")
 print(" ")

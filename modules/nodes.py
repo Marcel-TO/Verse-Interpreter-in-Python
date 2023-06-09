@@ -1,4 +1,5 @@
 import copy
+import sys
 from valueTypes import ValueTypes
 from tokens import Token
 from tokenTypes import TokenTypes
@@ -43,6 +44,9 @@ class ParsedNode:
         self.node = node
         self.hasSyntaxError = hasSyntaxError
         self.usedSymbolTable = SymbolTable(None)
+
+
+
     
 '''
 Node for block statements.
@@ -61,7 +65,10 @@ class BlockNode(BaseNode):
         self.usedSymbolTable = symboltable
         results = []
         i = 0
+        if symboltable.printable == True:
+            symboltable.printable = False
         for n in self.nodes:
+            
             result = n.visit(symboltable)
             if result != None:
                 results.append(result)
@@ -70,6 +77,9 @@ class BlockNode(BaseNode):
         i = 0
         hasFailed = False
         for i in range(len(symboltable.symboltable) + 1):
+            tLength = len(symboltable.symboltable)
+            if i == tLength:
+                symboltable.printable = True
             hasFailed = False
             results = []
             if symboltable.checkAllUnificationValid() == False:
@@ -344,7 +354,7 @@ class OperatorNode(BaseNode):
     def doOperationStr(self, val1: str, val2: str, token: Token, symboltable):
         result = ""
         if token.type == TokenTypes.PLUS:
-            result = val1 + val2
+            result = str(val1) + str(val2)
         # APPLICATION: gt⟨k1, k2⟩ −→ k1  &  gt⟨k1, k2⟩ −→ fail
         elif token.type == TokenTypes.GREATER:
             if len(val1) > len(val2):
@@ -588,6 +598,7 @@ class FuncCallNode:
         self.identifier = identifier
         self.args = args
         self.type = ValueTypes.ANY
+        
 
     def visit(self, symboltable: SymbolTable):
         self.usedSymbolTable = symboltable
@@ -608,36 +619,49 @@ class FuncCallNode:
                 params = func_dec.params
             except:
                 return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value))
-                
+            
             for param in params:
                 id = param.nodes[0].token.value
                 if table.addScope(id,param.type) == False:
-                    newId = IdentifierCreator.create(symboltable)
+                    newId = IdentifierCreator.create(table)
                     param.App_Beta(id, newId)
                     func_dec.body.App_Beta(id, newId)
                     table.addScope(newId,param.type)
+             
 
             while(index < len(params) and index < len(self.args)):
                 param = params[index]
                 id = param.nodes[0].token.value
-
+                arg = None
                 try:
                     if(self.args[index].token.type == TokenTypes.IDENTIFIER):
                         arg = self.args[index].visit(symboltable)
                         if(arg.token.type == TokenTypes.FAIL):
                             arg = None
+                    elif arg.token.type == TokenTypes.FAIL:
+                        return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value))
                     else: 
                         arg = self.args[index].visit(symboltable)
                         if(arg.token.type == TokenTypes.IDENTIFIER):
                             arg = arg.visit(symboltable)
                             if(arg.token.type == TokenTypes.FAIL):
                                 arg = None
+                        elif arg.token.type == TokenTypes.FAIL:  
+                            return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value))  
                 except:
                     arg = self.args[index].visit(symboltable)
                     if(arg.token.type == TokenTypes.IDENTIFIER):
                         arg = None
+                    elif arg.token.type == TokenTypes.FAIL:
+                        return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value))
+                
+        
                 table.addValue(id, arg)
+                
                 index += 1
+            #print(p + " | " + p1 + " | " + p3)
+
+            
             val = func_dec.body.visit(table)
 
             # Check if a variable is given to argument that has not been set (Logic)
@@ -712,6 +736,10 @@ class FuncDeclNode(BaseNode):
         self.usedSymbolTable = symboltable
         symbol = self.identifier.token.value
         symboltable.addBinding(symbol, self, self.type)
+        val = self.body.visit(symboltable)
+        if val.token.type == TokenTypes.FAIL: 
+            return self.identifier
+        return val
 
     def getChildNodes(self):
         childNodes = []
@@ -733,6 +761,44 @@ class FuncDeclNode(BaseNode):
         """
         return ContextValues([currentContext],False, False)
     
+class PrintDecl(FuncDeclNode):
+    def __init__(self,identifier:IdentifierNode, params:list[ScopeNode],usesLambda:bool, type:TypeNode, body:BlockNode) -> None:
+        super().__init__(identifier, params,usesLambda, type, body)
+
+    def visit(self, symboltable: SymbolTable):
+        self.usedSymbolTable = symboltable
+        symbol = self.identifier.token.value
+        symboltable.addBinding(symbol, self, self.type)
+        
+
+    def getChildNodes(self):
+        childNodes = []
+        for param in self.params:
+            childNodes.extend(param.getChildNodes()) 
+        childNodes.extend(self.body.getChildNodes())
+        return childNodes
+    
+    def getContexts(self, currentContext):   
+        return ContextValues([currentContext],False, False) 
+
+
+class PrintNode(BaseNode):
+    def __init__(self, identifier:IdentifierNode) -> None:
+        self.identifier = identifier
+
+    def visit(self, symboltable: SymbolTable):
+        if symboltable.printable:
+            val = self.identifier.visit(symboltable)
+            if(val.token.type == TokenTypes.FAIL):
+                return FailNode(Token(TokenTypes.FAIL, TokenTypes.FAIL.value))
+            print(val.token.value)
+        return StringNode(Token(TokenTypes.STRING,""))
+
+    def getChildNodes(self):
+        return IdentifierNode.getChildNodes()
+    
+    def getContexts(self, currentContext):   
+        return ContextValues([currentContext],False, False) 
 
 
 '''
