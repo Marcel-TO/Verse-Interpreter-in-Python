@@ -64,7 +64,7 @@ class BlockNode(BaseNode):
     def visit(self, symboltable: SymbolTable):
         self.usedSymbolTable = symboltable
         results = []
-        i = 0
+
         if symboltable.printable == True:
             symboltable.printable = False
         for n in self.nodes:
@@ -72,18 +72,16 @@ class BlockNode(BaseNode):
             result = n.visit(symboltable)
             if result != None:
                 results.append(result)
-            i += 1
+      
 
         i = 0
         hasFailed = False
-        for i in range(len(symboltable.symboltable) + 1):
+        while i < 2:
             tLength = len(symboltable.symboltable)
             if i == tLength:
                 symboltable.printable = True
             hasFailed = False
             results = []
-            if symboltable.checkAllUnificationValid() == False:
-                return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value)) 
             for n in self.nodes:
                 result = n.visit(symboltable)
                 symboltable.remove_all_except_self()
@@ -97,6 +95,8 @@ class BlockNode(BaseNode):
             i += 1
 
         # Block is only allowed to return one (last) value.
+        if symboltable.checkAllUnificationValid() == False:
+                return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value)) 
         if hasFailed:
             return FailNode(Token(TokenTypes.FAIL,TokenTypes.FAIL.value)) 
         finalResult = results[len(results)-1]
@@ -598,7 +598,7 @@ class FuncCallNode:
         self.identifier = identifier
         self.args = args
         self.type = ValueTypes.ANY
-        
+        self.usedSymbolTable = SymbolTable(None)
 
     def visit(self, symboltable: SymbolTable):
         self.usedSymbolTable = symboltable
@@ -661,7 +661,8 @@ class FuncCallNode:
                 index += 1
             #print(p + " | " + p1 + " | " + p3)
 
-            
+            if(self.identifier == "print"):
+                print("")
             val = func_dec.body.visit(table)
 
             # Check if a variable is given to argument that has not been set (Logic)
@@ -1110,9 +1111,13 @@ class IfNode(BaseNode):
             finalResult = else_context.visit(childTable)  
             
             
-        
-            if finalResult.token.type == TokenTypes.CHOICE:
-                finalResult = finalResult.nodes[0]
+            try:
+                if finalResult.token.type == TokenTypes.CHOICE:
+                    finalResult = finalResult.visit(symboltable)
+                    if finalResult.token.type == TokenTypes.CHOICE:
+                        finalResult = finalResult.nodes[0]
+            except:
+                finalResult = finalResult
         
         
         fr_context = Contexts([finalResult])
@@ -1410,6 +1415,9 @@ class IndexingNode(BaseNode):
         childNodes = []
         childNodes.extend(self.index.getChildNodes()) 
         return childNodes
+    
+    def App_Beta(self,identifierFrom, identifierTo):
+        self.index.App_Beta(identifierFrom, identifierTo)
     
 
 
@@ -1736,39 +1744,50 @@ class Contexts(BaseNode):
 
     def visit(self, symboltable):
         self.usedSymbolTable = symboltable
-        newContexts = []
+        
+        
         checkContext = True
+
         while checkContext:
             newContexts = []
             while checkContext:
                 
                 for c in self.contexts:
+                    
                     context = c.getContexts(c)
                     
                     if context.alreadyInContext or (context.needContext and context.alreadyInContext == False):
                         newContexts.extend(context.nodes)
                     else: newContexts.append(c)
+
                     checkContext = context.alreadyInContext
+
                 self.contexts = copy.deepcopy(newContexts)
+                
                 results = []
                 newContexts = []
             
             for c in self.contexts:
+                
                 usingTable = symboltable
                 if len(self.contexts) > 1:
                     usingTable = copy.deepcopy(usingTable)
+
                 res = c.visit(usingTable)
+
                 context  =  c.getContexts(c)
+                
                 if context.alreadyInContext or (context.needContext and context.alreadyInContext == False):
                         newContexts.extend(context.nodes)
                 else: newContexts.append(c)
+
                 checkContext = context.alreadyInContext or (context.needContext and context.alreadyInContext == False)
                 try:
                     results.extend(res)
                 except:
                     results.append(res) 
             self.contexts = copy.deepcopy(newContexts)  
-            result = None   
+             
         if len(results)>1:
             result = ChoiceSequenceNode(Token(TokenTypes.CHOICE,TokenTypes.CHOICE.value),results)
         else: result = results[0]

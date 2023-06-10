@@ -198,6 +198,9 @@ text = "hanoi(n:int,start:string, middle:string, end:string):string := (if(n = 0
 #text ="x:int; z:int; f(p:int,q:int):int :=  (p = 1; q = 23; y:int; y = 100; (p+q)*100); f(x,z); x + z"
 
 # hanoi(n:int,start:string, middle:string, end:string):string := (if(n = 0) then 0 else (hanoi(n - 1, start, end, middle); print("Move disk " + n + " from rod " + start + " to rod " + middle); hanoi(n - 1, end, middle, start))); hanoi(2,"A","C","B")
+text ="s:=(z,1,2,3,4); z:= 0..1; f(i:int) := (if(i = 0) then s[i] else s[i] + f(i-1)); f(3)"
+#text="print(ze + \"\"); ze:=1+2"
+
 start_text
 lexer = lexicon(text)
 parser = Parser(lexer)
