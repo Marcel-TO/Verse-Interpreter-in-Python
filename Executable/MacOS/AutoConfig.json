@@ -1,0 +1,133 @@
+{
+ "version": "auto-py-to-exe-configuration_v1",
+ "pyinstallerOptions": [
+  {
+   "optionDest": "noconfirm",
+   "value": true
+  },
+  {
+   "optionDest": "filenames",
+   "value": "/Users/marcel/Desktop/Studium/4.Semester/Logik Programmierung/Teamprojekt/GIT/modules/verse_console.py"
+  },
+  {
+   "optionDest": "onefile",
+   "value": true
+  },
+  {
+   "optionDest": "console",
+   "value": true
+  },
+  {
+   "optionDest": "ascii",
+   "value": false
+  },
+  {
+   "optionDest": "clean_build",
+   "value": false
+  },
+  {
+   "optionDest": "strip",
+   "value": false
+  },
+  {
+   "optionDest": "noupx",
+   "value": false
+  },
+  {
+   "optionDest": "disable_windowed_traceback",
+   "value": false
+  },
+  {
+   "optionDest": "embed_manifest",
+   "value": true
+  },
+  {
+   "optionDest": "uac_admin",
+   "value": false
+  },
+  {
+   "optionDest": "uac_uiaccess",
+   "value": false
+  },
+  {
+   "optionDest": "win_private_assemblies",
+   "value": false
+  },
+  {
+   "optionDest": "win_no_prefer_redirects",
+   "value": false
+  },
+  {
+   "optionDest": "bootloader_ignore_signals",
+   "value": false
+  },
+  {
+   "optionDest": "argv_emulation",
+   "value": false
+  },
+  {
+   "optionDest": "datas",
+   "value": "/Users/marcel/Desktop/Studium/4.Semester/Logik Programmierung/Teamprojekt/GIT/modules/errorClass.py:."
+  },
+  {
+   "optionDest": "datas",
+   "value": "/Users/marcel/Desktop/Studium/4.Semester/Logik Programmierung/Teamprojekt/GIT/modules/identifier_creator.py:."
+  },
+  {
+   "optionDest": "datas",
+   "value": "/Users/marcel/Desktop/Studium/4.Semester/Logik Programmierung/Teamprojekt/GIT/modules/logger.py:."
+  },
+  {
+   "optionDest": "datas",
+   "value": "/Users/marcel/Desktop/Studium/4.Semester/Logik Programmierung/Teamprojekt/GIT/modules/nodes.py:."
+  },
+  {
+   "optionDest": "datas",
+   "value": "/Users/marcel/Desktop/Studium/4.Semester/Logik Programmierung/Teamprojekt/GIT/modules/parsedNode.py:."
+  },
+  {
+   "optionDest": "datas",
+   "value": "/Users/marcel/Desktop/Studium/4.Semester/Logik Programmierung/Teamprojekt/GIT/modules/sequentor.py:."
+  },
+  {
+   "optionDest": "datas",
+   "value": "/Users/marcel/Desktop/Studium/4.Semester/Logik Programmierung/Teamprojekt/GIT/modules/start_text.py:."
+  },
+  {
+   "optionDest": "datas",
+   "value": "/Users/marcel/Desktop/Studium/4.Semester/Logik Programmierung/Teamprojekt/GIT/modules/symboltable.py:."
+  },
+  {
+   "optionDest": "datas",
+   "value": "/Users/marcel/Desktop/Studium/4.Semester/Logik Programmierung/Teamprojekt/GIT/modules/tokens.py:."
+  },
+  {
+   "optionDest": "datas",
+   "value": "/Users/marcel/Desktop/Studium/4.Semester/Logik Programmierung/Teamprojekt/GIT/modules/tokenTypes.py:."
+  },
+  {
+   "optionDest": "datas",
+   "value": "/Users/marcel/Desktop/Studium/4.Semester/Logik Programmierung/Teamprojekt/GIT/modules/valueTypes.py:."
+  },
+  {
+   "optionDest": "datas",
+   "value": "/Users/marcel/Desktop/Studium/4.Semester/Logik Programmierung/Teamprojekt/GIT/modules/verse_input.py:."
+  },
+  {
+   "optionDest": "datas",
+   "value": "/Users/marcel/Desktop/Studium/4.Semester/Logik Programmierung/Teamprojekt/GIT/modules/verse_interpreter.py:."
+  },
+  {
+   "optionDest": "datas",
+   "value": "/Users/marcel/Desktop/Studium/4.Semester/Logik Programmierung/Teamprojekt/GIT/modules/verse_lexer.py:."
+  },
+  {
+   "optionDest": "datas",
+   "value": "/Users/marcel/Desktop/Studium/4.Semester/Logik Programmierung/Teamprojekt/GIT/modules/verse_parser.py:."
+  }
+ ],
+ "nonPyinstallerOptions": {
+  "increaseRecursionLimit": true,
+  "manualArguments": ""
+ }
+}
